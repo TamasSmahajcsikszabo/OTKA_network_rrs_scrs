@@ -1,0 +1,8 @@
+---
+title: "Penalized Regression Analysis in Rumination"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
