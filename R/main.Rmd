@@ -53,13 +53,34 @@ The RRS items required no reduction steps as the highly correlating items did no
 Among the SCRS scales the `r names(suggested_SCRS)` scales required reductions steps using PCA. Among the MHC nodes `r names(MHC_goldbricker$suggested_reductions)` items were subject to reduction.
 
 ## Network Analysis with LASSO
-```{r include = FALSE}
+
+RSS network
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 
 # RRS data
-RSScov <- cov(RRS_subset, use = "pairwise.complete") 
-RRSgLASSO <- glasso(RSScov, rho = 2^-2) 
-RSSnetwork <-  qgraph(RRSgLASSO)
-plot(RSSnetwork)
+##RSScov <- cov(RRS_subset, use = "pairwise.complete") 
+#RRSgLASSO <- glasso(RSScov, rho = 2^-2) 
+#RSSnetwork <-  qgraph(RRSgLASSO, theme="TeamFortress")
+#RSSnetwork$graphAttributes$Nodes$labels <- names(dataset[,RRS_items]) 
+
+RSScov2 <- qgraph::cor_auto(RRS_subset) 
+qgraph(RSScov2, graph="glasso", tuning=0,layout="spring", sampleSize=530, theme="TeamFortress")
 ```
 
 
+SCRS network
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+
+# RRS data
+SCRScov <- qgraph::cor_auto(SCRS_subset_reduced) 
+qgraph(SCRScov, graph="glasso", tuning=0,layout="spring", sampleSize=530, theme="TeamFortress")
+```
+
+MHC network
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+
+# MHC data
+
+MHCcov <- qgraph::cor_auto(MHC_subset_reduced) 
+qgraph(MHCcov, graph="glasso", tuning=0,layout="spring", sampleSize=530, theme="TeamFortress")
+```
