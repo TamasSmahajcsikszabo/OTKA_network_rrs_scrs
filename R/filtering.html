@@ -366,8 +366,8 @@ summary {
 </div>
 
 
-<p>As a preparation step, we applied the <em>goldbricker</em> function from the R packageA networktools to search for pairs of items in the RRS, SCRS and MHS items which were highly correlated (r &gt; 0.50) and showed highly the same pattern with other items. When such “bad pairs” were identified, reduction techniques were put into use: instead of the pair, the first principal component of the two variables were kept in the data as a new, merged variable.</p>
-<p>The RRS items required no reduction steps as the highly correlating items did not extend their pattern to more nodes (their correlations to other nodes did not violate the criteria that &gt; 75% of these correlations did not differ significantly). Among the SCRS scales the SCRS_8 &amp; SCRS_1 scales required reductions steps using PCA. Among the MHC nodes MHC_3 &amp; MHC_1 were subject to reduction.</p>
+<p>As a preparation step, we applied the <em>goldbricker</em> function from the R packageA networktools to search for pairs of items in the RRS, SCRS and MHS items which were highly correlated (r &gt; 0.50) and showed highly the same pattern with other items. When such “bad pairs” were identified, reduction techniques were put into use (with the net_reduce function in R): instead of the pair, the first principal component of the two variables were kept in the data as a new, merged variable.</p>
+<p>The RRS items required no reduction steps as the highly correlating items did not extend their pattern to more nodes (their correlations to other nodes did not violate the criteria that &gt; 75% of these correlations did not differ significantly). Among the SCRS scales the SCRS_8 &amp; SCRS_1 scales required reductions steps using PCA. Among the MHC nodes MHC_3 &amp; MHC_1 items were subject to reduction.</p>
 
 
 

@@ -35,7 +35,7 @@ suggested_SCRS <- SCRS_goldbricker$suggested_reductions
 SCRS_subset_reduced <- net_reduce(SCRS_subset, SCRS_goldbricker, method = c("PCA", "best_goldbricker"))
 
 # MHC
-MHC_items <- grep("MHC_[1,2,3,4,5,6,7,8,9,10]", var_names)
+MHC_items <- grep("MHC_[1,2,3,4,5,6,7,8,9,10,11,12,14,14]", var_names)
 MHC_subset <- dataset[, MHC_items]
 
 MHC_goldbricker <- goldbricker(MHC_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
