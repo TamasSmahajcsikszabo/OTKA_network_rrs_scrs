@@ -1,0 +1,50 @@
+---
+title: "Data Filtering: Removing redundant items"
+output: html_document
+---
+
+```{r include = FALSE}
+# libraries declared
+library(tidyverse)
+library(networktools)
+```
+
+As a preparation step, we applied the *goldbricker* function from the R packageA networktools to search for pairs of items in the RRS, SCRS and MHS items which were highly correlated (r > 0.50) and showed highly the same pattern with other items. When such "bad pairs" were identified, reduction techniques were put into use (with the net_reduce function in R): instead of the pair, the first principal component of the two variables were kept in the data as a new, merged variable.
+```{r include = FALSE}
+
+# sourcing the data import script to get the dataset as tibble
+source("~/repos/rumination_lasso/R/data_import.R")
+
+# 1. searching for highly correlated pairs of items [>.5]
+var_names <- names(dataset)
+
+#### RRS #####
+RRS_items <- grep("RRS_[1,2,3,4,5,6,7,8,9,10]", var_names)
+RRS_subset <- dataset[, RRS_items]
+
+RRS_goldbricker <- goldbricker(RRS_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
+RRS_goldbricker$suggested_reductions
+
+# SCRS
+SCRS_items <- grep("SCRS_[1,2,3,4,5,6,7,8,9,10]", var_names)
+SCRS_subset <- dataset[, SCRS_items]
+
+SCRS_goldbricker <- goldbricker(SCRS_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
+SCRS_goldbricker$proportion_matrix
+suggested_SCRS <- SCRS_goldbricker$suggested_reductions
+SCRS_subset_reduced <- net_reduce(SCRS_subset, SCRS_goldbricker, method = c("PCA", "best_goldbricker"))
+
+# MHC
+MHC_items <- grep("MHC_[1,2,3,4,5,6,7,8,9,10]", var_names)
+MHC_subset <- dataset[, MHC_items]
+
+MHC_goldbricker <- goldbricker(MHC_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
+MHC_goldbricker$proportion_matrix
+MHC_goldbricker$suggested_reductions
+MHC_subset_reduced <- net_reduce(MHC_subset, MHC_goldbricker, method = c("PCA", "best_goldbricker"))
+```
+
+The RRS items required no reduction steps as the highly correlating items did not extend their pattern to more nodes (their correlations to other nodes did not violate the criteria that > 75% of these correlations did not differ significantly).
+Among the SCRS scales the `r names(suggested_SCRS)` scales required reductions steps using PCA. Among the MHC nodes `r names(MHC_goldbricker$suggested_reductions)` items were subject to reduction.
+
+
