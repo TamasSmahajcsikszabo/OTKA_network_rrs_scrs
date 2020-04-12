@@ -9,52 +9,10 @@ library(tidyverse)
 library(networktools)
 library(qgraph)
 library(glasso)
-#library(ggraph)
+library(ggraph)
 library(igraph)
 
 ```
-
-```{r include = FALSE }
-
-## color codes
-
-global_colors <- tribble(
-                  ~id, ~color,
-                  1, "coral",
-                  2, "cornflowerblue",
-                  3, "coral4",
-                  4, "seegreen3",
-                  5, "snow3"
-)
-
-make_community_graph <- function(graph, covMatrix) {
-
-    igraph_converted <- as.igraph(graph, attributes = TRUE )
-    group_estimation <- cluster_spinglass(
-                  igraph_converted,
-                  weights = NULL,
-                  vertex = NULL,
-                  spins = 25,
-                  parupdate = FALSE,
-                  start.temp = 1,
-                  stop.temp = 0.01,
-                  cool.fact = 0.99,
-                  update.rule = c("config", "random", "simple"),
-                  gamma = 0.5,
-                  implementation = c("orig", "neg"),
-                  gamma.minus = 1
-                  )
-
-
-    grouping_order <- data.frame(id = group_estimation$membership) %>%
-        left_join(global_colors) %>%
-        select(color) %>%
-        unlist()
-
-    qgraph(covMatrix, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE, color = grouping_order)
-}
-```
-
 ## 2. Methods
 
 ### 2.1 Network analysis 
@@ -133,7 +91,7 @@ SCRS network
 
 
 SCRScov <- qgraph::cor_auto(SCRS_subset_reduced) 
-scrs_network <- qgraph(SCRScov, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE)
+qgraph(SCRScov, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE)
 ```
 
 MHC network
@@ -142,30 +100,32 @@ MHC network
 # MHC data
 
 MHCcov <- qgraph::cor_auto(MHC_subset_reduced) 
-MHC_network <- qgraph(MHCcov, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE)
+qgraph(MHCcov, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE)
 ```
  
 ### 3.2 Community detection 
-Community mapping of RSS, MHC and SCRS with the *spinglass algorithm*:
-
-RSS communities identified with parameters *gamma = 0.5, spins = 25, starting temperature = 1, ending temperature = 0.01, cooling factor = 0.99*.
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
+# community detection for RRS
+rss_graph <-  as.igraph(rss_network, attributes=TRUE)
+#spinglass_rss <- spinglass.community(rss_graph) 
+#rss_communities <- spinglass_rss$membership
+rss_groups <-  cluster_spinglass(
+                  rss_graph,
+                  weights = NULL,
+                  vertex = NULL,
+                  spins = 25,
+                  parupdate = FALSE,
+                  start.temp = 1,
+                  stop.temp = 0.01,
+                  cool.fact = 0.99,
+                  update.rule = c("config", "random", "simple"),
+                  gamma = 0.5,
+                  implementation = c("orig", "neg"),
+                  gamma.minus = 1
+)
 
-make_community_graph(rss_network, RSScov2)
+rss_graph %>%
+    geom_node_circle(aes(fill = rss_groups))
+
 ```
-
-SCRS communities identified with parameters *gamma = 0.5, spins = 25, starting temperature = 1, ending temperature = 0.01, cooling factor = 0.99*.
-
-```{r echo = FALSE, message = FALSE, warning = FALSE}
-
-make_community_graph(scrs_network, SCRScov)
-```
-
-MHC communities identified with parameters *gamma = 0.5, spins = 25, starting temperature = 1, ending temperature = 0.01, cooling factor = 0.99*.
-
-```{r echo = FALSE, message = FALSE, warning = FALSE}
-
-make_community_graph(MHC_network, MHCcov)
-```
-

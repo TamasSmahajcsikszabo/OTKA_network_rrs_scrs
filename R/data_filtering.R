@@ -1,12 +1,6 @@
----
-title: "Data Filtering: Removing redundant items"
-output: html_document
----
 
-```{r}
 library(tidyverse)
 library(networktools)
-```
 # sourcing the data import script to get the dataset as tibble
 source("~/repos/rumination_lasso/R/data_import.R")
 
