@@ -9,10 +9,14 @@ library(tidyverse)
 library(networktools)
 library(qgraph)
 library(glasso)
-```
-## Methods
+library(igraph)
 
-## Removing redundant items
+```
+## 2. Methods
+
+### 2.1 Network analysis 
+
+#### 2.1.1 Removing redundant items
 
 As a preparation step, we applied the *goldbricker* function from the R package *networktools* to search for pairs of items in the RRS, SCRS and MHS items which were highly correlated (r > 0.50) and showed highly the same pattern with other items. When such "bad pairs" were identified, reduction techniques were put into use (with the *net_reduce* function in R): instead of the pair, the first principal component of the two variables were kept in the data as a new, merged variable.
 
@@ -54,9 +58,18 @@ MHC_subset_reduced <- net_reduce(MHC_subset, MHC_goldbricker, method = c("PCA", 
 The RRS items required no reduction steps as the highly correlating items did not extend their pattern to more nodes (their correlations to other nodes did not violate the criteria that > 75% of these correlations did not differ significantly).
 Among the SCRS scales the `r names(suggested_SCRS)` scales required reductions steps using PCA. Among the MHC nodes `r names(MHC_goldbricker$suggested_reductions)` items were subject to reduction.
 
-## Network Analysis with LASSO
+#### 2.1.2 Network Analysis with LASSO
 
+For the network analysis, the tuning parameter of *gamma* in the grahical LASSO alogrithm has been set to 0.5 value in accordance with Bernstein et al in order to achieve sparse graphs. The final networks were chosen by the lowest values of the *extended Bayesian Information Criterion* (EBIC).
+
+#### 2.1.3. Community detection
+In order to get an understanding of community of nodes and to see if nodes can be grouped into neighbourhoods, we used the *igraph* R package. When detecting possible communities of nodes, the detection happened with the following parameters:
+
+## 3. Results
+
+### 3.1 Network plots
 RSS network
+
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 
 # RRS data
@@ -67,7 +80,7 @@ RSS network
 #RSSnetwork$graphAttributes$Nodes$labels <- names(dataset[,RRS_items]) 
 
 RSScov2 <- qgraph::cor_auto(RRS_subset) 
-qgraph(RSScov2, graph="glasso", tuning=0,layout="spring", sampleSize=530, theme="TeamFortress")
+qgraph(RSScov2, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE)
 ```
 
 
@@ -76,7 +89,7 @@ SCRS network
 
 
 SCRScov <- qgraph::cor_auto(SCRS_subset_reduced) 
-qgraph(SCRScov, graph="glasso", tuning=0,layout="spring", sampleSize=530, theme="TeamFortress")
+qgraph(SCRScov, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE)
 ```
 
 MHC network
@@ -85,5 +98,7 @@ MHC network
 # MHC data
 
 MHCcov <- qgraph::cor_auto(MHC_subset_reduced) 
-qgraph(MHCcov, graph="glasso", tuning=0,layout="spring", sampleSize=530, theme="TeamFortress")
+qgraph(MHCcov, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE)
 ```
+ 
+### 3.2 Community detection 
