@@ -17,19 +17,18 @@ library(igraph)
 ```{r include = FALSE }
 
 ## color codes
-
 global_colors <- tribble(
                   ~id, ~color,
                   1, "coral",
                   2, "cornflowerblue",
-                  3, "coral4",
-                  4, "seegreen3",
-                  5, "snow3"
+                  3, "snow3",
+                  4, "seegreen3"
 )
 
+## global functions
 make_community_graph <- function(graph, covMatrix) {
 
-    igraph_converted <- as.igraph(graph, attributes = TRUE )
+    igraph_converted <- as.igraph(graph, attributes = TRUE)
     group_estimation <- cluster_spinglass(
                   igraph_converted,
                   weights = NULL,
@@ -53,6 +52,43 @@ make_community_graph <- function(graph, covMatrix) {
 
     qgraph(covMatrix, graph="glasso", tuning=0.5, layout="spring", sampleSize=530, theme="TeamFortress", details = TRUE, threshold = TRUE, color = grouping_order)
 }
+
+    expected_inf_plot <- function(network, toolname) {
+        influence_df <- networktools::expectedInf(network, step=c("both"), directed=FALSE)
+        step1 <- unlist(influence_df["step1"])
+        step2 <- unlist(influence_df["step2"])
+
+        #z-scores
+        step1_mean  <- mean(step1, na.rm = TRUE)
+        step1_sd  <- sd(step1, na.rm = TRUE)
+        step1 <- (step1 - step1_mean) / step1_sd
+        step2_mean  <- mean(step2, na.rm = TRUE)
+        step2_sd  <- sd(step2, na.rm = TRUE)
+        step2 <- (step2 - step2_mean) / step2_sd
+
+        influence_tibble <- tibble(
+                                   OneStep = step1,
+                                   TwoStep = step2, 
+                                   item = as_factor(paste0(toolname,"_", seq(1, length(step1)))))%>% gather(1:2, key = Method, value = inf)
+
+        influence_tibble %>%
+            ggplot(aes(item, inf, group = Method, color = Method)) +
+            geom_point(shape =0, size = 2) +
+            geom_path() +
+            coord_flip() +
+            scale_color_manual(values = global_colors$color[1:2]) +
+            theme_light() +
+            scale_x_discrete(limits = rev(levels(influence_tibble$item))) +
+            labs(
+                 title = paste0("One- and Two-Step Expected Influence estimates for ", toolname),
+                 x = "Items",
+                 y = "Expected Influence (z-scores)"
+    ) +
+                         theme(
+                               plot.title = element_text(size = 11)
+                         )
+    }
+
 ```
 
 ## 2. Methods
@@ -108,6 +144,9 @@ For the network analysis, the tuning parameter of *gamma* in the grahical LASSO 
 #### 2.1.3. Community detection
 In order to get an understanding of community of nodes and to see if nodes can be grouped into neighbourhoods, we used the *igraph* R package. When detecting possible communities of nodes, the detection happened with the following parameters in the *spinglass algorithm*:
 TODO: try the walktrap algorithm from igraph!
+
+#### 2.1.4. Expected Influence of nodes
+To understand certain items' centrality and importance, besides regularly used centrality measures (such as strength, closeness and betweenness of nodes in a network), one can also use the One- and Two-Step Expected Influence (EI) measures (Robinaugh et al, 2016). Traditionally in unweighted networks (where network edges are encoded to 0 or 1)  a node's centrality is the sum of edges, and in weighted nodes it is the sum of the edge weights. In this approach negative edges are treated the same way as positives, as the absolute values are used for centrality estimation. On the other hand, the Expected Influence metrics take into account if a node has positive and negative edges, too.
 
 ## 3. Results
 
@@ -169,3 +208,28 @@ MHC communities identified with parameters *gamma = 0.5, spins = 25, starting te
 make_community_graph(MHC_network, MHCcov)
 ```
 
+### 3.3 Expected Influence
+In order to estimate the Expected Influence metrics, we used the *expectedInf* function of the *networktools* R package. The influence score are normalized.
+
+
+RRS Expected Influence Measures
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 5, fig.height=7}
+    expected_inf_plot(rss_network, "RRS")
+```
+
+MHC Expected Influence Measures
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 5, fig.height=7}
+
+    expected_inf_plot(MHC_network, "MHC")
+```
+
+SCRS Expected Influence Measures
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 5, fig.height=7}
+    expected_inf_plot(scrs_network, "SCRS")
+```
+
+## References
+Robinaugh, D. J., Millner, A. J., & McNally, R. J. (2016). Identifying highly influential nodes in the complicated grief network. Journal of Abnormal Psychology, 125. 747–757.
