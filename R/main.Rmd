@@ -17,127 +17,129 @@ library(igraph)
 
 ## color codes
 global_colors <- tribble(
-  ~id, ~color,
-  1, "coral",
-  2, "cornflowerblue",
-  3, "snow3",
-  4, "seegreen3"
+                         ~id, ~color,
+                         1, "coral",
+                         2, "cornflowerblue",
+                         3, "snow3",
+                         4, "seegreen3"
 )
 
 ## global functions
 normalize <- function(a) {
-  est_mean <- mean(a, na.rm = TRUE)
-  est_SD <- sd(a, na.rm = TRUE)
+    est_mean <- mean(a, na.rm = TRUE)
+    est_SD <- sd(a, na.rm = TRUE)
 
-  (a - est_mean) / est_SD
+    (a - est_mean) / est_SD
 }
 
 make_community_graph <- function(graph, covMatrix) {
-  igraph_converted <- as.igraph(graph, attributes = TRUE)
-  group_estimation <- cluster_spinglass(
-    igraph_converted,
-    weights = NULL,
-    vertex = NULL,
-    spins = 25,
-    parupdate = FALSE,
-    start.temp = 1,
-    stop.temp = 0.01,
-    cool.fact = 0.99,
-    update.rule = c("config", "random", "simple"),
-    gamma = 0.5,
-    implementation = c("orig", "neg"),
-    gamma.minus = 1
-  )
-
-
-  grouping_order <- data.frame(id = group_estimation$membership) %>%
-    left_join(global_colors) %>%
-    select(color) %>%
-    unlist()
-
-  qgraph(covMatrix, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE, color = grouping_order)
-}
-
-expected_inf_plot <- function(network, toolname) {
-  influence_df <- networktools::expectedInf(network, step = c("both"), directed = FALSE)
-  step1 <- unlist(influence_df["step1"])
-  step2 <- unlist(influence_df["step2"])
-
-  # z-scores
-  step1_mean <- mean(step1, na.rm = TRUE)
-  step1_sd <- sd(step1, na.rm = TRUE)
-  step1 <- (step1 - step1_mean) / step1_sd
-  step2_mean <- mean(step2, na.rm = TRUE)
-  step2_sd <- sd(step2, na.rm = TRUE)
-  step2 <- (step2 - step2_mean) / step2_sd
-
-  influence_tibble <- tibble(
-    OneStep = step1,
-    TwoStep = step2,
-    item = as_factor(paste0(toolname, "_", seq(1, length(step1))))
-  ) %>% gather(1:2, key = Method, value = inf)
-
-  influence_tibble %>%
-    ggplot(aes(item, inf, group = Method, color = Method)) +
-    geom_point(shape = 0, size = 2) +
-    geom_path() +
-    coord_flip() +
-    scale_color_manual(values = global_colors$color[1:2]) +
-    theme_light() +
-    scale_x_discrete(limits = rev(levels(influence_tibble$item))) +
-    labs(
-      title = paste0("One- and Two-Step Expected Influence estimates for ", toolname),
-      x = "Items",
-      y = "Expected Influence (z-scores)"
-    ) +
-    theme(
-      plot.title = element_text(size = 11)
+    igraph_converted <- as.igraph(graph, attributes = TRUE)
+    group_estimation <- cluster_spinglass(
+                                          igraph_converted,
+                                          weights = NULL,
+                                          vertex = NULL,
+                                          spins = 25,
+                                          parupdate = FALSE,
+                                          start.temp = 1,
+                                          stop.temp = 0.01,
+                                          cool.fact = 0.99,
+                                          update.rule = c("config", "random", "simple"),
+                                          gamma = 0.5,
+                                          implementation = c("orig", "neg"),
+                                          gamma.minus = 1
     )
+
+
+    grouping_order <- data.frame(id = group_estimation$membership) %>%
+        left_join(global_colors) %>%
+        select(color) %>%
+        unlist()
+
+    qgraph(covMatrix, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE, color = grouping_order)
+}
+test <- function(){
+
+}
+expected_inf_plot <- function(network, toolname) {
+    influence_df <- networktools::expectedInf(network, step = c("both"), directed = FALSE)
+    step1 <- unlist(influence_df["step1"])
+    step2 <- unlist(influence_df["step2"])
+
+    # z-scores
+    step1_mean <- mean(step1, na.rm = TRUE)
+    step1_sd <- sd(step1, na.rm = TRUE)
+    step1 <- (step1 - step1_mean) / step1_sd
+    step2_mean <- mean(step2, na.rm = TRUE)
+    step2_sd <- sd(step2, na.rm = TRUE)
+    step2 <- (step2 - step2_mean) / step2_sd
+
+    influence_tibble <- tibble(
+                               OneStep = step1,
+                               TwoStep = step2,
+                               item = as_factor(paste0(toolname, "_", seq(1, length(step1))))
+                               ) %>% gather(1:2, key = Method, value = inf)
+
+    influence_tibble %>%
+        ggplot(aes(item, inf, group = Method, color = Method)) +
+        geom_point(shape = 0, size = 2) +
+        geom_path() +
+        coord_flip() +
+        scale_color_manual(values = global_colors$color[1:2]) +
+        theme_light() +
+        scale_x_discrete(limits = rev(levels(influence_tibble$item))) +
+        labs(
+             title = paste0("One- and Two-Step Expected Influence estimates for ", toolname),
+             x = "Items",
+             y = "Expected Influence (z-scores)"
+             ) +
+                         theme(
+                               plot.title = element_text(size = 11)
+                         )
 }
 
 make_bridge_plot <- function(network, toolname) {
-  bridge_estimate <- networktools::bridge(network)
+    bridge_estimate <- networktools::bridge(network)
 
-  # normalize scores into a tibble
-  output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
+    # normalize scores into a tibble
+    output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
 
-  for (i in seq(1, 5)) {
-    target_vector <- tibble(normalize(bridge_estimate[[i]]))
-    colnames(target_vector) <- names(bridge_estimate)[i]
-    output_tibble <- bind_cols(output_tibble, target_vector)
-  }
-  # add communities
-  output_tibble <- bind_cols(output_tibble, bridge_estimate[6])
-  output_tibble <- output_tibble[, names(bridge_estimate)]
-  output_tibble <- output_tibble %>%
-    mutate(item = names(bridge_estimate[[1]]))
-  output_tibble <- output_tibble %>%
-    mutate(Community = as_factor(communities))
+    for (i in seq(1, 5)) {
+        target_vector <- tibble(normalize(bridge_estimate[[i]]))
+        colnames(target_vector) <- names(bridge_estimate)[i]
+        output_tibble <- bind_cols(output_tibble, target_vector)
+    }
+    # add communities
+    output_tibble <- bind_cols(output_tibble, bridge_estimate[6])
+    output_tibble <- output_tibble[, names(bridge_estimate)]
+    output_tibble <- output_tibble %>%
+        mutate(item = names(bridge_estimate[[1]]))
+    output_tibble <- output_tibble %>%
+        mutate(Community = as_factor(communities))
 
-  # reshape
-  reshaped_output <- output_tibble %>%
-    gather(1:5, key = measure, value = value)
-  # create plot
-  reshaped_output %>%
-    ggplot(aes(item, value, color = Community, shape = Community)) +
-    geom_path(aes(group = measure), color = "black") +
-    geom_point(size = 4) +
-    coord_flip() +
-    scale_color_manual(values = global_colors$color) +
-    theme_light() +
-    scale_x_discrete(limits = rev(levels(as_factor(names(bridge_estimate[[1]]))))) +
-    facet_wrap(~measure, ncol = 5) +
-    theme(
-      legend.position = "bottom"
-    ) +
-    labs(
-      x = "Item",
-      y = "Z-scores",
-      title = paste0("Bridge Expected Influence Estimates for ", toolname)
-    ) +
-    theme(
-      plot.title = element_text(size = 11)
-    )
+    # reshape
+    reshaped_output <- output_tibble %>%
+        gather(1:5, key = measure, value = value)
+    # create plot
+    reshaped_output %>%
+        ggplot(aes(item, value, color = Community, shape = Community)) +
+        geom_path(aes(group = measure), color = "black") +
+        geom_point(size = 4) +
+        coord_flip() +
+        scale_color_manual(values = global_colors$color) +
+        theme_light() +
+        scale_x_discrete(limits = rev(levels(as_factor(names(bridge_estimate[[1]]))))) +
+        facet_wrap(~measure, ncol = 5) +
+        theme(
+              legend.position = "bottom"
+              ) +
+                         labs(
+                              x = "Item",
+                              y = "Z-scores",
+                              title = paste0("Bridge Expected Influence Estimates for ", toolname)
+                              ) +
+                         theme(
+                               plot.title = element_text(size = 11)
+                         )
 }
 ```
 
@@ -237,7 +239,7 @@ MHC network
 MHCcov <- qgraph::cor_auto(MHC_subset_reduced)
 MHC_network <- qgraph(MHCcov, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE)
 ```
- 
+
 ### 3.2 Community detection 
 Community mapping of RSS, MHC and SCRS with the *spinglass algorithm*:
 
