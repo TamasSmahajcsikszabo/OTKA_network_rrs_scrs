@@ -6,7 +6,3 @@ library(haven)
 # data importing
 dataset <- read.spss("~/repos/rumination_lasso/data/scrs888.sav", to.data.frame = TRUE, use.value.labels = TRUE)
 dataset <- as_tibble(dataset) # transform raw dataframe into tibble dataframe
-
-# data labels
-data_labels <- tibble(var = names(dataset), labels = attributes(dataset)$variable.labels) %>%
-  filter(labels != "")

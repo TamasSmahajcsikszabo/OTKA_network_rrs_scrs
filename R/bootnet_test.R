@@ -72,13 +72,13 @@ level_order <- unnested %>%
 
 level_order <- as.character(level_order$id1)
 
-ggplot(unnested) +
+test_diff  <- ggplot(unnested) +
   geom_tile(aes(x = factor(id1, level = level_order), y = factor(id2, level = level_order), fill = fill_flag, linejoin = "round", width = 0.9, height = 0.9)) +
   geom_text(aes(id1, id2, color = fill_flag), label = "*", vjust = 0.75, size = 10, fontface = "bold") +
   scale_fill_manual(values = c("white", "gray70", "grey70")) +
   scale_color_manual(values = c("white", "gray70", "grey20")) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "none"
-  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") +
   labs(x = "Edges", y = "Edge pairs", title = "Difference test significances")
+
+ggsave("test_diff_plot.png", test_diff, device = "png")

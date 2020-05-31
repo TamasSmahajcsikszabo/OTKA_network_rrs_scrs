@@ -1,5 +1,8 @@
 ---
 # functions
+function g {
+git add . && git commit . -m "$1" && git push 
+}
 title: "Network Analysis on Rumination"
 output: html_document
 ---
@@ -22,7 +25,7 @@ global_colors <- tribble(
                          1, "coral",
                          2, "cornflowerblue",
                          3, "snow3",
-                         4, "seagreen3"
+                         4, "seegreen3"
 )
 
 ## global functions
@@ -33,7 +36,7 @@ normalize <- function(a) {
     (a - est_mean) / est_SD
 }
 
-make_community_graph <- function(graph, covMatrix, labels) {
+make_community_graph <- function(graph, covMatrix) {
     igraph_converted <- as.igraph(graph, attributes = TRUE)
     group_estimation <- cluster_spinglass(
                                           igraph_converted,
@@ -56,24 +59,16 @@ make_community_graph <- function(graph, covMatrix, labels) {
         select(color) %>%
         unlist()
 
-    qgraph(covMatrix, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE, color = grouping_order, labels = labels)
+    qgraph(covMatrix, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE, color = grouping_order)
 }
+test <- function(){
 
-find_tool <- function(itemname, data_labels) {
-    if (str_locate(itemname, " .+ ")[1,1] > 0 & !is.na(str_locate(itemname, " .+ "))) {
-        itemname <- str_sub(itemname, start = 1, end = str_locate(itemname, " .+ ")[1,1]-1)
-    } else {
-        itemname <- itemname
-    }
-    toolname <- data_labels[itemname == data_labels$labels, ]$var
-    toolname <- str_sub(toolname, start = 1, end = str_locate(toolname, "_")[[1,1]] - 1)
-    toolname
 }
 expected_inf_plot <- function(network, toolname) {
     influence_df <- networktools::expectedInf(network, step = c("both"), directed = FALSE)
     step1 <- unlist(influence_df["step1"])
     step2 <- unlist(influence_df["step2"])
-    
+
     # z-scores
     step1_mean <- mean(step1, na.rm = TRUE)
     step1_sd <- sd(step1, na.rm = TRUE)
@@ -81,19 +76,12 @@ expected_inf_plot <- function(network, toolname) {
     step2_mean <- mean(step2, na.rm = TRUE)
     step2_sd <- sd(step2, na.rm = TRUE)
     step2 <- (step2 - step2_mean) / step2_sd
-    
-    varnames <- names(step1)
-    varnames <- stringr::str_replace(varnames, "step1.","")
-    for (i in seq_along(varnames)) {
-        tool <- find_tool(varnames[i], data_labels)
-        print(tool)
-        varnames[i] <- paste0(tool, ": ", varnames[i])
-    }
-        influence_tibble <- tibble(
+
+    influence_tibble <- tibble(
                                OneStep = step1,
                                TwoStep = step2,
-                               item = factor(varnames, levels = varnames)) %>% 
-    gather(1:2, key = Method, value = inf)
+                               item = as_factor(paste0(toolname, "_", seq(1, length(step1))))
+                               ) %>% gather(1:2, key = Method, value = inf)
 
     influence_tibble %>%
         ggplot(aes(item, inf, group = Method, color = Method)) +
@@ -112,6 +100,7 @@ expected_inf_plot <- function(network, toolname) {
                                plot.title = element_text(size = 11)
                          )
 }
+
 make_bridge_plot <- function(network, toolname) {
     bridge_estimate <- networktools::bridge(network)
 
@@ -134,39 +123,27 @@ make_bridge_plot <- function(network, toolname) {
     # reshape
     reshaped_output <- output_tibble %>%
         gather(1:5, key = measure, value = value)
-
-    for (r in seq(1, nrow(reshaped_output))) {
-        reshaped_output[r,"var"] <- find_tool(reshaped_output[r,"item"][[1]], data_labels)
-        reshaped_output[r,"longitem"] <- paste0(reshaped_output[r, "var"], ": ", reshaped_output[r, "item"])
-
-    }
-
-    names(bridge_estimate[[1]]) <- unique(reshaped_output$longitem)
-    
-
-
     # create plot
-
     reshaped_output %>%
-        ggplot(aes(longitem, value, color = Community, shape = Community)) +
+        ggplot(aes(item, value, color = Community, shape = Community)) +
         geom_path(aes(group = measure), color = "black") +
         geom_point(size = 4) +
-         coord_flip() +
-         scale_color_manual(values = global_colors$color) +
-         theme_light() +
-         scale_x_discrete(limits = rev(levels(as_factor(names(bridge_estimate[[1]]))))) +
-         facet_wrap(~measure, ncol = 5) +
-         theme(
-               legend.position = "bottom"
-               ) +
-                          labs(
-                               x = "Item",
-                               y = "Z-scores",
-                               title = paste0("Bridge Expected Influence Estimates for ", toolname)
-                               ) +
-                          theme(
-                                plot.title = element_text(size = 11)
-                          )
+        coord_flip() +
+        scale_color_manual(values = global_colors$color) +
+        theme_light() +
+        scale_x_discrete(limits = rev(levels(as_factor(names(bridge_estimate[[1]]))))) +
+        facet_wrap(~measure, ncol = 5) +
+        theme(
+              legend.position = "bottom"
+              ) +
+                         labs(
+                              x = "Item",
+                              y = "Z-scores",
+                              title = paste0("Bridge Expected Influence Estimates for ", toolname)
+                              ) +
+                         theme(
+                               plot.title = element_text(size = 11)
+                         )
 }
 ```
 
@@ -192,37 +169,29 @@ RRS_items <- grep("RRS_[1,2,3,4,5,6,7,8,9,10]", var_names)
 RRS_subset <- dataset[, RRS_items]
 
 RRS_goldbricker <- goldbricker(RRS_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
+RRS_goldbricker$suggested_reductions
 
 # SCRS
 SCRS_items <- grep("SCRS_[1,2,3,4,5,6,7,8,9,10]", var_names)
 SCRS_subset <- dataset[, SCRS_items]
 
 SCRS_goldbricker <- goldbricker(SCRS_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
-# SCRS_goldbricker$proportion_matrix
+SCRS_goldbricker$proportion_matrix
 suggested_SCRS <- SCRS_goldbricker$suggested_reductions
-if (suggested_SCRS == "No suggested reductions") {
-    SCRS_subset_reduced <- SCRS_subset
-} else {
-    SCRS_subset_reduced <- net_reduce(SCRS_subset, SCRS_goldbricker, method = c("PCA", "best_goldbricker"))
-}
+SCRS_subset_reduced <- net_reduce(SCRS_subset, SCRS_goldbricker, method = c("PCA", "best_goldbricker"))
 
 # MHC
-# MHC_items <- grep("MHC_[1,2,3,4,5,6,7,8,9,10,11,12,14]", var_names)
-# MHC_subset <- dataset[, MHC_items]
+MHC_items <- grep("MHC_[1,2,3,4,5,6,7,8,9,10,11,12,14]", var_names)
+MHC_subset <- dataset[, MHC_items]
 
-# MHC_goldbricker <- goldbricker(MHC_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
-# MHC_goldbricker$proportion_matrix
-# MHC_goldbricker$suggested_reductions
-
-## if (MHC_goldbricker$suggested_reductions== "No suggested reductions") {
-#    MHC_subset_reduced <- MHC_subset
-# } else {
-#     MHC_subset_reduced <- net_reduce(MHC_subset, MHC_goldbricker, method = c("PCA", "best_goldbricker"))
-# }
-
+MHC_goldbricker <- goldbricker(MHC_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
+MHC_goldbricker$proportion_matrix
+MHC_goldbricker$suggested_reductions
+MHC_subset_reduced <- net_reduce(MHC_subset, MHC_goldbricker, method = c("PCA", "best_goldbricker"))
 ```
 
 The RRS items required no reduction steps as the highly correlating items did not extend their pattern to more nodes (their correlations to other nodes did not violate the criteria that > 75% of these correlations did not differ significantly).
+Among the SCRS scales the `r names(suggested_SCRS)` scales required reductions steps using PCA. Among the MHC nodes `r names(MHC_goldbricker$suggested_reductions)` items were subject to reduction.
 
 #### 2.1.2 Network Analysis with LASSO
 
@@ -252,41 +221,28 @@ RSS network
 # RRSgLASSO <- glasso(RSScov, rho = 2^-2)
 # RSSnetwork <-  qgraph(RRSgLASSO, theme="TeamFortress")
 # RSSnetwork$graphAttributes$Nodes$labels <- names(dataset[,RRS_items])
-RRS_labels <- data_labels[grep("RRS", data_labels$var),]$labels
-RRS_labels  <- RRS_labels[1:(length(RRS_labels)-3)]
+
 RSScov2 <- qgraph::cor_auto(RRS_subset)
-rss_network <- qgraph(RSScov2, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE, labels = RRS_labels)
+rss_network <- qgraph(RSScov2, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE)
 ```
 
 
 SCRS network
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 
-SCRS_labels <- data_labels[grep("SCRS", data_labels$var),]$labels
+
 SCRScov <- qgraph::cor_auto(SCRS_subset_reduced)
-scrs_network <- qgraph(SCRScov, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE, labels = SCRS_labels)
+scrs_network <- qgraph(SCRScov, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE)
 ```
 
+MHC network
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 
 # MHC data
 
-# MHCcov <- qgraph::cor_auto(MHC_subset_reduced)
-# MHC_network <- qgraph(MHCcov, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE)
-
-
-# full data scenario
-# MHC not included!
-full_data <- dataset[, c(RRS_items, SCRS_items)] 
-full_goldbricker <- goldbricker(full_data, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
-full_goldbricker$suggested_reductions
-full_reduced <- net_reduce(full_data, full_goldbricker, method = c("PCA", "best_goldbricker"))
-full_cov <- qgraph::cor_auto(full_reduced)
-full_labels  <- c(RRS_labels, SCRS_labels[c(3, 5, 6, 7, 9, 1)], "situation + sad", "mistakes + aspects")
-full_network <- qgraph(full_cov, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 888, theme = "TeamFortress", details = TRUE, threshold = TRUE, labels = full_labels)
-
+MHCcov <- qgraph::cor_auto(MHC_subset_reduced)
+MHC_network <- qgraph(MHCcov, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 530, theme = "TeamFortress", details = TRUE, threshold = TRUE)
 ```
-
 
 ### 3.2 Community detection 
 Community mapping of RSS, MHC and SCRS with the *spinglass algorithm*:
@@ -295,30 +251,21 @@ RSS communities identified with parameters *gamma = 0.5, spins = 25, starting te
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 
-make_community_graph(rss_network, RSScov2, RRS_labels)
+make_community_graph(rss_network, RSScov2)
 ```
 
 SCRS communities identified with parameters *gamma = 0.5, spins = 25, starting temperature = 1, ending temperature = 0.01, cooling factor = 0.99*.
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 
-make_community_graph(scrs_network, SCRScov, SCRS_labels)
+make_community_graph(scrs_network, SCRScov)
 ```
 
+MHC communities identified with parameters *gamma = 0.5, spins = 25, starting temperature = 1, ending temperature = 0.01, cooling factor = 0.99*.
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 
-# make_community_graph(MHC_network, MHCcov)
-
-```
-
-RRS and MHC combined communities identified with parameters *gamma = 0.5, spins = 25, starting temperature = 1, ending temperature = 0.01, cooling factor = 0.99*.
-
-```{r echo = FALSE, message = FALSE, warning = FALSE}
-
-make_community_graph(full_network, full_cov, full_labels)
-
-
+make_community_graph(MHC_network, MHCcov)
 ```
 
 ### 3.3 Expected Influence
@@ -331,22 +278,17 @@ RRS Expected Influence Measures
 expected_inf_plot(rss_network, "RRS")
 ```
 
+MHC Expected Influence Measures
 
 ```{r echo =FALSE, message = FALSE, warning = FALSE, fig.width = 5, fig.height=7}
 
-# expected_inf_plot(MHC_network, "MHC")
+expected_inf_plot(MHC_network, "MHC")
 ```
 
 SCRS Expected Influence Measures
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 5, fig.height=7}
 expected_inf_plot(scrs_network, "SCRS")
-```
-
-Combined RRS and SCRS Expected Influence Measures
-
-```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 5, fig.height=7}
-expected_inf_plot(full_network, "RRS & SCRS")
 ```
 
 ### 3.4 Bridge nodes
@@ -369,18 +311,13 @@ SCRS bridge estimates
 make_bridge_plot(scrs_network, "SCRS")
 ```
 
+MHC bridge estimates
 
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 8, fig.height=4}
-#make_bridge_plot(MHC_network, "MHC")
+make_bridge_plot(MHC_network, "MHC")
 ```
 
-Combined RRS and SCRS bridge estimates
-
-
-```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 8, fig.height=4}
-make_bridge_plot(full_network, "RSS & SCRS")
-```
 
 ## References
 Jones, P. (2018). Networktools: Tools for Identifying Important Nodes in Networks. R Package Version 1.2.3.
