@@ -2,6 +2,7 @@
 # functions
 title: "Network Analysis on Rumination"
 bibliography: rumination.bibtex
+csl: apa7.csl
 output: html_document
 ---
 
@@ -13,6 +14,8 @@ library(qgraph)
 library(glasso)
 # library(ggraph)
 library(igraph)
+library(bootnet)
+
 ```
 
 ```{r include = FALSE }
@@ -173,8 +176,28 @@ make_bridge_plot <- function(network, toolname) {
 
 ## 2. Methods
 
-### 2.1 Network analysis 
+### 2.1 Network analysis
+*Psychological networks* have their own characteristics which differentiate them from other networks of the graph theory [@Epskamp2017; @Newman2010]. Nodes usually represent some psychological measures or items of a psychological assessment tool, the edges of the network reflect the corresponding estimates of association derived from the data. Sample sizes have direct impact on estimated accuracy and stability of the psychological network, thus the accuracy of the network parameters and measures is crucial: By obtaining robust results we can have a more realistic picture of a network without knowing the true network shape and structure. Just like any other psychological variables, network characteristics are also sensitive to sampling, estimation methods, included variables, outliers and various other components of an analysis. As [@Epskamp2017a] points out, psychological networks differ from *reflective latent variable models* by not seeking for a common cause of co-occurrence of variables (such as symptoms or different items of a questionnaire), but instead their focus is on quantifying and visually show the multivariate dependencies and the different pathways of direct relationships between the nodes.
+In the current study, we used a fairly large sample as shown above. Before going further into network modeling, we estimated the 95% confidence intervals of network centrality measures to have an understanding of the sampling distribution of our estimates.
 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+source("~/repos/rumination_lasso/R/data_import.R")
+
+var_names <- names(dataset)
+
+RRS_items <- grep("RRS_[1,2,3,4,5,6,7,8,9,10]", var_names)
+RRS_subset <- dataset[, RRS_items]
+SCRS_items <- grep("SCRS_[1,2,3,4,5,6,7,8,9,10]", var_names)
+SCRS_subset <- dataset[, SCRS_items]
+
+ci_data  <- bind_cols(RRS_subset, SCRS_subset)
+
+boot <- bootnet(RRS_subset, 100, default = "pcor", type = "parametric")
+
+boot
+plot(boot, CIstyles="quantiles",  statistics = c("strength", "closeness","betweenness"))
+
+```
 #### 2.1.1 Removing redundant items
 
 As a preparation step, we applied the *goldbricker* function from the R package *networktools* to search for pairs of items in the RRS, SCRS and MHS items which were highly correlated (r > 0.50) and showed highly the same pattern with other items. When such "bad pairs" were identified, reduction techniques were put into use (with the *net_reduce* function in R): instead of the pair, the first principal component of the two variables were kept in the data as a new, merged variable.
@@ -234,7 +257,7 @@ In order to get an understanding of community of nodes and to see if nodes can b
 TODO: try the walktrap algorithm from igraph!
 
 #### 2.1.4. Expected Influence of nodes
-To understand certain items' centrality and importance, besides regularly used centrality measures (such as strength, closeness and betweenness of nodes in a network), one can also use the One- and Two-Step Expected Influence (EI) measures (Robinaugh et al, 2016). Traditionally in unweighted networks (where network edges are encoded to 0 or 1)  a node's centrality is the sum of edges, and in weighted nodes it is the sum of the edge weights. In this approach negative edges are treated the same way as positives, as the absolute values are used for centrality estimation. On the other hand, the Expected Influence metrics take into account if a node has positive and negative edges, too.
+To understand certain items' centrality and importance, besides regularly used centrality measures (such as strength, closeness and betweenness of nodes in a network), one can also use the One- and Two-Step Expected Influence (EI) measures [@robinaugh2016]. Traditionally in unweighted networks (where network edges are encoded to 0 or 1)  a node's centrality is the sum of edges, and in weighted nodes it is the sum of the edge weights. In this approach negative edges are treated the same way as positives, as the absolute values are used for centrality estimation. On the other hand, the Expected Influence metrics take into account if a node has positive and negative edges, too.
 
 #### 2.1.5. Identifying important nodes
 In order to further elaborate the question of importance within the network, we identified *bridge nodes* using the functions provided by the *networktools* R package [@Jones2017]. We estimated both one-step and two-step bridge expected influence measures which reflect the sum of edge weights connecting one node to other groups on nodes (or communities of nodes); and also express a node's secondary influence on the rest of the network, respectively. Higher influence scores indicate that a certain node is more likely to active neighbouring nodes, subgroups of nodes or communities.
