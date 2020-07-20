@@ -12,7 +12,7 @@
   publisher = {Elsevier {BV}},
 }
 
-@InProceedings{Jones2017,
+@Article{Jones2017,
   author = {Payton Jones},
   title  = {networktools: Assorted and Tools for Identifying and Important Nodes and in Networks},
   year   = {2017},
@@ -39,4 +39,11 @@
   title     = {Networks - An Introduction},
   year      = {2010},
   publisher = {Oxford University Press},
+}
+
+@Article{Epskamp2017a,
+  author = {Sacha Epskamp and Denny Borsboom and Eiko I. Fried and Department of Psychology and University of Amsterdam},
+  title  = {Estimating Psychological Networks and their Accuracy: Supplementary Materials},
+  year   = {2017},
+  file   = {:/home/tamas/repos/rumination_lasso/articles/bootnet_Supplementary.pdf:PDF},
 }
