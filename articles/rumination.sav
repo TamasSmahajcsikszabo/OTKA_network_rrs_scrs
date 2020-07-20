@@ -35,11 +35,11 @@
 }
 =�������10�1�_?g<�vC�jHRW�<�ȩ:���xk�ok]'�
 
-@Article{Newman2010,
+@Book{Newman2010,
   author    = {M.E.J. Newman},
+  publisher = {Oxford University Press},
   title     = {Networks - An Introduction},
   year      = {2010},
-  publisher = {Oxford University Press},
 }
 
 @Article{Epskamp2017a,
