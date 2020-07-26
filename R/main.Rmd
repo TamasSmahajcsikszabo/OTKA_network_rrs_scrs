@@ -1,5 +1,4 @@
 ---
-# functions
 title: "Network Analysis on Rumination"
 bibliography: rumination.bibtex
 csl: apa7.csl
@@ -30,7 +29,7 @@ global_colors <- tribble(
 )
 
 ## global functions
-normalize <- function(a) {
+standardize <- function(a) {
     est_mean <- mean(a, na.rm = TRUE)
     est_SD <- sd(a, na.rm = TRUE)
 
@@ -119,11 +118,11 @@ expected_inf_plot <- function(network, toolname) {
 make_bridge_plot <- function(network, toolname) {
     bridge_estimate <- networktools::bridge(network)
 
-    # normalize scores into a tibble
+    # standardize scores into a tibble
     output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
 
     for (i in seq(1, 5)) {
-        target_vector <- tibble(normalize(bridge_estimate[[i]]))
+        target_vector <- tibble(standardize(bridge_estimate[[i]]))
         colnames(target_vector) <- names(bridge_estimate)[i]
         output_tibble <- bind_cols(output_tibble, target_vector)
     }
@@ -346,7 +345,7 @@ make_community_graph(full_network, full_cov, full_labels)
 ```
 
 ### 3.3 Expected Influence
-In order to estimate the Expected Influence metrics, we used the *expectedInf* function of the *networktools* R package. The influence score are normalized.
+In order to estimate the Expected Influence metrics, we used the *expectedInf* function of the *networktools* R package. The influence score are standardized.
 
 
 RRS Expected Influence Measures
