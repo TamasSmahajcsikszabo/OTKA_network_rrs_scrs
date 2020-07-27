@@ -2,7 +2,9 @@
 title: "Network Analysis on Rumination"
 bibliography: rumination.bibtex
 csl: apa7.csl
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r include = FALSE}
@@ -14,6 +16,7 @@ library(glasso)
 #library(ggraph)
 library(igraph)
 library(bootnet)
+library(modelr)
 
 ```
 
@@ -199,6 +202,63 @@ make_bridge_plot <- function(network, toolname) {
                                 plot.title = element_text(size = 11)
                           )
 }
+
+
+network_accuracy_plot <- function(accuracy, tool = "", multiple=FALSE) {
+    sample_data <- accuracy$sampleTable %>%
+        filter(nchar(id)>7) %>%
+        arrange(desc(value))
+    
+    sample_data <- sample_data %>%
+    left_join(data_labels, by = c("node1" = "var")) %>%
+    left_join(data_labels, by = c("node2" = "var")) %>% 
+    rename(new_node_1 = labels.x,
+           new_node_2 = labels.y) %>% 
+        filter(!is.na(new_node_2)) %>% 
+        mutate(tool1 = str_sub(node1, 1, str_locate(node1, "_")[,1] - 1),
+               tool2 = str_sub(node2, 1, str_locate(node2, "_")[,1] - 1)) %>% 
+        mutate(id = if_else(tool1 == tool2,
+                            paste0(tool1, ": ", new_node_1, " - ", new_node_2),
+                            paste0(tool1, ": ", new_node_1, " - ", tool2, ": ", new_node_2)))
+
+    bootstrap_data_aggr <- accuracy$bootTable %>%
+    left_join(data_labels, by = c("node1" = "var")) %>%
+    left_join(data_labels, by = c("node2" = "var")) %>% 
+    rename(new_node_1 = labels.x,
+           new_node_2 = labels.y) %>% 
+        filter(!is.na(new_node_2)) %>% 
+        mutate(tool1 = str_sub(node1, 1, str_locate(node1, "_")[,1] - 1),
+               tool2 = str_sub(node2, 1, str_locate(node2, "_")[,1] - 1)) %>% 
+        mutate(id = if_else(tool1 == tool2,
+                            paste0(tool1, ": ", new_node_1, " - ", new_node_2),
+                            paste0(tool1, ": ", new_node_1, " - ", tool2, ": ", new_node_2))) %>% 
+        filter(nchar(id)>7) %>%
+        arrange(desc(value)) %>%
+        group_by(id) %>%
+        summarize(
+                  m = mean(value, na.rm = TRUE),
+                  lower = m - 1.96 * sd(value, na.rm = TRUE),
+                  upper = m + 1.96 * sd(value, na.rm = TRUE)
+        )
+
+
+        
+    bootstrap_data <- accuracy$bootTable %>%
+        filter(nchar(id)>7) %>%
+        arrange(desc(value))
+
+    ggplot() +
+        geom_vline(aes(xintercept = 0), linetype = "dotted", size = 0.75) +
+        geom_point(data = bootstrap_data_aggr, aes(m, reorder(id, m)), shape = 22, fill = "cornflowerblue", size = 2) +
+        geom_errorbar(data = bootstrap_data_aggr, aes(m, id, xmin = lower, xmax = upper), color = "cornflowerblue") +
+        geom_point(data = sample_data, aes(value, reorder(id, value)), shape = 21, fill = "coral", size = 2) +
+        theme_light() +
+        labs(title = paste0("Edge Weight Accuracy Estimates with Bootstrap for ", tool),
+             x = "Edge Weight",
+             y = "Edge",
+             caption = "DOT - the sample edge weight, SQUARE and confidence interval - the bootstrap estimates for edge weights (mean and 95% CI)") +
+        scale_x_continuous(breaks = seq(-0.2, 0.8, 0.05))
+}
 ```
 
 ## 2. Methods
@@ -271,7 +331,11 @@ TODO: try the walktrap algorithm from igraph!
 To understand certain items' centrality and importance, besides regularly used centrality measures (such as strength, closeness and betweenness of nodes in a network), one can also use the One- and Two-Step Expected Influence (EI) measures [@robinaugh2016]. Traditionally in unweighted networks (where network edges are encoded to 0 or 1)  a node's centrality is the sum of edges, and in weighted nodes it is the sum of the edge weights. In this approach negative edges are treated the same way as positives, as the absolute values are used for centrality estimation. On the other hand, the Expected Influence metrics take into account if a node has positive and negative edges, too.
 
 #### 2.1.5. Identifying important nodes
-In order to further elaborate the question of importance within the network, we identified *bridge nodes* using the functions provided by the *networktools* R package [@Jones2017]. We estimated both one-step and two-step bridge expected influence measures which reflect the sum of edge weights connecting one node to other groups on nodes (or communities of nodes); and also express a node's secondary influence on the rest of the network, respectively. Higher influence scores indicate that a certain node is more likely to active neighbouring nodes, subgroups of nodes or communities.
+In order to further elaborate the question of node importance within the network, we identified *bridge nodes* using the functions provided by the *networktools* R package [@Jones2017]. We estimated both one-step and two-step bridge expected influence measures which reflect the sum of edge weights connecting one node to other groups on nodes (or communities of nodes); and also express a node's secondary influence on the rest of the network, respectively. Higher influence scores indicate that a certain node is more likely to active neighbouring nodes, subgroups of nodes or communities.
+
+
+#### 2.1.6. Network accuracy and stability
+Accuracy and stability have an important role in estimating network parameters when samples might vary in characteristics and size [@Epskamp2017]. One way of estimating network accuracy is to produce a 95% confidence interval of edge-weights with some variant of bootstrap. In our case we chose the nonparametric variant because of interpretability. Network stability is quantified with the *Correlation Stability* (CS-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality of higher than 0.7. Simulation studies [@Epskamp2017] show that the CS-coefficient should be between 0.25 and 0.5. 
 
 
 ## 3. Results
@@ -407,6 +471,49 @@ Combined RRS and SCRS bridge estimates
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 8, fig.height=4}
 make_bridge_plot(full_network, "RSS & SCRS")
+```
+
+
+## 3.5 Network accuracy and stability
+We used the *bootnet* R package to have an estimate of edge-weight accuracy with *nonparametric bootstrap* (1000 times sampling) and also produce measures of centrality stability with *case dropping bootstrap* (to simulate cases where only the subset of the existing data would be available).
+
+
+Network accuracy estimate for RRS
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 10, fig.height=8}
+# generate the accuracy estimate and save it
+#RRS_network <- estimateNetwork(RRS_subset, default="EBICglasso")
+#accuracy_rrs  <- bootnet(RRS_network, nBoots = 2500, cores = 6)
+#saveRDS(accuracy_rrs, "../output/accuracy_rrs.RDS")
+
+accuracy_rrs  <- readRDS("../output/accuracy_rrs.RDS")
+network_accuracy_plot(accuracy_rrs, "RRS")
+```
+
+
+
+Network accuracy estimate for SCRS
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 10, fig.height=8}
+# generate the accuracy estimate and save it
+#SCRS_network <- estimateNetwork(SCRS_subset, default="EBICglasso")
+#accuracy_scrs  <- bootnet(SCRS_network, nBoots = 2500, cores = 6)
+#saveRDS(accuracy_scrs, "../output/accuracy_scrs.RDS")
+
+accuracy_scrs  <- readRDS("../output/accuracy_scrs.RDS")
+network_accuracy_plot(accuracy_scrs, "SCRS")
+```
+
+Network accuracy estimate for combind RRS and SCRS
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 14, fig.height=20}
+# generate the accuracy estimate and save it
+#combined_network <- estimateNetwork(full_data, default="EBICglasso")
+#accuracy_combined  <- bootnet(combined_network, nBoots = 2500, cores = 6)
+#saveRDS(accuracy_combined, "../output/accuracy_combined.RDS")
+
+accuracy_combined  <- readRDS("../output/accuracy_combined.RDS")
+network_accuracy_plot(accuracy_combined, "combined RRS and SCRS")
 ```
 
 ## References
