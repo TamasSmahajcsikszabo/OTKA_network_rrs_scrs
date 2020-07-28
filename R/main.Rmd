@@ -38,6 +38,40 @@ standardize <- function(a) {
 
     (a - est_mean) / est_SD
 }
+
+tau_estimate <- function(x, y = NULL) {
+  if (is.list(x)) {
+    input <- x
+    x <- input[[1]]
+    y <- input[[2]]
+  }
+
+  concordants <- c()
+  discordants <- c()
+  total <- c(0)
+  max_op <- length(x) * (length(y) - 1)
+  for (index in seq(1, length(x))) {
+    for (pair_index in seq(1, length(x))[!seq(1, length(x)) == index]) {
+      first <- list(x[index], y[index])
+      second <- list(x[pair_index], y[pair_index])
+      if ((first[[1]] > second[[1]] & first[[2]] > second[[2]]) |
+        (first[[1]] < second[[1]] & first[[2]] < second[[2]])) {
+        concordants <- c(concordants, 1)
+      } else {
+        discordants <- c(discordants, -1)
+      }
+      total <- total + 1
+      cat(paste0("\r", "Progress: ", round(total / max_op, 2) * 100, "%"))
+    }
+  }
+  tau <- (sum(concordants) + sum(discordants)) / total
+  if (is.nan(tau) & (length(x) == 1 | length(y) == 1)) {
+    warning("Estimation not possible; input values are scalars")
+  } else {
+    cat(paste0("\n", "Tau estimate = ", tau))
+  }
+}
+
 make_community_graph <- function(graph, covMatrix, labels) {
     igraph_converted <- as.igraph(graph, attributes = TRUE)
     group_estimation <- cluster_spinglass(
@@ -281,6 +315,7 @@ ci_data  <- bind_cols(RRS_subset, SCRS_subset)
 
 
 ```
+
 #### 2.1.1 Removing redundant items
 
 As a preparation step, we applied the *goldbricker* function from the R package *networktools* to search for pairs of items in the RRS, SCRS and MHS items which were highly correlated (r > 0.50) and showed highly the same pattern with other items. When such "bad pairs" were identified, reduction techniques were put into use (with the *net_reduce* function in R): instead of the pair, the first principal component of the two variables were kept in the data as a new, merged variable.
@@ -337,7 +372,7 @@ In order to further elaborate the question of node importance within the network
 #### 2.1.6. Network accuracy and stability
 Accuracy and stability have an important role in estimating network parameters when samples might vary in characteristics and size [@Epskamp2017]. One way of estimating network accuracy is to produce a 95% confidence interval of edge-weights with some variant of bootstrap. In our case we chose the nonparametric variant because of interpretability. Network stability is quantified with the *Correlation Stability* (CS-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality of higher than 0.7. Simulation studies [@Epskamp2017] show that the CS-coefficient should be between 0.25 and 0.5. 
 
-
+ 
 ## 3. Results
 
 ### 3.1 Network plots
@@ -516,6 +551,75 @@ accuracy_combined  <- readRDS("../output/accuracy_combined.RDS")
 network_accuracy_plot(accuracy_combined, "combined RRS and SCRS")
 ```
 
+
+Network stability estimates for our three networks were carried out by using the *bootnet* function from the R package bearing the same name. We performed a *case dropping bootstrap* to simulate scenarios where fewer and fewer cases of the original sample would have been available and quantified the stability of the centrality metrics with the *Correlation Stability* (CS) coefficient. When estimating bootstrap, we set the number of bootstraps to 2500.
+
+Stability for the RRS network
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 14, fig.height=20}
+
+#RRS_network <- estimateNetwork(RRS_subset, default="EBICglasso")
+#RRS_stability <- bootnet(RRS_network, nBoots = 2500, type="case", nCore = 6, statistics = c("strength", "betweenness", "closeness", "edge", "inStrength", "outStrength"), computeCentrality = TRUE)
+#saveRDS(RRS_stability, "../output/RRS_stability.RDS")
+
+
+#stability
+RRS_stability <- readRDS("../output/RRS_stability.RDS")
+
+
+#CS
+corStability(RRS_stability)
+
+network <- RRS_stability
+network_stability_plot <- function(network) {
+    B_levels = seq(1, 2500)
+    sample_data  <- network$sampleTable
+    boot_data <- network$bootTable  %>%
+        mutate(sample_rate = nPerson / mean(sample_data$nPerson)) %>%
+        mutate(
+               row = row_number(),
+               bootstrap_indicator = (row %/% 75) + 1,
+               bootstrap_indicator = factor(bootstrap_indicator, levels = B_levels))
+
+    drop_levels  <- unique(boot_data$nPerson)
+    measures<- unique(sample_data$type)
+    total_operations  <- 2500 * length(measures) * length(drop_levels)
+    plot_data  <-  tibble()
+    i = 0
+    for (b in B_levels) {
+        for (level in drop_levels) {
+            for (m in measures) {
+                i = i + 1
+                boot_sample  <- boot_data %>%
+                    filter(
+                           bootstrap_indicator == b,
+                           type == m,
+                           nPerson == level
+                    )
+
+                original_sample  <- sample_data %>%
+                    filter(type == m)
+                test  <-all(!is.null(nrow(boot_sample)), !is.null(nrow(original_sample)), length(original_sample$value) == length(boot_sample$value)) 
+                if (test) {
+                    correlation = cor(boot_sample$value, original_sample$value)
+                    new_record <- tibble(
+                                         b = b,
+                                         measure = m,
+                                         level = level,
+                                         correlation = correlation
+                    )
+                    plot_data <- bind_rows(plot_data, new_record)
+                    cat(paste0("\rProgress: ", round((i/total_operations)*100,2), "%"))
+                }
+        }
+    }
+
+
+    plot_data %>%
+        ggplot(aes(reorder(sample_rate, desc(sample_rate)), value, group = type)) +
+        geom_point(aes(color = type)) 
+}
+```
 ## References
 
 
