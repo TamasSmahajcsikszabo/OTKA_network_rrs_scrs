@@ -571,54 +571,76 @@ RRS_stability <- readRDS("../output/RRS_stability.RDS")
 corStability(RRS_stability)
 
 network <- RRS_stability
+b = 1
+level = 222
 network_stability_plot <- function(network) {
     B_levels = seq(1, 2500)
-    sample_data  <- network$sampleTable
-    boot_data <- network$bootTable  %>%
+    sample_data  <- t(matrix(network$sampleTable))
+    names(sample_data) <- names(network$sampleTable)
+    boot <- network$bootTable  %>%
         mutate(sample_rate = nPerson / mean(sample_data$nPerson)) %>%
         mutate(
                row = row_number(),
                bootstrap_indicator = (row %/% 75) + 1,
                bootstrap_indicator = factor(bootstrap_indicator, levels = B_levels))
 
+    boot_data <- t(matrix(boot))
+    names(boot_data) <- names(boot)
+
     drop_levels  <- unique(boot_data$nPerson)
     measures<- unique(sample_data$type)
     total_operations  <- 2500 * length(measures) * length(drop_levels)
-    plot_data  <-  tibble()
+    plot_data  <- matrix(ncol = 4, nrow = 0)
+    colnames(plot_data) <- c("b", "measure", "level", "correlation")
     i = 0
+
     for (b in B_levels) {
         for (level in drop_levels) {
             for (m in measures) {
                 i = i + 1
-                boot_sample  <- boot_data %>%
-                    filter(
-                           bootstrap_indicator == b,
-                           type == m,
-                           nPerson == level
-                    )
+                
+                boot_sample_bootstrap_mask  <- unlist(boot_data['bootstrap_indicator'], use.names=FALSE) == b
+                boot_sample_level_mask  <- unlist(boot_data['nPerson'], use.names=FALSE) == level
+                boot_sample_measure_mask  <- unlist(boot_data['type'], use.names=FALSE) == m
+                boot_mask  <- boot_sample_bootstrap_mask & boot_sample_level_mask & boot_sample_measure_mask
 
-                original_sample  <- sample_data %>%
-                    filter(type == m)
-                test  <-all(!is.null(nrow(boot_sample)), !is.null(nrow(original_sample)), length(original_sample$value) == length(boot_sample$value)) 
+                boot_sample <- unlist(boot_data['value'], use.names=FALSE)[boot_mask]
+
+
+                original_sample_mask <- unlist(sample_data['type'], use.names=FALSE) == m
+                original_sample <- unlist(sample_data['value'], use.names = FALSE)[original_sample_mask]
+
+                test  <-all(!is.null(boot_sample), !is.null(original_sample), length(original_sample) == length(boot_sample)) 
                 if (test) {
-                    correlation = cor(boot_sample$value, original_sample$value)
-                    new_record <- tibble(
-                                         b = b,
-                                         measure = m,
-                                         level = level,
-                                         correlation = correlation
+                    correlation = cor(boot_sample, original_sample)
+                    new_record <- c(
+                                         "b" = b,
+                                         "measure" = m,
+                                         "level" = level,
+                                         "correlation" = correlation
                     )
-                    plot_data <- bind_rows(plot_data, new_record)
+                    plot_data <- rbind(plot_data, new_record)
                     cat(paste0("\rProgress: ", round((i/total_operations)*100,2), "%"))
                 }
         }
     }
+    }
+    plot_df  <- tibble(as.data.frame(plot_data))
+    plot_df  <- plot_df %>%
+        mutate(level = as.numeric(level),
+        correlation = as.numeric(correlation)) %>%
+        group_by(b, measure) %>%
+        summarise(r = mean(correlation, na.rm = TRUE),
+                  sample_rate = level / max(unlist(sample_data['nPerson'], use.names = FALSE)))
+
+    saveRDS(plot_df, paste0("../output/", deparse(quote(network)), ".RDS"))
 
 
     plot_data %>%
-        ggplot(aes(reorder(sample_rate, desc(sample_rate)), value, group = type)) +
+        ggplot(aes(reorder(sample_rate, desc(sample_rate)), , group = type)) +
         geom_point(aes(color = type)) 
 }
+
 ```
 ## References
 
