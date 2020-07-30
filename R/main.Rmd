@@ -17,6 +17,7 @@ library(glasso)
 library(igraph)
 library(bootnet)
 library(modelr)
+library(scales)
 
 ```
 
@@ -372,6 +373,8 @@ In order to further elaborate the question of node importance within the network
 #### 2.1.6. Network accuracy and stability
 Accuracy and stability have an important role in estimating network parameters when samples might vary in characteristics and size [@Epskamp2017]. One way of estimating network accuracy is to produce a 95% confidence interval of edge-weights with some variant of bootstrap. In our case we chose the nonparametric variant because of interpretability. Network stability is quantified with the *Correlation Stability* (CS-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality of higher than 0.7. Simulation studies [@Epskamp2017] show that the CS-coefficient should be between 0.25 and 0.5. 
 
+#### 2.1.7. Difference Tests
+In the final round of our analysis we estimated difference tests of network centrality indices and edge-weights to compare node importance. Difference tests are proposed by [@Epskamp2017]. These tests accomplish difference testing by using non-parametric bootstrap estimates of the centralities and edge-weights.
  
 ## 3. Results
 
@@ -509,7 +512,7 @@ make_bridge_plot(full_network, "RSS & SCRS")
 ```
 
 
-## 3.5 Network accuracy and stability
+### 3.5 Network accuracy and stability
 We used the *bootnet* R package to have an estimate of edge-weight accuracy with *nonparametric bootstrap* (1000 times sampling) and also produce measures of centrality stability with *case dropping bootstrap* (to simulate cases where only the subset of the existing data would be available).
 
 
@@ -556,24 +559,30 @@ Network stability estimates for our three networks were carried out by using the
 
 Stability for the RRS network
 
-```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 14, fig.height=20}
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height=8}
 
 #RRS_network <- estimateNetwork(RRS_subset, default="EBICglasso")
 #RRS_stability <- bootnet(RRS_network, nBoots = 2500, type="case", nCore = 6, statistics = c("strength", "betweenness", "closeness", "edge", "inStrength", "outStrength"), computeCentrality = TRUE)
 #saveRDS(RRS_stability, "../output/RRS_stability.RDS")
 
+#SCRS_network <- estimateNetwork(SCRS_subset, default="EBICglasso")
+#SCRS_stability <- bootnet(SCRS_network, nBoots = 2500, type="case", nCore = 6, statistics = c("strength", "betweenness", "closeness", "edge", "inStrength", "outStrength"), computeCentrality = TRUE)
+#saveRDS(SCRS_stability, "../output/SCRS_stability.RDS")
+
+#full_network <- estimateNetwork(full_data, default="EBICglasso")
+#full_stability <- bootnet(full_network, nBoots = 2500, type="case", nCore = 6, statistics = c("strength", "betweenness", "closeness", "edge", "inStrength", "outStrength"), computeCentrality = TRUE)
+#saveRDS(full_stability, "../output/full_stability.RDS")
+
+
 
 #stability
 RRS_stability <- readRDS("../output/RRS_stability.RDS")
+SCRS_stability <- readRDS("../output/SCRS_stability.RDS")
+full_stability <- readRDS("../output/full_stability.RDS")
 
 
-#CS
-corStability(RRS_stability)
 
-network <- RRS_stability
-b = 1
-level = 222
-network_stability_plot <- function(network) {
+network_stability_estimator <- function(network) {
     B_levels = seq(1, 2500)
     sample_data  <- t(matrix(network$sampleTable))
     names(sample_data) <- names(network$sampleTable)
@@ -633,15 +642,63 @@ network_stability_plot <- function(network) {
         summarise(r = mean(correlation, na.rm = TRUE),
                   sample_rate = level / max(unlist(sample_data['nPerson'], use.names = FALSE)))
 
-    saveRDS(plot_df, paste0("../output/", deparse(quote(network)), ".RDS"))
+    saveRDS(plot_df, paste0("../output/plot_", deparse(quote(network)), ".RDS"))
 
-
-    plot_data %>%
-        ggplot(aes(reorder(sample_rate, desc(sample_rate)), , group = type)) +
-        geom_point(aes(color = type)) 
 }
 
+stability_estimate <- plot_RRS_stab
+network_stability_plot <- function(stability_estimate){
+    stability_estimate %>%
+    mutate(b = as.numeric(b)) %>% 
+        ggplot(aes(reorder(percent(sample_rate), desc(sample_rate)), r, group = measure)) +
+        geom_point() +
+        geom_hline(aes(yintercept = 0)) +
+        geom_smooth(aes(color = measure, fill = measure), alpha = 1/4) +
+      ylim(c(-1,1)) +
+      theme_light() +
+      scale_color_manual(values = c("coral4", "coral", "cornflowerblue", "darkturquoise"))+
+      scale_fill_manual(values = c("coral4", "coral", "cornflowerblue", "darkturquoise"))+
+      labs(x = "Portion of original sample",
+           y = "Average correlation with the original sample") +
+      #scale_x_continuous(breaks = seq(1.0, 0.0, -0.1)) +
+      scale_y_continuous(breaks = seq(-1.0, 1.0, 0.1))
+
+    
+      
+}
+
+#CS estimates
+RRScorStab <-corStability(RRS_stability)
+SCRScorStab <- corStability(SCRS_stability)
+fullcorStab <- corStability(full_stability)
+
+CS_estimates <- tibble(RRS = RRScorStab,
+       SCRS = SCRScorStab,
+       combined = fullcorStab)
+
+rownames(CS_estimates) <- names(RRScorStab)
+
+CS_estimates <- CS_estimates %>% 
+  mutate(measure = rownames(CS_estimates)) %>% 
+  select(Metric = measure, RRS, SCRS, combined)
+knitr::kable(CS_estimates, 
+             caption = "Correlation Stability coefficient estimates for RRS, SCRS and their combined network", digits = 4)
 ```
+
+As shown at [@Epskamp2017], the CS-coefficent is ideally between 0.25 and 0.5, the latter is the cat-off point for the estimate. The results show that RRS and SCRS closeness metrics are stable in the sense that around 28% of the case can be dropped to still maintain 0.7 or higher correlation with their original estimates. The closeness measure [`r CS_estimates[2, 4]`] for their combined network is already higher than the 0.5 cut-off. The same applies to all edge and strength estimates, with no regard of the network of RRS, SCRS or their combined variant. Betweenness measures are too low to be considered secure to interpret (all below 0.25) meaning that even slight case drops result in losing their stability.
+
+### 3.6 Difference tests
+The *bootnet* R package offers the *differenceTest* function to perform non-parametric bootstrap (bootstrapping with replacements). 
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+RRS_network <- bootnet(RRS_subset, default="EBICglasso")
+differenceTest()
+
+plot_RRS_stab <- readRDS("../output/plot_RRS_stability.RDS")
+network_stability_plot(plot_RRS_stab)
+```
+
+
 ## References
 
 
