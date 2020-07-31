@@ -1,0 +1,14 @@
+
+#### 2.1.7. Difference Tests
+In the final round of our analysis we estimated difference tests of network centrality indices and edge-weights to compare node importance. Difference tests are proposed by [@Epskamp2017; @Epskamp2017a]. These tests accomplish difference testing by using non-parametric bootstrap estimates of the centrality indices and edge-weights.
+
+
+### 3.6 Difference tests
+The *bootnet* R package offers the *differenceTest* function to perform non-parametric bootstrap (bootstrapping with replacements). 
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+#RRS_network <- bootnet(RRS_subset, default="EBICglasso")
+#saveRDS(RRS_network, "../output/RRS_network.RDS")
+RRS_network <- readRDS("../output/RRS_network.RDS")
+differenceTest(RRS_network)
+

@@ -34,11 +34,11 @@
 }
 =�������10�1�_?g<�vC�jHRW�<�ȩ:���xk�ok]'�
 
-@Article{Newman2010,
+@Book{Newman2010,
   author    = {M.E.J. Newman},
+  publisher = {Oxford University Press},
   title     = {Networks - An Introduction},
   year      = {2010},
-  publisher = {Oxford University Press},
 }
 
 @Article{Epskamp2017a,
@@ -46,4 +46,29 @@
   title  = {Estimating Psychological Networks and their Accuracy: Supplementary Materials},
   year   = {2017},
   file   = {:/home/tamas/repos/rumination_lasso/articles/bootnet_Supplementary.pdf:PDF},
+}
+
+@Article{Epskamp2018,
+  author    = {Sacha Epskamp and Lourens J. Waldorp and Ren{\'{e}} M{\~{o}}ttus and Denny Borsboom},
+  journal   = {Multivariate Behavioral Research},
+  title     = {The Gaussian Graphical Model in Cross-Sectional and Time-Series Data},
+  year      = {2018},
+  month     = {apr},
+  number    = {4},
+  pages     = {453--480},
+  volume    = {53},
+  doi       = {10.1080/00273171.2018.1454823},
+  file      = {:/home/tamas/repos/rumination_lasso/articles/The Gaussian Graphical Model in Cross Sectional and Time Series Data.pdf:PDF},
+  publisher = {Informa {UK} Limited},
+}
+
+@Article{Epskamp2012,
+  author  = {Epskamp, S., Cramer, A. O. J., Waldorp, L. J., Schmittmann, V. D., & Borsboom, D.},
+  journal = {Journal of Statistical Software},
+  title   = {Qgraph: Network and visualizations of relationships in psychometric data},
+  year    = {2012},
+  month   = may,
+  number  = {4},
+  volume  = {48},
+  file    = {:/home/tamas/repos/rumination_lasso/articles/qgraph.pdf:PDF},
 }

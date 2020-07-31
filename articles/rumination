@@ -43,7 +43,7 @@
 }
 
 @Article{Epskamp2017a,
-  author = {Sacha Epskamp and Denny Borsboom and Eiko I. Fried and Department of Psychology and University of Amsterdam},
+  author = {Sacha Epskamp and Denny Borsboom and Eiko I. Fried},
   title  = {Estimating Psychological Networks and their Accuracy: Supplementary Materials},
   year   = {2017},
   file   = {:/home/tamas/repos/rumination_lasso/articles/bootnet_Supplementary.pdf:PDF},
@@ -72,6 +72,44 @@
   number  = {4},
   volume  = {48},
   file    = {:/home/tamas/repos/rumination_lasso/articles/qgraph.pdf:PDF},
+}
+
+@Article{Reichardt2006,
+  author  = {Jörg Reichardt and Stefan Bornholdt},
+  journal = {Physical Review},
+  title   = {Statistical Mechanics of Community Detection},
+  year    = {2006},
+  month   = aug,
+  number  = {74(1)},
+  file    = {:/home/tamas/repos/rumination_lasso/articles/Reichardt_cond-mat0603718.pdf:PDF},
+}
+
+@Article{Heeren2018,
+  author    = {Alexandre Heeren and Payton J. Jones and Richard J. McNally},
+  journal   = {Journal of Affective Disorders},
+  title     = {Mapping network connectivity among symptoms of social anxiety and comorbid depression in people with social anxiety disorder},
+  year      = {2018},
+  month     = {mar},
+  pages     = {75--82},
+  volume    = {228},
+  doi       = {10.1016/j.jad.2017.12.003},
+  file      = {:/home/tamas/repos/rumination_lasso/articles/Heeren2018.pdf:PDF},
+  publisher = {Elsevier {BV}},
+}
+��qߓ���M_�yQ%�̨��/#uA�E�Xk.��i�8!�u`0���GS��q	צ'�t}8�"��^�;�U�A`>�cu����3�,݂�Up�L��$]3�Gj��B���Y���Z��,}���7s_��D�No��-Ei*1�r�
+�l�-[�Y���K�	0��� ދ��ݎm|
+8�v��)8�œC����>Z���߻~h��v�\I��.^��n�˲��C���>�B���̈́� c�	�A��.\
+�����$
+�ǅ=���UD;��T�B�XIt�ԥ�0(Q�Z�2�O8�8�����4�mPxr��R�A���'O�n�;�=ƕ%�鍇I�В'�s���\��l֊��Jʼ���2�V;ubg���t��j��1�o.`YUR+v/��
+
+@Article{Robinaugh2016,
+  author  = {Donald J. Robinaugh, Alexander J. Millner, Richard J. McNall},
+  journal = {J Abnorm Psychol.},
+  title   = {Identifying Highly Influential Nodes in the Complicated Grief Network},
+  year    = {2016},
+  month   = aug,
+  number  = {125(6)},
+  doi     = {10.1037/abn0000181},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}
