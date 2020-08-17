@@ -1,0 +1,71 @@
+TITLE: SCRS888
+
+DATA: FILE is C:\dokumentumok\scrs_cikk\scrs888_mplus.dat;
+
+FORMAT is 47F12.0 8F8.0;
+
+VARIABLE:
+NAMES are
+
+felvet 
+mikor 
+sorszam 
+nem kor
+iskola
+osztaly 
+apa_veg
+anya_veg 
+jollet
+tartosb 
+akutb
+r1-r10 !rrs1-rrs10
+s1-s10 !scrs1-scrs10
+m1-m14 !mhc1-mhc14
+letra !Cantrill letra
+scrs_tot !scrs összpontszám
+RRS_B !brooding
+RRS_R !reflection
+RRS_T !rrs összpontszám
+EWB !mhc érzelmi jóllét
+SOWB !mhc szociális jóllét
+PWB !mhc pszichés jóllét
+MHC_T; !mhc összpontszám
+
+USEVARIABLES are s1-s10;
+                      
+MISSING is blank; ! missing values coded with blank space
+
+Analysis: estimator = mlr; 
+         
+
+MODEL: 
+!labels for factor loadings in parentheses (same label=same estimate)
+selfc_rumi by s1
+s2 (L2)
+s3 (L3)
+s4 (L4)
+s5 (L5)
+s6 (L6)
+s7 (L7)
+s8 (L8)
+s9 (L9)
+s10 (L10);
+
+!unique variance labels:
+
+s1(U1); s2(U2); s3 (U3); s4(U4); s5(U5); 
+s6(U6); s7(U7); s8(U8); s9(U9); s10(U10);
+
+!Factor variance set to 1:
+
+selfc_rumi (R_VAR);
+
+MODEL CONSTRAINT:
+NEW (OMEGA);
+
+OMEGA = (R_VAR*(1+L2+L3+L4+L5+L6+L7+L8+L9+L10)^2)/
+((R_VAR*(1+L2+L3+L4+L5+L6+L7+L8+L9+L10)^2+
+(U1+U2+U3+U4+U5+U6+U7+U8+U9+U10)));
+
+
+Output: standardized;
