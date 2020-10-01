@@ -1,0 +1,42 @@
+McNally:
+*****************************************************
+Co-morbidity arises as a
+natural consequence of intertwined symptom networks
+(Cramer et al. 2010). That is, symptoms characteristic of
+one disorder may cluster together (e.g. distress associated
+with obsessions may directly trigger compulsions),
+whereas symptoms characteristic of a co-morbid disorder
+may likewise cluster together (e.g. guilt triggering suicidal
+ideation). Yet despite their syndromic distinctiveness,
+both disorders may share certain features (e.g. sad
+mood) – bridge symptoms – that link the two clusters
+into a single network of interacting symptoms.
+LASSO:
+algorithm
+to obtain a (regularized) partial correlation network
+whose edges depict the magnitude of direct association
+between pairs of symptoms after adjusting for the
+influence of all other symptoms in the network
+the network produced by the
+graphical LASSO depicts direct associations between
+pairs of symptoms, thereby excluding any spurious
+associations attributable to the influence of other
+symptoms. However, one limitation is that the net-
+work is undirected; one cannot tell whether a partial
+correlation between symptom X and symptom Y
+signifies that symptom X predicts the activation of
+symptom Y (or vice versa) or whether the direction
+of prediction (and possibly influence) occurs both
+ways. 
+This
+procedure implements an L1 penalty, estimating a
+sparse inverse covariance matrix that results in shrink-
+age such that trivially small partial correlations are dri-
+ven to zero and thus do not appear in the graph.
+We also computed strength centrality and between-
+ness centrality – two metrics signifying the importance
+of a node (symptom) to the network (Freeman, 1978/
+1979). The first is calculated by summing the weights
+of all edges connected to a node, whereas the second
+indicates the number of times that a node lies on the
+shortest path between two other nodes

@@ -112,4 +112,42 @@
   doi     = {10.1037/abn0000181},
 }
 
+@Article{Jones2018,
+  author    = {Payton J. Jones and Patrick Mair and Richard J. McNally},
+  journal   = {Frontiers in Psychology},
+  title     = {Visualizing Psychological Networks:A Tutorial in R},
+  year      = {2018},
+  month     = {September},
+  volume    = {9},
+  doi       = {doi: 10.3389/fpsyg.2018.01742},
+  publisher = {Frontiers Media {SA}},
+}
+
+@Article{McNally_2017,
+  author    = {R. J. McNally and P. Mair and B. L. Mugno and B. C. Riemann},
+  journal   = {Psychological Medicine},
+  title     = {Co-morbid obsessive{\textendash}compulsive disorder and depression: a Bayesian network approach},
+  year      = {2017},
+  month     = {jan},
+  number    = {7},
+  pages     = {1204--1214},
+  volume    = {47},
+  doi       = {https://doi.org/10.1017/S0033291716003287},
+  publisher = {Cambridge University Press ({CUP})},
+}
+
+@Article{Friedman2007,
+  author    = {J. Friedman and T. Hastie and R. Tibshirani},
+  journal   = {Biostatistics},
+  title     = {Sparse inverse covariance estimation with the graphical lasso},
+  year      = {2007},
+  month     = {dec},
+  number    = {3},
+  pages     = {432--441},
+  volume    = {9},
+  doi       = {10.1093/biostatistics/kxm045},
+  file      = {:/home/tamas/repos/rumination_lasso/articles/glasso-bio.pdf:PDF},
+  publisher = {Oxford University Press ({OUP})},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}
