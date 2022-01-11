@@ -374,3 +374,64 @@ network_stability_plot <- function(stability_estimate){
     
       
 }
+get_bridge_estimate <- function(network, dec=2){
+    # igraph_converted <- as.igraph(network, attributes = TRUE)
+    group_estimation <- cluster_spinglass(
+                                          network,
+                                          weights = NULL,
+                                          vertex = NULL,
+                                          spins = 25,
+                                          parupdate = FALSE,
+                                          start.temp = 1,
+                                          stop.temp = 0.01,
+                                          cool.fact = 0.99,
+                                          update.rule = c("config", "random", "simple"),
+                                          gamma = 0.5,
+                                          implementation = c("orig", "neg"),
+                                          gamma.minus = 1 )
+
+#    }
+    if (length(unique(group_estimation$membership)) > 1) {
+        bridge_estimate <- networktools::bridge(network, communities = group_estimation$membership)
+    } else {
+        bridge_estimate <- networktools::bridge(network)
+    }
+
+    # standardize scores into a tibble
+    output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
+
+    for (i in seq(1, 5)) {
+        target_vector <- tibble(round(standardize(bridge_estimate[[i]]),dec))
+        colnames(target_vector) <- names(bridge_estimate)[i]
+        output_tibble <- bind_cols(output_tibble, target_vector)
+    }
+    # add communities
+    output_tibble <- bind_cols(output_tibble, bridge_estimate[6])
+    output_tibble <- output_tibble[, names(bridge_estimate)]
+    output_tibble <- output_tibble %>%
+        mutate(Community = as_factor(communities)) %>%
+        dplyr::select(-communities)
+    output_tibble
+}
+network_summary <- function(graph, dec=2){
+    summary <- matrix(nrow=10)
+    summary <-data.frame(summary)
+    summary[,1] <- tibble('item'=V(graph)$name)
+    colnames(summary) <- 'item'
+    summary['subscale'] <- tibble('subscale'=V(graph)$subscale)
+    summary['label'] <- tibble('label'=V(graph)$label)
+    summary['strength'] <- tibble('strength'=strength(graph))
+    summary['betweenness'] <- tibble('betweenness'=round(betweenness(graph),dec))
+    summary['closeness'] <- tibble('closeness'=round(closeness(graph),dec))
+    influence_df <- networktools::expectedInf(graph, step = c("both"), directed = FALSE)
+    summary['step1 Exp. Inf.'] <- tibble('step1 Exp. Inf.'=(influence_df$step1))
+    summary['step2 Exp. Inf.'] <- tibble('step2 Exp. Inf.'=(influence_df$step2))
+    summary <- bind_cols(summary, get_bridge_estimate(graph))
+    summary <- summary %>% arrange(Community)
+    summary
+}
+network_summary(graph)
+# TODO degree distribution summary
+# TODO expectedInf
+summary['degree dist.'] <- tibble('degree dist.'=degree_distribution(graph))
+    influence_df <- networktools::expectedInf(graph, step = c("both"), directed = FALSE)
