@@ -19,6 +19,7 @@ library(igraph)
 library(bootnet)
 library(modelr)
 library(scales)
+library(knitr)
 source("R/data_import.R")
 source("R/functions.R")
 ```
@@ -103,9 +104,17 @@ Accuracy and stability have an important role in estimating network parameters w
 
 
 ### 3.1.1. Network descriptives
+
+The RRS (order: `r vcount(RRS_graph)`, size: `r ecount(RRS_graph)`) and SCRS (order: `r vcount(SCRS_graph)`, size: `r ecount(SCRS_graph)`) networks.
+
 ```{r }
-RRS_graph
-SCRS_graph
+#TODO: proper seed, clusternig
+seed <- 73632
+summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed),
+                            network_summary(SCRS_graph, name="SCRS", seed=seed),
+                            network_summary(rumi, name="Combined RRS+SCRS",seed=seed))
+
+knitr::kable(summary_table, format='simple', row.names=FALSE,label="Network descriptive statistics for RRS, SCRS and their combined networks")
 
 ```
 
