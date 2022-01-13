@@ -14,7 +14,7 @@ library(tidyverse)
 library(networktools)
 library(qgraph)
 library(glasso)
-#library(ggraph)
+library(ggraph)
 library(igraph)
 library(bootnet)
 library(modelr)
@@ -22,23 +22,9 @@ library(scales)
 library(knitr)
 source("R/data_import.R")
 source("R/functions.R")
-```
-
-```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
-
-## color codes
-global_colors <- tribble(
-                         ~id, ~color,
-                         1, "coral",
-                         2, "cornflowerblue",
-                         3, "snow3",
-                         4, "seagreen3"
-)
-
 # data import
 source("../networks_with_r/get_rumi.R")
 setwd('/home/tamas/repos/rumination_lasso')
-# plot(rumi, vertex.label=paste0(V(rumi)$subscale, " \n", V(rumi)$label), edge.label=round(E(rumi)$strength,3))
 ```
 
 ## 2. Methods
@@ -73,7 +59,7 @@ The final networks were chosen by the lowest values of the *extended Bayesian In
 
 <!-- Before going further into network modeling, we estimated the 95% confidence intervals of network centrality measures to have an understanding of the sampling distribution of our estimates. According to @Epskamp2017a low sample size and non-regularized estimates might lead to amplify any bootstrap bias; by having a larger sample of individuals, we expect lesser levels of bias of any bootstrap estimates for network accuracy and stability. -->
 
-#### 2.1.2 Removing redundant items
+#### 2.1.2 Goldbricker
 
 We applied the *goldbricker* function from the R package *networktools* [@Jones2017] in order to search for pairs of items in the RRS, SCRS and their combined networks that were highly correlated (r > 0.75) and exhibited the same pattern with other items. 
 
@@ -102,17 +88,36 @@ Accuracy and stability have an important role in estimating network parameters w
  
 ## 3. Results
 
+## 3.1.1. Network descriptives
 
-### 3.1.1. Network descriptives
+The RRS (order of `r vcount(RRS_graph)`, size of `r ecount(RRS_graph)`) and SCRS (order of `r vcount(SCRS_graph)`, size of `r ecount(SCRS_graph)`) networks are densely connected relational networks.
+While SCRS exhibits no *articulation point* (also call *cut vertex* whose removal would disconnect the network [@GaborCsardi2020]), the vertex of the *'problem'* item of RRS acts as an articulation point, as it would cut off the *'deserve'* vertex.
+The RRS internal structure 
+The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points, 
 
-The RRS (order: `r vcount(RRS_graph)`, size: `r ecount(RRS_graph)`) and SCRS (order: `r vcount(SCRS_graph)`, size: `r ecount(SCRS_graph)`) networks.
 
 ```{r }
-#TODO: proper seed, clusternig
-seed <- 73632
-summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed),
-                            network_summary(SCRS_graph, name="SCRS", seed=seed),
-                            network_summary(rumi, name="Combined RRS+SCRS",seed=seed))
+# simulate_communities(RRS_graph, path="output/RRS_communities.RDS",i=1000)
+# simulate_communities(SCRS_graph, path="output/SCRS_communities.RDS",i=1000)
+# simulate_communities(rumi, path="output/combined_communities.RDS",i=1000)
+RRS_simulated_communities <- readRDS("output/RRS_communities.RDS")
+SCRS_simulated_communities <- readRDS("output/SCRS_communities.RDS")
+combined_simulated_communities <- readRDS("output/combined_communities.RDS")
+
+RRS_simulated_communities  %>%
+    group_by(Item, Community)  %>%
+    summarize(N= n())
+SCRS_simulated_communities  %>%
+    group_by(Item, Community)  %>%
+    summarize(N= n())
+combined_simulated_communities  %>%
+    group_by(Item, Community)  %>%
+    summarize(N= n())
+
+simulate_communities(SCRS_graph, path="output/SCRS_communities.RDS")
+summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
+                            network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
+                            network_summary(rumi, name="Combined RRS+SCRS",seed=seed,method=method,weights=weights))
 
 knitr::kable(summary_table, format='simple', row.names=FALSE,label="Network descriptive statistics for RRS, SCRS and their combined networks")
 

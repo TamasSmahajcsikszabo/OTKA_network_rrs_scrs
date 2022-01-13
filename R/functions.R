@@ -393,25 +393,43 @@ network_stability_plot <- function(stability_estimate) {
         # scale_x_continuous(breaks = seq(1.0, 0.0, -0.1)) +
         scale_y_continuous(breaks = seq(-1.0, 1.0, 0.1))
 }
-get_bridge_estimate <- function(network, dec = 2, seed=1234) {
-    W <- E(network)$strength
-    set.seed(seed)
-    group_estimation <- cluster_spinglass(
-        network,
-        weights = W,
-        vertex = NULL,
-        spins = 25,
-        parupdate = FALSE,
-        start.temp = 1,
-        stop.temp = 0.01,
-        cool.fact = 0.99,
-        update.rule = c("config", "random", "simple"),
-        gamma = 0.5,
-        implementation = c("orig", "neg"),
-        gamma.minus = 1
-    )
+get_bridge_estimate <- function(network, dec = 2, seed=1234, method='fast_greedy',weights=TRUE) {
+    if (!is.null(seed)){
+        set.seed(seed)
+    }
+    if (weights){
+        W <- E(network)$weight
+    } else {
+        W <- NULL
+    }
+    if (method=='spinglass'){
+        group_estimation <- cluster_spinglass(
+            network,
+            weights = W,
+            vertex = NULL,
+            spins = 25,
+            parupdate = FALSE,
+            start.temp = 1,
+            stop.temp = 0.01,
+            cool.fact = 0.99,
+            update.rule = c("config", "random", "simple"),
+            gamma = 0.5,
+            implementation = c("orig", "neg"),
+            gamma.minus = 1)
+    } else if (method=='fast_greedy') {
+        group_estimation <- cluster_fast_greedy(
+            network,
+            weights = W
+        )
+    } else if (method=='walktrap') {
+        group_estimation <- cluster_walktrap(network,
+            weights = W
+        )
+    } else if (method=='optimal') {
+        group_estimation <- cluster_optimal(network,
+            weights = W)
 
-    #    }
+    }
     if (length(unique(group_estimation$membership)) > 1) {
         bridge_estimate <- networktools::bridge(network, communities = group_estimation$membership)
     } else {
@@ -435,7 +453,7 @@ get_bridge_estimate <- function(network, dec = 2, seed=1234) {
     output_tibble
 }
 
-network_summary <- function(graph, dec = 2, name='Graph', single_scale=FALSE, seed=1234) {
+network_summary <- function(graph, dec = 2, name='Graph', single_scale=FALSE, seed=1234, method='optimal', weights=TRUE) {
     summary <- matrix(nrow = vcount(graph))
     summary <- data.frame(summary)
     summary[, 1] <- tibble("Item" = V(graph)$name)
@@ -449,7 +467,7 @@ network_summary <- function(graph, dec = 2, name='Graph', single_scale=FALSE, se
     influence_df <- networktools::expectedInf(graph, step = c("both"), directed = FALSE)
     summary["1-step Exp. Inf."] <- tibble("step1 Exp. Inf." = (influence_df$step1))
     summary["2-step Exp. Inf."] <- tibble("step2 Exp. Inf." = (influence_df$step2))
-    summary <- bind_cols(summary, get_bridge_estimate(graph, seed=seed))
+    summary <- bind_cols(summary, get_bridge_estimate(graph, seed=seed, method=method, weights=weights))
     summary <- summary %>% arrange(Community)
     summary["Title"]  <- c(name, rep("",vcount(graph)-1))
     summary %>% select("Title","Item", "Subscale", "Label", "Community", everything())
@@ -458,5 +476,53 @@ network_summary <- function(graph, dec = 2, name='Graph', single_scale=FALSE, se
 degree_distribution_summary <- function(graph){
     tibble("Degree" = 0:max(degree(graph), na.rm=TRUE),
            "Degree dist." = degree_distribution(graph, mode='all'))
+}
+
+simulate_communities <- function(graph, i=1000, path="simulate.RDS"){
+    results <- tibble()
+    totalN <- 4 * 2 * i
+
+    for (method in c("optimal", "spinglass", "walktrap", "fast_greedy")){
+        for (w in c(TRUE, FALSE))
+            for (iteration in 1:i) {
+            estimate <- get_bridge_estimate(graph,seed=NULL,method=method,weights=w)
+            estimate['Item'] <- V(graph)$name
+            estimate <- estimate[c('Item', 'Community')]
+            estimate['Iteration']  <- iteration
+            estimate['Method']  <- method
+            estimate['Weights']  <- w
+            results <- bind_rows(results, estimate)
+            progress <- paste0("\r",round(((nrow(results)/vcount(graph))/totalN)*100), "%")
+            cat(progress)
+        }
+    }
+    saveRDS(results, path)
+}
+
+simulatedCommunities <- combined_simulated_communities
+graph <- rumi
+weights = TRUE
+method='fast_greedy'
+get_TPR_FPR <- function(simulatedCommunities, graph) {
+    true_table <- tibble(Item = V(graph)$name,
+                        `Community (True)` = V(graph)$subscale_enum)
+    true_communities <- true_table
+
+    simulatedCommunities <- simulatedCommunities  %>%
+        group_by(Item, Method, Weights, Community) %>%
+        summarise(N= n()) %>%
+        ungroup() %>%
+        group_by(Item, Method, Weights) %>%
+        filter(N == max(N))
+
+    results <- tibble() 
+
+    for (method in unique(simulatedCommunities$Method)) {
+        for (weights in unique(simulatedCommunities$Weights)) {
+            actual_method <- simulatedCommunities %>% filter(Method == method, Weights == weights)
+            
+
+        }
+    }
 }
 
