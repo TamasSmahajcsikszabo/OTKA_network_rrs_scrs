@@ -565,3 +565,48 @@ get_TPR <- function(simulatedCommunities, graph) {
         group_by(Method, `Original Subscale`) %>%
         filter(TPR == max(TPR))
 }
+
+simulated_community <- combined_simulated_communities
+i <- 1
+add_community_certainty <- function(graph, simulated_community, method=c('optimal', 'walktrap', 'spinglass', 'fast_greedy')){
+    certainty <- simulated_community  %>%
+        filter(Method %in% method) %>%
+        group_by(Item,Community) %>%
+        summarise(N=n()) %>%
+        ungroup() %>%
+        group_by(Item) %>%
+        mutate(Total = sum(N)) %>%
+        ungroup() %>%
+        rowwise() %>%
+        mutate(Certainty = N/Total) %>%
+        group_by(Item) %>%
+        filter(N==max(N))
+
+    for (i in 1:vcount(graph)){
+        V(graph)[i]$certainty <- certainty %>% filter(Item == V(graph)[i]$name) %>% ungroup() %>% dplyr::select(Certainty) %>% unlist()
+    }
+    graph
+}
+
+beautify <- function(graph, simulated_community){
+    require('ggraph')
+    
+    set.seed(42)
+    add_community_certainty(graph,simulated_community) %>%
+        ggraph(layout='fr') +
+        geom_edge_density() +
+        geom_edge_fan(aes(alpha = strength, width = weight), color='grey30') +
+        geom_node_point(color='black', size=12) +
+        geom_node_point(aes(color=subscale), size=10) +
+        geom_node_point(color='white',size=5) +
+        geom_node_point(aes(alpha=certainty), size=5) +
+        geom_node_text(aes(label=label), size=5, vjust=-1.5) +
+        geom_node_text(aes(label=paste0(name, "-",subscale)), size=5, vjust=-2.5) +
+        scale_color_manual(values=c("white", "grey30", "grey60"))
+
+    # TODO: add FPR and misclassified rate of subscales
+    # TODO: visualize articulation points!
+}
+
+beautify(RRS_graph, RRS_simulated_communities)
+beautify(SCRS_graph, SCRS_simulated_communities)

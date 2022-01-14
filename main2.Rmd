@@ -128,19 +128,20 @@ combined_tpr_s <- suppressMessages(combined_tpr %>%
     group_by(Subscale)  %>%
     summarise(TPR_m = mean(TPR)))
 
-
+as.data.frame(combined_tpr)
 combined_tpr_top <- suppressMessages(combined_tpr %>% 
     filter(!Method %in% c("walktrap", "optimal","fast_greedy")) %>%
     group_by(Subscale)  %>%
     summarise(TPR_m = mean(TPR)))
 
-seed <- 647
-weights <- TRUE
-method <- 'spinglass'
-summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
-                            network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
-                            network_summary(rumi, name="Combined RRS+SCRS",seed=seed,method=method,weights=weights))
-
+for (seed in sample(1:100000,1000)) {
+    set.seed(seed)
+    weights <- TRUE
+    method <- 'spinglass'
+    summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
+                                network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
+                                network_summary(rumi, name="Combined RRS+SCRS",seed=seed,method=method,weights=weights))
+}
 
 
 
