@@ -465,8 +465,8 @@ network_summary <- function(graph, dec = 2, name='Graph', single_scale=FALSE, se
     summary["Betweenness"] <- tibble("betweenness" = round(betweenness(graph), dec))
     summary["Closeness"] <- tibble("closeness" = round(closeness(graph), dec))
     influence_df <- networktools::expectedInf(graph, step = c("both"), directed = FALSE)
-    summary["1-step Exp. Inf."] <- tibble("step1 Exp. Inf." = (influence_df$step1))
-    summary["2-step Exp. Inf."] <- tibble("step2 Exp. Inf." = (influence_df$step2))
+    summary["1-step Exp. Inf. (standardized)"] <- tibble("step1 Exp. Inf." = standardize(influence_df$step1))
+    summary["2-step Exp. Inf. (standardized)"] <- tibble("step2 Exp. Inf." = standardize(influence_df$step2))
     summary <- bind_cols(summary, get_bridge_estimate(graph, seed=seed, method=method, weights=weights))
     summary <- summary %>% arrange(Community)
     summary["Title"]  <- c(name, rep("",vcount(graph)-1))
@@ -508,7 +508,7 @@ simulate_communities <- function(graph, i=1000, path="simulate.RDS"){
 # b <- c(2,3,4,5,6,7)
 # length(intersect(a,b))/length(a)
 # i <- 1
-get_TPR_FPR <- function(simulatedCommunities, graph) {
+get_TPR <- function(simulatedCommunities, graph) {
     true_table <- tibble(Item = V(graph)$name,
                         `Community (True)` = V(graph)$subscale_enum)
     original_communities <- list()
@@ -538,6 +538,7 @@ get_TPR_FPR <- function(simulatedCommunities, graph) {
     }
 
     results <- tibble()
+    subscales <- data.frame(item=V(graph)$name, subscale=V(graph)$subscale)
 
     for (original_community in original_communities) {
         for (i in seq_along(best_found_communities)) {
@@ -545,10 +546,12 @@ get_TPR_FPR <- function(simulatedCommunities, graph) {
             label <- strsplit(names(best_found_communities)[i], ", ")[[1]]
             method <- label[1]
             weight <- label[2]
+            subscale <- suppressMessages(unique(data.frame(item=original_community) %>% left_join(subscales) %>%dplyr::select(subscale))[[1]])
             if (match > 0) {
                 result <- tibble(
                                  Method=method,
-                                 Weights=weights,
+                                 Weights=weight,
+                                 Subscale=subscale,
                                  `# of True community membership`=match,
                                  `TPR`=match/length(unlist(original_community)),
                                  `Original Subscale` = paste0(original_community, collapse=', '),
