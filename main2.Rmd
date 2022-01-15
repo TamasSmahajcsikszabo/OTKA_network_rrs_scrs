@@ -24,6 +24,7 @@ library(bootnet)
 library(modelr)
 library(scales)
 library(knitr)
+library(ggpubr)
 source("R/data_import.R")
 source("R/functions.R")
 # data import
@@ -94,6 +95,10 @@ Accuracy and stability have an important role in estimating network parameters w
 ## 3. Results
 
 ## 3.1.1. Network descriptives and internal structure (community detection) 
+
+The undirected relation networks of RRS, SCRS and their combined structure can be seen on the following plot.
+
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 i  <- 1000
 # simulate_communities(RRS_graph, path="output/RRS_communities.RDS",i=i)
@@ -102,6 +107,11 @@ i  <- 1000
 RRS_simulated_communities <- readRDS("output/RRS_communities.RDS")
 SCRS_simulated_communities <- readRDS("output/SCRS_communities.RDS")
 combined_simulated_communities <- readRDS("output/combined_communities.RDS")
+
+RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=5)
+SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=5)
+combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS+SCRS undirected graph",force_caption=TRUE, textsize=5)
+network_plot <- ggarrange(ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1.2,0.8)), combined_plot, widths=c(0.95,1.05))
 
 # RRS_simulated_communities  %>%
 #     group_by(Item, Community)  %>%
@@ -146,6 +156,15 @@ for (seed in sample(1:100000,1000)) {
 
 
 ```
+
+\newpage
+\blandscape
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+network_plot
+```
+
+\elandscape
 
 The RRS (order of `r vcount(RRS_graph)`, size of `r ecount(RRS_graph)`) and SCRS (order of `r vcount(SCRS_graph)`, size of `r ecount(SCRS_graph)`) networks are densely connected relational networks.
 While SCRS exhibits no *articulation point* (also call *cut vertex* whose removal would disconnect the network [@GaborCsardi2020]), the vertex of the *'problem'* item of RRS acts as an articulation point, as it would cut off the *'deserve'* vertex.
