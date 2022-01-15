@@ -30,6 +30,7 @@ source("R/functions.R")
 # data import
 source("../networks_with_r/get_rumi.R")
 setwd('/home/tamas/repos/rumination_lasso')
+suppressMessages(extrafont::loadfonts(device='postscript'))
 ```
 
 ## 2. Methods
@@ -88,7 +89,11 @@ In order to get an understanding of community of vertices and to see if vertices
 When detecting possible communities of vertices, we utilized previous insights [@Reichardt2006; @Bernstein2019, @GaborCsardi2020].
 
 #### 2.1.6. Network accuracy and stability
-Accuracy and stability have an important role in estimating network parameters when samples might vary in characteristics and size [@Epskamp2017; @Epskamp2017a]. One way of estimating network accuracy is to produce a 95% confidence interval of edge-weights with some variant of bootstrap. In our case we chose the non-parametric variant because of interpretability. Network stability is quantified with the *Correlation Stability* (CS-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality of higher than 0.7. Simulation studies [@Epskamp2017] show that the CS-coefficient should be between 0.25 and 0.5. 
+Accuracy and stability have an important role in estimating network parameters when samples might vary in characteristics and size [@Epskamp2017; @Epskamp2017a]. 
+One way of estimating network accuracy is to produce a 95% confidence interval of edge-weights with some variant of bootstrap. 
+In our case we chose the non-parametric bootstrap estimate for sake of interpretability, where the penalized partial correlation coefficients serve as the edge weights. 
+Network stability is quantified with the *Correlation Stability* (CS-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality of higher than 0.7. 
+Simulation studies [@Epskamp2017] show that the CS-coefficient should be between 0.25 and 0.5. 
 
 
  
@@ -96,8 +101,17 @@ Accuracy and stability have an important role in estimating network parameters w
 
 ## 3.1.1. Network descriptives and internal structure (community detection) 
 
-The undirected relation networks of RRS, SCRS and their combined structure can be seen on the following plot.
+The undirected relational networks of RRS, SCRS and their combined structure can be seen on Figure 1. below. 
+Vertices represent the corresponding items of each questionnaire with labels showing item number, sub-scale and a label for each item.
+Edges are the LASSO (L1)-penalized partial correlation coefficients whose value is represented as shade and width of the arcs.
 
+The RRS (order of `r vcount(RRS_graph)`, size of `r ecount(RRS_graph)`) and SCRS (order of `r vcount(SCRS_graph)`, size of `r ecount(SCRS_graph)`) networks are densely connected relational networks.
+While SCRS exhibits no *articulation point* (also call *cut vertex* whose removal would disconnect the network [@GaborCsardi2020]), the vertex of the *'problem'* item of RRS acts as an articulation point, as it would cut off the *'deserve'* vertex.
+Articulation points are marked with * on Figure 1.
+
+The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points neither.
+In order to analyze their respective internal structures, we performed community detection using the *igraph* package in R.
+Inner node point of each vertex provide colour coding for our community detection results (the presented certainty percentages are ratios of the detected true communities).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 i  <- 1000
@@ -108,10 +122,13 @@ RRS_simulated_communities <- readRDS("output/RRS_communities.RDS")
 SCRS_simulated_communities <- readRDS("output/SCRS_communities.RDS")
 combined_simulated_communities <- readRDS("output/combined_communities.RDS")
 
-RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=5)
-SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=5)
-combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS+SCRS undirected graph",force_caption=TRUE, textsize=5)
-network_plot <- ggarrange(ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1.2,0.8)), combined_plot, widths=c(0.95,1.05))
+overalltextsize <- 24
+textsize=5
+RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize)
+SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize)
+combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS & SCRS undirected graph",force_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize)
+network_plot <- ggarrange(ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1,1)), combined_plot, widths=c(0.95,1.05))
+# ggsave("output/networkplot.png",network_plot, dpi=400, device='png',width=27, height=14)
 
 # RRS_simulated_communities  %>%
 #     group_by(Item, Community)  %>%
@@ -138,38 +155,39 @@ combined_tpr_s <- suppressMessages(combined_tpr %>%
     group_by(Subscale)  %>%
     summarise(TPR_m = mean(TPR)))
 
-as.data.frame(combined_tpr)
 combined_tpr_top <- suppressMessages(combined_tpr %>% 
     filter(!Method %in% c("walktrap", "optimal","fast_greedy")) %>%
     group_by(Subscale)  %>%
     summarise(TPR_m = mean(TPR)))
 
-for (seed in sample(1:100000,1000)) {
-    set.seed(seed)
-    weights <- TRUE
-    method <- 'spinglass'
-    summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
-                                network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
-                                network_summary(rumi, name="Combined RRS+SCRS",seed=seed,method=method,weights=weights))
-}
+# for (seed in sample(1:100000,1000)) {
+#     set.seed(seed)
+#     weights <- TRUE
+#     method <- 'spinglass'
+#     summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
+#                                 network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
+#                                 network_summary(rumi, name="Combined RRS+SCRS",seed=seed,method=method,weights=weights))
+# }
 
 
+seed <- 647
+weights <- TRUE
+method <- 'spinglass'
+summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
+                            network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
+                            network_summary(rumi, name="Combined RRS+SCRS",seed=seed,method=method,weights=weights))
 
 ```
 
 \newpage
 \blandscape
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=32, fig.height=20, fig.cap='Tableau view of three graphs of rumination'}
 network_plot
 ```
 
 \elandscape
 
-The RRS (order of `r vcount(RRS_graph)`, size of `r ecount(RRS_graph)`) and SCRS (order of `r vcount(SCRS_graph)`, size of `r ecount(SCRS_graph)`) networks are densely connected relational networks.
-While SCRS exhibits no *articulation point* (also call *cut vertex* whose removal would disconnect the network [@GaborCsardi2020]), the vertex of the *'problem'* item of RRS acts as an articulation point, as it would cut off the *'deserve'* vertex.
-The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points neither.
-In order to analyze their respective internal structures, we performed community detection using the *igraph* package in R.
 As the choice of algorithm has non-trivial impact on the identified community structure, after having selected the *"optimal"*, the *"spinglass"*, the *"walktrap"* and (to also include hierarchical clustering) the *"fast greedy"* methods, we tested each a `r i` times on the three networks.
 We also provided an edge weight vector in the form of the LASSO-penalized partial correlation coefficients (or alternatively, omitted weights).
 The RRS two-scale structure could be recreated with all four algorithms with the inclusion of the weight vector not having effect on the measures.

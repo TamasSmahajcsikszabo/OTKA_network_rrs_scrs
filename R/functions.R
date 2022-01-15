@@ -574,6 +574,10 @@ get_TPR <- function(simulatedCommunities, graph) {
 }
 
 add_community_certainty <- function(graph, simulated_community, method = c("optimal", "walktrap", "spinglass", "fast_greedy")) {
+    true_table <- tibble(
+            Item = V(graph)$name,
+            `Community (True)` = V(graph)$subscale_enum
+        )
     certainty <- simulated_community %>%
         filter(Method %in% method) %>%
         group_by(Item, Community) %>%
@@ -583,9 +587,12 @@ add_community_certainty <- function(graph, simulated_community, method = c("opti
         mutate(Total = sum(N)) %>%
         ungroup() %>%
         rowwise() %>%
-        mutate(Certainty = N / Total) %>%
+        mutate(Certainty = round(N / Total,3)) %>%
         group_by(Item) %>%
-        filter(N == max(N))
+        left_join(true_table) %>%
+        filter(Community==`Community (True)`)
+
+
 
     for (i in 1:vcount(graph)) {
         V(graph)[i]$Certainty <- certainty %>%
@@ -615,7 +622,7 @@ add_toolname <- function(graph){
     graph
 }
 
-beautify <- function(graph, simulated_community,title="Graph", no_caption=FALSE,force_caption=FALSE, textsize=6) {
+beautify <- function(graph, simulated_community,title="Graph", no_caption=FALSE,force_caption=FALSE, textsize=6, overalltextsize=18) {
     require("ggraph")
     S <- nrow(simulated_community)/vcount(graph)/8
     set.seed(42)
@@ -627,29 +634,137 @@ beautify <- function(graph, simulated_community,title="Graph", no_caption=FALSE,
     if (force_caption){
         caption <- paste0("Certainty reflects % of most frequent Subscale prediction during ", S, " times reruns of community detection")
         caption <- paste0("* - articulation point (cut vertex; when removed disconnects the graph)", "\n", caption)
+        caption <- paste0(caption, "\n O [order] is # of vertices; S [size] is # of edges")
 
     }
     add_community_certainty(graph, simulated_community) %>%
         add_articulation_point() %>%
         add_toolname() %>%
         ggraph(layout = "fr") +
-        geom_edge_density(edge_fill='grey85') +
+        geom_edge_density(edge_fill='grey95') +
         geom_edge_fan(aes(alpha = strength, width = weight),color = "grey60", show.legend=FALSE) +
         geom_node_point(color = "black", size = 12) +
         geom_node_point(aes(color = subscale), size = 10) +
         geom_node_point(color = "white", size = 5) +
         geom_node_point(aes(alpha = Certainty), size = 5) +
         # geom_node_label(aes(label = label), alpha=1/5, color='grey70', size = 5, vjust=-0.6) +
-        geom_node_text(aes(label = label), size = textsize, vjust = -1.3, family='Garamond',fontface='bold') +
+        geom_node_text(aes(label = label), size = textsize, vjust = -1.4,fontface='bold') +
         # geom_node_label(aes(label = paste0(name, "-", subscale)),alpha=1/5, color='grey70', size = 5,vjust=-1.1) +
-        geom_node_text(aes(label = paste0(tool, "(",item_number,")", "-", subscale)), size = textsize, vjust = -2.5, family='Garamond') +
-        geom_node_text(aes(label = articulation_point), size = 13, hjust=-2.9,vjust = -0.9, family='Garamond') +
-        scale_color_manual(values = c("white", "grey30", "grey60"), name="Subscale") +
+        geom_node_text(aes(label = paste0(tool, "(",item_number,")", "-", subscale)), size = textsize, vjust = -2.6) +
+        geom_node_text(aes(label = articulation_point), size = 13, hjust=-2.9,vjust = -1.0) +
+        scale_color_manual(values = c("white", "grey30", "grey60"), name="Sub-scale") +
         labs(caption=caption,
              title=title,
              subtitle=add_network_descriptives(graph)) +
         theme(legend.position="right",
-              text=element_text(family='Garamond', size=18),
+              text=element_text(size=overalltextsize),
               panel.background=element_rect(color='black', fill='white'))
 }
 
+item_analysis <- function(simulated_community, graph) {
+    true_table <- tibble(
+            Item = V(graph)$name,
+            `Community (True)` = V(graph)$subscale_enum
+        )
+
+    simulated_community %>%
+        filter(Method %in% method) %>%
+        group_by(Item, Community, Method) %>%
+        summarise(N = n()) %>%
+        ungroup() %>%
+        group_by(Item) %>%
+        mutate(Total = sum(N)) %>%
+        ungroup() %>%
+        rowwise() %>%
+        mutate(Certainty = round(N / Total,3)) %>%
+        group_by(Item, Method) %>%
+        left_join(true_table) %>%
+        as.data.frame()
+}
+simulatedCommunities <- SCRS_simulated_communities
+method='spinglass'
+graph <- SCRS_graph
+weight=TRUE
+item <- 'SCRS_1'
+y <- 3
+item_analysis_TPR <- function(simulatedCommunities, graph) {
+    true_table <- tibble(
+        Item = V(graph)$name,
+        `Community (True)` = V(graph)$subscale_enum
+    )
+    original_communities <- list()
+    for (community in unique(true_table$`Community (True)`)) {
+        original_community <- list(true_table[true_table$`Community (True)` == community, ]$Item)
+        original_communities[community] <- original_community
+    }
+
+    results <- simulatedCommunities %>% group_by(Method, Weights, Item) %>% summarise(N=n()) %>% ungroup()
+    for (i in unique(true_table$`Community (True)`)){
+        results[as.character(i)] <- 0
+    }
+    # for (y in unique(simulatedCommunities$Community)) {
+    #     if (!as.character(y) %in% names(results)) {
+    #         results[as.character(y)] <- 0
+    #     }
+    # }
+    # found_communities <- list()
+    for (iteration in unique(simulatedCommunities$Iteration)) {
+        iteration_data <- simulatedCommunities[simulatedCommunities$Iteration==i,]
+
+        for (weight in c(TRUE, FALSE)) {
+            for (method in unique(simulatedCommunities$Method)){
+                iteration_data_subset <- iteration_data %>%
+                    filter(Method==method, Weights==weight)
+                for (community in unique(iteration_data_subset$Community)){
+                    subscale <- iteration_data_subset[iteration_data_subset$Community==community,]
+                    subscale <- subscale$Item
+                    match <- lapply(original_communities, function(x){length(intersect(subscale,x))})
+                    likely_community_i <- max(unlist(match))
+                    # if (likely_community_i >= round(vcount(graph)*0.75)){
+                    idx <- seq(1, length(original_communities))[match==likely_community_i]
+                    # } else {
+                    #     if (length(found_communities)>0){
+                    #         if (!any(unlist(lapply(found_communities, function(x){identical(list(x), list(subscale))})))){
+                    #             found_communities <- append(found_communities, list(subscale))
+                    #         }
+                    #     } else {
+                    #         found_communities <- append(found_communities, list(subscale))
+                    #     }
+                    #     idx <- seq(1, length(found_communities))[unlist(lapply(found_communities, function(x){identical(list(x), list(subscale))}))]
+                    #     if(length(idx)==0){
+                    #         idx <- length(found_communities)+1
+                    #     }
+                    # }
+                    # likely_community <- original_communities[idx]
+                    for (item in subscale){
+                        name <- as.name(idx)
+                        results[results$Item==item & results$Method==method & results$Weights==weight,][name] <- results[results$Item==item & results$Method==method & results$Weights==weight,][name] + 1
+                            
+            }
+        }
+    }}}
+    list('estimate'=results,
+         'original communities'=original_communities)
+         # 'found communtities'=found_communities)
+
+}
+
+RRS_item_analysis <- item_analysis_TPR(RRS_simulated_communities, RRS_graph)
+SCRS_item_analysis <- item_analysis_TPR(SCRS_simulated_communities, SCRS_graph)
+combined_item_analysis <- item_analysis_TPR(combined_simulated_communities, rumi)
+
+saveRDS(combined_item_analysis, "output/combined_item_analysis.RDS")
+saveRDS(RRS_item_analysis, "output/RRS_item_analysis.RDS")
+saveRDS(SCRS_item_analysis, "output/SCRS_item_analysis.RDS")
+
+combined_item_analysis %>% group_by(Item) %>%summarise(TP=mean(TP/N))
+
+#TPR
+# RRS_item_analysis %>%
+#     left_join(true_table) %>%
+#     pivot_longer(5:6) %>%
+#     mutate(found = name == `Community (True)`) %>%
+#     filter(found) %>%
+#     group_by(Item) %>%
+#     summarise(rate = mean(value / N)) %>%
+#     as.data.frame()
