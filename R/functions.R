@@ -681,9 +681,35 @@ item_analysis <- function(simulated_community, graph) {
         left_join(true_table) %>%
         as.data.frame()
 }
-simulatedCommunities <- SCRS_simulated_communities
+
+to_vector <- function(input){
+    if (typeof(input)=='list') {
+        output <- unlist(input)
+    } else{
+        output <- input
+    }
+    output
+}
+
+find_subscale <- function(original, predicted) {
+    # return TRUE if found, difference otherwise
+    original <- to_vector(original)
+    predicted<- to_vector(predicted)
+    common <- intersect(original, predicted)
+    if (identical(common, original)) {
+        output <- list('match'=TRUE,'FP'=predicted[!predicted %in% common],
+                        'TP'=common)
+    } else {
+        output <- list('match'=FALSE, 'FP'=predicted[!predicted %in% common],
+                        'TP'=common)
+    }
+
+    output
+}
+simulatedCommunities <- RRS_simulated_communities
+simulated_community <- RRS_simulated_communities
 method='spinglass'
-graph <- SCRS_graph
+graph <- RRS_graph
 weight=TRUE
 item <- 'SCRS_1'
 y <- 3
@@ -697,56 +723,52 @@ item_analysis_TPR <- function(simulatedCommunities, graph) {
         original_community <- list(true_table[true_table$`Community (True)` == community, ]$Item)
         original_communities[community] <- original_community
     }
+    #TODO: special case if original scale is just one community!
 
-    results <- simulatedCommunities %>% group_by(Method, Weights, Item) %>% summarise(N=n()) %>% ungroup()
-    for (i in unique(true_table$`Community (True)`)){
-        results[as.character(i)] <- 0
-    }
-    # for (y in unique(simulatedCommunities$Community)) {
-    #     if (!as.character(y) %in% names(results)) {
-    #         results[as.character(y)] <- 0
-    #     }
-    # }
-    # found_communities <- list()
+    results <- tibble()
+    TOTAL <- 0
     for (iteration in unique(simulatedCommunities$Iteration)) {
         iteration_data <- simulatedCommunities[simulatedCommunities$Iteration==i,]
 
         for (weight in c(TRUE, FALSE)) {
             for (method in unique(simulatedCommunities$Method)){
-                iteration_data_subset <- iteration_data %>%
+                iteration_data_subset <- iteration_data |>
                     filter(Method==method, Weights==weight)
                 for (community in unique(iteration_data_subset$Community)){
                     subscale <- iteration_data_subset[iteration_data_subset$Community==community,]
                     subscale <- subscale$Item
-                    match <- lapply(original_communities, function(x){length(intersect(subscale,x))})
-                    likely_community_i <- max(unlist(match))
-                    # if (likely_community_i >= round(vcount(graph)*0.75)){
-                    idx <- seq(1, length(original_communities))[match==likely_community_i]
-                    # } else {
-                    #     if (length(found_communities)>0){
-                    #         if (!any(unlist(lapply(found_communities, function(x){identical(list(x), list(subscale))})))){
-                    #             found_communities <- append(found_communities, list(subscale))
-                    #         }
-                    #     } else {
-                    #         found_communities <- append(found_communities, list(subscale))
-                    #     }
-                    #     idx <- seq(1, length(found_communities))[unlist(lapply(found_communities, function(x){identical(list(x), list(subscale))}))]
-                    #     if(length(idx)==0){
-                    #         idx <- length(found_communities)+1
-                    #     }
-                    # }
-                    # likely_community <- original_communities[idx]
-                    for (item in subscale){
-                        name <- as.name(idx)
-                        results[results$Item==item & results$Method==method & results$Weights==weight,][name] <- results[results$Item==item & results$Method==method & results$Weights==weight,][name] + 1
-                            
+                    for (original in original_communities){
+                        match <- find_subscale(original, subscale)
+                        if (match['match'][[1]]) {
+                            for (item in match['TP']){
+                                res <- tibble('Method'=method,
+                                            'Weights'=weight,
+                                            'Item'=item,
+                                            'Community'=community,
+                                            'Iteration'=iteration,
+                                            'TP'=1,
+                                            'FP'=0)
+                                results <- bind_rows(results, res)
+                            }
+                            for (item in match['FP']) {
+                                res <- tibble('Method'=method,
+                                            'Weights'=weight,
+                                            'Item'=item,
+                                            'Community'=community,
+                                            'Iteration'=iteration,
+                                            'TP'=0,
+                                            'FP'=1)
+                                results <- bind_rows(results, res)
+                            }
+                        }
+                    TOTAL <- TOTAL+1
+                    }
+                }
             }
         }
-    }}}
-    list('estimate'=results,
-         'original communities'=original_communities)
-         # 'found communtities'=found_communities)
-
+    }
+    results['TOTAL'] <- TOTAL
+    results
 }
 
 RRS_item_analysis <- item_analysis_TPR(RRS_simulated_communities, RRS_graph)
@@ -757,14 +779,17 @@ saveRDS(combined_item_analysis, "output/combined_item_analysis.RDS")
 saveRDS(RRS_item_analysis, "output/RRS_item_analysis.RDS")
 saveRDS(SCRS_item_analysis, "output/SCRS_item_analysis.RDS")
 
-combined_item_analysis %>% group_by(Item) %>%summarise(TP=mean(TP/N))
 
 #TPR
-# RRS_item_analysis %>%
-#     left_join(true_table) %>%
-#     pivot_longer(5:6) %>%
-#     mutate(found = name == `Community (True)`) %>%
-#     filter(found) %>%
-#     group_by(Item) %>%
-#     summarise(rate = mean(value / N)) %>%
-#     as.data.frame()
+RRS_item_analysis  %>%
+    group_by(Item, Community) %>%
+    summarise(TP = sum(TP), FP=sum(FP))
+
+SCRS_item_analysis  %>%
+    group_by(Item, Community) %>%
+    summarise(TP = sum(TP), FP=sum(FP))
+
+combined_item_analysis  %>%
+    group_by(Item, Method) %>%
+    summarise(TP = sum(TP), FP=sum(FP)) %>%
+    as.data.frame()
