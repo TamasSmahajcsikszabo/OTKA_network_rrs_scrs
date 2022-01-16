@@ -393,6 +393,33 @@ network_stability_plot <- function(stability_estimate) {
         # scale_x_continuous(breaks = seq(1.0, 0.0, -0.1)) +
         scale_y_continuous(breaks = seq(-1.0, 1.0, 0.1))
 }
+
+
+to_vector <- function(input){
+    if (typeof(input)=='list') {
+        output <- unlist(input)
+    } else{
+        output <- input
+    }
+    output
+}
+
+find_subscale <- function(original, predicted) {
+    # return TRUE if found, difference otherwise
+    original <- to_vector(original)
+    predicted<- to_vector(predicted)
+    common <- intersect(original, predicted)
+    if (identical(common, original)) {
+        output <- list('match'=TRUE,'FP'=predicted[!predicted %in% common],
+                        'TP'=common)
+    } else {
+        output <- list('match'=FALSE, 'FP'=predicted[!predicted %in% common],
+                        'TP'=common)
+    }
+
+    output
+}
+
 get_bridge_estimate <- function(network, dec = 2, seed = 1234, method = "fast_greedy", weights = TRUE) {
     if (!is.null(seed)) {
         set.seed(seed)
@@ -437,8 +464,10 @@ get_bridge_estimate <- function(network, dec = 2, seed = 1234, method = "fast_gr
         bridge_estimate <- networktools::bridge(network)
     }
 
+    itemrownames <- names(bridge_estimate[1][[1]])
+
     # standardize scores into a tibble
-    output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
+    # output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
 
     for (i in seq(1, 5)) {
         target_vector <- tibble(round(standardize(bridge_estimate[[i]]), dec))
@@ -451,6 +480,16 @@ get_bridge_estimate <- function(network, dec = 2, seed = 1234, method = "fast_gr
     output_tibble <- output_tibble %>%
         mutate(Community = as_factor(communities)) %>%
         dplyr::select(-communities)
+        # mutate(Item = itemrownames)
+    # true_table <- tibble(
+    #     Item = V(network)$name,
+    #     `Community (True)` = V(network)$subscale_enum
+    # )
+    # output_tibble <- output_tibble %>% 
+    #     left_join(true_table) %>%
+    #     mutate(TP = Community == `Community (True)`)
+
+    # as.data.frame(output_tibble)
     output_tibble
 }
 
@@ -512,6 +551,18 @@ simulate_communities <- function(graph, i = 1000, path = "simulate.RDS") {
 # b <- c(2,3,4,5,6,7)
 # length(intersect(a,b))/length(a)
 # i <- 1
+get_original_communities <- function(graph){
+    true_table <- tibble(
+        Item = V(graph)$name,
+        `Community (True)` = V(graph)$subscale_enum
+    )
+    original_communities <- list()
+    for (community in unique(true_table$`Community (True)`)) {
+        original_community <- list(true_table[true_table$`Community (True)` == community, ]$Item)
+        original_communities[community] <- original_community
+    }
+    original_communities
+}
 get_TPR <- function(simulatedCommunities, graph) {
     true_table <- tibble(
         Item = V(graph)$name,
@@ -525,9 +576,9 @@ get_TPR <- function(simulatedCommunities, graph) {
     simulatedCommunities <- simulatedCommunities %>%
         group_by(Item, Method, Weights, Community) %>%
         summarise(N = n()) %>%
-        ungroup() %>%
-        group_by(Item, Method, Weights) %>%
-        filter(N == max(N))
+        ungroup()
+        # group_by(Item, Method, Weights) %>%
+        # filter(N == max(N))
 
     best_found_communities <- list()
     for (method in c("optimal", "spinglass", "walktrap", "fast_greedy")) {
@@ -568,37 +619,57 @@ get_TPR <- function(simulatedCommunities, graph) {
         }
     }
     results <- unique(results)
+    results
     results %>%
         group_by(Method, `Original Subscale`) %>%
         filter(TPR == max(TPR))
 }
-
 add_community_certainty <- function(graph, simulated_community, method = c("optimal", "walktrap", "spinglass", "fast_greedy")) {
     true_table <- tibble(
             Item = V(graph)$name,
             `Community (True)` = V(graph)$subscale_enum
         )
-    certainty <- simulated_community %>%
-        filter(Method %in% method) %>%
-        group_by(Item, Community) %>%
-        summarise(N = n()) %>%
-        ungroup() %>%
-        group_by(Item) %>%
-        mutate(Total = sum(N)) %>%
-        ungroup() %>%
-        rowwise() %>%
-        mutate(Certainty = round(N / Total,3)) %>%
-        group_by(Item) %>%
-        left_join(true_table) %>%
-        filter(Community==`Community (True)`)
+    original_communities <- get_original_communities(graph)
+    certainty <- tibble()
+    for (community in original_communities){
+        TP <- simulated_community %>%
+            # filter(!Method == 'walktrap') %>%
+            group_by(Item, Community) %>%
+            summarise(N= n()) %>%
+            filter(Item %in% community) %>%
+            arrange(Community) %>%
+            ungroup() %>%
+            group_by(Community) %>%
+            mutate(Total = max(N)) %>%
+            mutate(itemcount = max(row_number())) %>%
+            filter(itemcount == length(community)) %>%
+            ungroup() %>%
+            group_by(Item, Community) %>%
+            summarise(TPR = sum(N)/sum(Total))
+    certainty <- bind_rows(certainty,TP)
+    }
+
+    # certainty <- simulated_community %>%
+    #     filter(Method %in% method) %>%
+    #     group_by(Item, Community) %>%
+    #     summarise(N = n()) %>%
+    #     ungroup() %>%
+    #     group_by(Item) %>%
+    #     mutate(Total = sum(N)) %>%
+    #     ungroup() %>%
+    #     rowwise() %>%
+    #     mutate(Certainty = round(N / Total,3)) %>%
+    #     group_by(Item) %>%
+    #     left_join(true_table) %>%
+    #     filter(Community==`Community (True)`)
 
 
 
     for (i in 1:vcount(graph)) {
-        V(graph)[i]$Certainty <- certainty %>%
+        V(graph)[i]$TPR<- certainty %>%
             filter(Item == V(graph)[i]$name) %>%
             ungroup() %>%
-            dplyr::select(Certainty) %>%
+            dplyr::select(TPR) %>%
             unlist()
     }
     graph
@@ -613,7 +684,7 @@ add_articulation_point <- function(graph) {
 add_network_descriptives <- function(graph){
     o <- vcount(graph)
     s <- ecount(graph)
-    paste0("O=",o,"; ","S=",s)
+    paste0("Order=",o,"; ","Size=",s)
 }
 
 add_toolname <- function(graph){
@@ -626,13 +697,13 @@ beautify <- function(graph, simulated_community,title="Graph", no_caption=FALSE,
     require("ggraph")
     S <- nrow(simulated_community)/vcount(graph)/8
     set.seed(42)
-    caption <- paste0("Certainty reflects % of most frequent Subscale prediction during ", S, " times reruns of community detection")
+    caption <- paste0("TPR is True Positive Rate with", S, " times reruns of community detection")
     if (length(articulation_points(graph))>0) {
         caption <- paste0("* - articulation point (cut vertex; when removed disconnects the graph)", "\n", caption)
     } 
     if (no_caption){caption <- ""}
     if (force_caption){
-        caption <- paste0("Certainty reflects % of most frequent Subscale prediction during ", S, " times reruns of community detection")
+        caption <- paste0("TPR is True Positive Rate with", S, " times reruns of community detection")
         caption <- paste0("* - articulation point (cut vertex; when removed disconnects the graph)", "\n", caption)
         caption <- paste0(caption, "\n O [order] is # of vertices; S [size] is # of edges")
 
@@ -646,7 +717,7 @@ beautify <- function(graph, simulated_community,title="Graph", no_caption=FALSE,
         geom_node_point(color = "black", size = 12) +
         geom_node_point(aes(color = subscale), size = 10) +
         geom_node_point(color = "white", size = 5) +
-        geom_node_point(aes(alpha = Certainty), size = 5) +
+        geom_node_point(aes(alpha = TPR), size = 5) +
         # geom_node_label(aes(label = label), alpha=1/5, color='grey70', size = 5, vjust=-0.6) +
         geom_node_text(aes(label = label), size = textsize, vjust = -1.4,fontface='bold') +
         # geom_node_label(aes(label = paste0(name, "-", subscale)),alpha=1/5, color='grey70', size = 5,vjust=-1.1) +
@@ -682,37 +753,6 @@ item_analysis <- function(simulated_community, graph) {
         as.data.frame()
 }
 
-to_vector <- function(input){
-    if (typeof(input)=='list') {
-        output <- unlist(input)
-    } else{
-        output <- input
-    }
-    output
-}
-
-find_subscale <- function(original, predicted) {
-    # return TRUE if found, difference otherwise
-    original <- to_vector(original)
-    predicted<- to_vector(predicted)
-    common <- intersect(original, predicted)
-    if (identical(common, original)) {
-        output <- list('match'=TRUE,'FP'=predicted[!predicted %in% common],
-                        'TP'=common)
-    } else {
-        output <- list('match'=FALSE, 'FP'=predicted[!predicted %in% common],
-                        'TP'=common)
-    }
-
-    output
-}
-simulatedCommunities <- RRS_simulated_communities
-simulated_community <- RRS_simulated_communities
-method='spinglass'
-graph <- RRS_graph
-weight=TRUE
-item <- 'SCRS_1'
-y <- 3
 item_analysis_TPR <- function(simulatedCommunities, graph) {
     true_table <- tibble(
         Item = V(graph)$name,
@@ -723,10 +763,10 @@ item_analysis_TPR <- function(simulatedCommunities, graph) {
         original_community <- list(true_table[true_table$`Community (True)` == community, ]$Item)
         original_communities[community] <- original_community
     }
+
     #TODO: special case if original scale is just one community!
 
     results <- tibble()
-    TOTAL <- 0
     for (iteration in unique(simulatedCommunities$Iteration)) {
         iteration_data <- simulatedCommunities[simulatedCommunities$Iteration==i,]
 
@@ -761,35 +801,152 @@ item_analysis_TPR <- function(simulatedCommunities, graph) {
                                 results <- bind_rows(results, res)
                             }
                         }
-                    TOTAL <- TOTAL+1
                     }
                 }
             }
         }
     }
-    results['TOTAL'] <- TOTAL
+    results
+}
+# simulatedCommunities <- RRS_simulated_communities
+# simulated_community <- RRS_simulated_communities
+# i <- 1
+# method='spinglass'
+# graph <- RRS_graph
+# network <- RRS_graph
+# weight=TRUE
+# item <- 'SCRS_1'
+# y <- 3
+
+# RRS_item_analysis <- item_analysis_TPR(RRS_simulated_communities, RRS_graph)
+#SCRS_item_analysis <- item_analysis_TPR(SCRS_simulated_communities, SCRS_graph)
+# combined_item_analysis <- item_analysis_TPR(combined_simulated_communities, rumi)
+
+#saveRDS(combined_item_analysis, "output/combined_item_analysis.RDS")
+#saveRDS(RRS_item_analysis, "output/RRS_item_analysis.RDS")
+#saveRDS(SCRS_item_analysis, "output/SCRS_item_analysis.RDS")
+
+
+##TPR
+# RRS_item_analysis  %>%
+#     group_by(Item) %>%
+#     summarise(TP = sum(TP), FP=sum(FP))
+
+#SCRS_item_analysis  %>%
+#    group_by(Item, Community) %>%
+#    summarise(TP = sum(TP), FP=sum(FP))
+
+# combined_item_analysis  %>%
+#     group_by(Item, Community) %>%
+#     summarise(TP = sum(TP), FP=sum(FP)) %>%
+#     as.data.frame()
+
+get_TPR(RRS_simulated_communities, RRS_graph)
+as.data.frame(get_TPR(combined_simulated_communities, rumi))
+
+get_community <- function(dataset){
+    communities <- unique(dataset$Community)
+    lapply(communities, function(x){dataset[dataset$Community==x,]$Item})
+}
+
+found_pattern <- function(original_communities, communities){
+    results <- tibble()
+    for (original in original_communities){
+        for (community in communities){
+            res <- find_subscale(original, community)
+            result <- tibble(match=res['match'][[1]],
+                              FP=paste0(res['FP'][[1]], collapse=","),
+                              TP=paste0(res['TP'][[1]], collapse=","))
+            results <- bind_rows(results, result)
+        }
+    }
     results
 }
 
-RRS_item_analysis <- item_analysis_TPR(RRS_simulated_communities, RRS_graph)
-SCRS_item_analysis <- item_analysis_TPR(SCRS_simulated_communities, SCRS_graph)
-combined_item_analysis <- item_analysis_TPR(combined_simulated_communities, rumi)
+get_match <- function(input){
+    columns <- strsplit(input,",")
+    tibble('Item'=unlist(columns))
+}
 
-saveRDS(combined_item_analysis, "output/combined_item_analysis.RDS")
-saveRDS(RRS_item_analysis, "output/RRS_item_analysis.RDS")
-saveRDS(SCRS_item_analysis, "output/SCRS_item_analysis.RDS")
+item_level_TPR <- function(simulatedCommunities, graph) {
+    true_table <- tibble(
+        Item = V(graph)$name,
+        `Community (True)` = V(graph)$subscale_enum
+    )
+    original_communities <- list()
+    for (community in unique(true_table$`Community (True)`)) {
+        original_community <- list(true_table[true_table$`Community (True)` == community, ]$Item)
+        original_communities[community] <- original_community
+    }
+    matching <- tibble()
+    for (method in c('spinglass','optimal','fast_greedy', 'walktrap')){
+        for (weight in c(TRUE, FALSE)) {
+            for (iteration in unique(simulatedCommunities$Iteration)){
+                simulated_community <- simulatedCommunities %>%
+                    filter(
+                           Method == method,
+                           Weights==weight,
+                           Iteration==iteration
+                    )
+
+                communities <- get_community(simulated_community)
+                match <- found_pattern(original_communities, communities)
+                matching <- bind_rows(matching, match)
+            }
+        }
+    }
+    rates <- tibble(Item=V(graph)$name, 'TP'=0, 'FP'=0)
+    true_matching <- matching %>% filter(match)
+    FPs <- map_df(true_matching['FP'], get_match)
+    FPS  <- FPs %>% group_by(Item) %>%summarize(N=n())
+    TPs <- map_df(true_matching['TP'], get_match)
+    TPS  <- TPs %>% group_by(Item) %>%summarize(N=n())
+
+}
 
 
-#TPR
-RRS_item_analysis  %>%
-    group_by(Item, Community) %>%
-    summarise(TP = sum(TP), FP=sum(FP))
+### APPAA AAAA
 
-SCRS_item_analysis  %>%
-    group_by(Item, Community) %>%
-    summarise(TP = sum(TP), FP=sum(FP))
+    # found_communities <- list()
+    # for (method in c("optimal", "spinglass", "walktrap", "fast_greedy")) {
+    #     for (weight in c(TRUE, FALSE)) {
+    #         slice <- simulatedCommunities[simulatedCommunities$Method == method & simulatedCommunities$Weights == weight, ]
+    #         for (community in as.numeric(unique(slice$Community))) {
+    #             found_community <- list(unique(slice[slice$Community == community, ]$Item)) 
+    #             label <- paste0(method, ", ", weight)
+    #             names(found_community) <- label
+    #             found_communities <- append(found_communities, found_community)
+    #         }
+    #     }
+    # }
+    # # found_communities <- unique(found_communities)
 
-combined_item_analysis  %>%
-    group_by(Item, Method) %>%
-    summarise(TP = sum(TP), FP=sum(FP)) %>%
-    as.data.frame()
+    # results <- tibble()
+    # subscales <- data.frame(item = V(graph)$name, subscale = V(graph)$subscale)
+
+    # for (original_community in original_communities) {
+    #     for (i in seq_along(found_communities)) {
+    #         match <- length(intersect(original_community, unlist(found_communities[i])))
+    #         match_detail <- find_subscale(original_community, found_communities[i])
+    #         label <- strsplit(names(found_communities)[i], ", ")[[1]]
+    #         method <- label[1]
+    #         weight <- label[2]
+    #         subscale <- suppressMessages(unique(data.frame(item = original_community) %>% left_join(subscales) %>% dplyr::select(subscale))[[1]])
+    #         if (match_detail['match'][[1]]) {
+    #             result <- tibble(
+    #                 Method = method,
+    #                 Weights = weight,
+    #                 Subscale = subscale,
+    #                 `# of True community membership` = match,
+    #                 `TPR` = match / length(unlist(original_community)),
+    #                 `Original Subscale` = paste0(original_community, collapse = ", "),
+    #                 `Found Community` = paste0(unlist(found_communities[i]), collapse = ", ")
+    #             )
+    #             results <- bind_rows(results, result)
+    #         }
+    #     }
+    # }
+    # results <- unique(results)
+    # results %>%
+    #     group_by(Method, `Original Subscale`) %>%
+    #     filter(TPR == max(TPR))
