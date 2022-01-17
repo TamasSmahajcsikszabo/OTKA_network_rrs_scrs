@@ -25,6 +25,7 @@ library(modelr)
 library(scales)
 library(knitr)
 library(ggpubr)
+library(broom)
 source("R/data_import.R")
 source("R/functions.R")
 # data import
@@ -35,7 +36,7 @@ suppressMessages(extrafont::loadfonts(device='postscript'))
 
 ## 2. Methods
 
-### 2.1 Network analysis
+### Hypothesis and the use of Network Analysis
 *Psychological networks* have their own characteristics which differentiate them from other networks of the graph theory [@Epskamp2017; @Newman2010]. 
 Nodes usually represent some psychological measures or items of a psychological assessment tool, while the edges of the network reflect the corresponding estimates of association derived from the data.
 Having two rumination-related questionnaires, we assumed
@@ -52,7 +53,7 @@ In the current study, we used a fairly large sample of indiviuals (N=`r nrow(rum
 The vertices represent the items of the Ruminative Response Style (RRS) and the Self-critical Rumination Scale (SCRS), while edges are penalized partial correlations (using LASSO penalization, [@Friedman2007] ).
 
 
-#### 2.1.1 Least Absolute Shrinkage and Selection Operator (LASSO)
+### 2.1. Least Absolute Shrinkage and Selection Operator (LASSO)
 
 We constructed individual and combined networks of RRS and SCRS with respective penalized correlation matrices using the *EBICglasso* function of the **qgraph** package (number of lambda parameters were set to 1000).
 In order to shrink the edges, achieve high specificity, and get a less dense network, we let the function to exclude any elements of the underlying precision matrix below a threshold value (*threshold* parameter set to TRUE).
@@ -65,7 +66,7 @@ The final networks were chosen by the lowest values of the *extended Bayesian In
 
 <!-- Before going further into network modeling, we estimated the 95% confidence intervals of network centrality measures to have an understanding of the sampling distribution of our estimates. According to @Epskamp2017a low sample size and non-regularized estimates might lead to amplify any bootstrap bias; by having a larger sample of individuals, we expect lesser levels of bias of any bootstrap estimates for network accuracy and stability. -->
 
-#### 2.1.2 Goldbricker
+### 2.2 Redundant items
 
 We applied the *goldbricker* function from the R package *networktools* [@Jones2017] in order to search for pairs of items in the RRS, SCRS and their combined networks that were highly correlated (r > 0.75) and exhibited the same pattern with other items. 
 
@@ -78,40 +79,44 @@ After the LASSO regularization no further dimensionality reduction was necessary
 As subject for this paper,
 
 
-#### 2.1.3 Network descriptives
+### 2.3 Network descriptives
+
 A comparative overview of the three networks was produced with their descriptives (degree distribution) and their centrality measures (strength, closeness, betweenness; [@GaborCsardi2020]), their One- and Two-Step Expected Influence (EI) measures ([@Robinaugh2016], [@Heeren2018]).
 In order to further elaborate the question of vertex importance, we identified *bridge nodes* using the functions provided by the *networktools* R package [@Jones2017]. 
 We estimated both one-step and two-step bridge expected influence measures which reflect the sum of edge weights connecting one vertex to other groups on vertices (or communities); and also express a vertex's secondary influence on the rest of the network, respectively. 
 Higher influence scores indicate that a certain node is more likely to active neighbouring nodes, subgroups of nodes or communities.
 
-#### 2.1.4. Community detection
+### 2.4. Community detection
 In order to get an understanding of community of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established subscale-structure of RRS, SCRS and investigate their separation in their combined network, we used the community detection methods of the *igraph* R package. 
 When detecting possible communities of vertices, we utilized previous insights [@Reichardt2006; @Bernstein2019, @GaborCsardi2020].
+In order to mitigate the effect of choice of community detection algorithms we performed more of them available in the *igraph* package multiple times.
 
-#### 2.1.6. Network accuracy and stability
+### 2.5. Network accuracy and stability
 Accuracy and stability have an important role in estimating network parameters when samples might vary in characteristics and size [@Epskamp2017; @Epskamp2017a]. 
 One way of estimating network accuracy is to produce a 95% confidence interval of edge-weights with some variant of bootstrap. 
-In our case we chose the non-parametric bootstrap estimate for sake of interpretability, where the penalized partial correlation coefficients serve as the edge weights. 
-Network stability is quantified with the *Correlation Stability* (CS-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality of higher than 0.7. 
-Simulation studies [@Epskamp2017] show that the CS-coefficient should be between 0.25 and 0.5. 
+In our case we chose the non-parametric bootstrap estimate for sake of interpretability, where the penalized partial correlation coefficients formed the edge weights. 
+Network stability is quantified with the *Correlation Stability* (CS-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality higher than some fixed threshold value (in the present paper, 0.7). 
+Simulation studies [@Epskamp2017] lead us in our expectation as the CS-coefficient should be between 0.25 and 0.5. 
 
 
  
 ## 3. Results
 
-## 3.1.1. Network descriptives and internal structure (community detection) 
+### 3.1 Network descriptives
 
-The undirected relational networks of RRS, SCRS and their combined structure can be seen on Figure 1. below. 
+The undirected, weighted, associational networks of RRS, SCRS and their combined structure can be seen on Figure 1. below.
 Vertices represent the corresponding items of each questionnaire with labels showing item number, sub-scale and a label for each item.
+Sub-scales are presented in a colour-coded fashion as the outer circle of each vertex.
 Edges are the LASSO (L1)-penalized partial correlation coefficients whose value is represented as shade and width of the arcs.
 
-The RRS (order of `r vcount(RRS_graph)`, size of `r ecount(RRS_graph)`) and SCRS (order of `r vcount(SCRS_graph)`, size of `r ecount(SCRS_graph)`) networks are densely connected relational networks.
+The RRS (order of `r vcount(RRS_graph)`, size of `r ecount(RRS_graph)`) and SCRS (order of `r vcount(SCRS_graph)`, size of `r ecount(SCRS_graph)`) networks are densely connected networks.
 While SCRS exhibits no *articulation point* (also call *cut vertex* whose removal would disconnect the network [@GaborCsardi2020]), the vertex of the *'problem'* item of RRS acts as an articulation point, as it would cut off the *'deserve'* vertex.
 Articulation points are marked with * on Figure 1.
 
-The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points neither.
+The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points.
 In order to analyze their respective internal structures, we performed community detection using the *igraph* package in R.
-Inner node point of each vertex provide colour coding for our community detection results (the presented certainty percentages are ratios of the detected true communities).
+Inner node point of each vertex provide colour coding for our community detection results (the presented certainty percentages are True Positive Rates of each sub-scale).
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 i  <- 1000
@@ -182,10 +187,10 @@ combined_tpr_top <- suppressMessages(combined_tpr %>%
 
 seed <- 647
 weights <- TRUE
-method <- 'spinglass'
+method <- 'optimal'
 summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
                             network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
-                            network_summary(rumi, name="Combined RRS+SCRS",seed=seed,method=method,weights=weights))
+                            network_summary(rumi, name="RRS+SCRS",seed=seed,method=method,weights=weights))
 
 ```
 
@@ -200,16 +205,40 @@ network_plot
 
 As the choice of algorithm has non-trivial impact on the identified community structure, after having selected the *"optimal"*, the *"spinglass"*, the *"walktrap"* and (to also include hierarchical clustering) the *"fast greedy"* methods, we tested each a `r i` times on the three networks.
 We also provided an edge weight vector in the form of the LASSO-penalized partial correlation coefficients (or alternatively, omitted weights).
+
 The RRS two-scale structure could be recreated with all four algorithms with the inclusion of the weight vector not having effect on the measures.
-For the subscale of *brooding* the average true positive rate was `r RRS_tpr_s[1,2][[1]]`.
-In the case of *reflection*, TPR as `r round(RRS_tpr_s[2,2][[1]],3)`.
+For the sub-scale of *brooding* the average **true positive rate** (TPR) was `r RRS_tpr_s[1,2][[1]]`; for *reflection*  `r round(RRS_tpr_s[2,2][[1]],3)`.
+In case of the *reflection* subscale, lower average TPR becomes tangible with the inspection of items 2 (*"analyze"*) and 9 (*"person"*) whose low TPR indicates that depending in the choice of community detection they have a chance of forming their own community or being classified as members of the *brooding* scale.
+
 
 In the case of SCRS, the best TPR of `r SCRS_tpr_s[7,4][[1]]` has been achieved with `r SCRS_tpr_s[7,2][[1]]` community detection.
-The SCRS exhibited a three-component structure according to community detection.
+The one-scale structure of the SCRS has been reestablished in these results, too.
 
-The combined rumination network shows a clear expected structure, with having high TPR for each subscale (on average, *brooding* (`r combined_tpr_s[1,2][[1]]`), *reflection* (`r combined_tpr_s[2,2][[1]]`) and *self-critical* (`r combined_tpr_s[3,2][[1]]`)).
-Keeping only the *spinglass* algoritm (as used by [@Bernstein2019]), we get high 1.0 TPR.
+The combined rumination network shows a clear expected structure, with having high TPR for each sub-scale (on average, *brooding* (`r combined_tpr_s[1,2][[1]]`), *reflection* (`r combined_tpr_s[2,2][[1]]`) and *self-critical* (`r combined_tpr_s[3,2][[1]]`)).
+Commenting on the stability of the network community structure the RRS *reflection* sub-scale exhibits strong TPR rates, and the weakness of the two items from their respective stand-alone network for items 2 and 9 are no longer present in the combined graph.
+The RRS *brooding* scale has good separation in terms of TPR, except for its item 3 (*#react#*) having <0.9 TPR.
+The one-scale SCRS has also a separable community with high (>0.925) TPR.
+Keeping only the *spinglass* algoritm (as used by [@Bernstein2019]), we get high average 1.0 TPR for the combined graph.
+
 Please refer to our summary table in the Appendix (Table 1.) for actual descriptives and identified communities using the *spinglass* method.
+
+### 3. Internal Structure
+In order to measure the impact of tools (RRS, SCRS) and their respective scales (*brooding*, *reflection* and *self-critical*) on network structure, we constructed an *exponential random graph model* (ERGM).
+In the model of our combined network, endogenous (network structure related) predictors included the number of edges in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [**Snijders hivatkozas! Csardi 92**] to involve some higher-order global network structures as a reflection on **clustering** in the form of completed triangles of vertices.
+In order to capture exogenous effects (i.e., vertex attribues), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the tool and its scale will increase the log-odds of being connected by an edge).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+ergm_model_fit <- readRDS("output/ergmfit.RDS")
+anova_tidy <- broom::tidy(anova(ergm_model_fit))
+ergm_tidy <- broom::tidy(ergm_model_fit)
+ergm_tidy[2,1] <- 'gwesp [trianlge]'
+knitr::kable(ergm_tidy,digits=3,label="", caption="ERGM model fit results with Markov chain Monte Carlo Maximum Likelihood Estimation")
+```
+
+An ANOVA analysis on the overall model indicates (with df=`r anova_tidy[2,2][[1]]`, Residual Deviance=`r round(anova_tidy[2,5][[1]],3)`, p=`r round(anova_tidy[2,6][[1]],3)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
+The detailed analysis reveals that endogenous effects decrease the log-odds of connectivity in the case of number of *edges* (by `r round(exp(ergm_tidy[1,2][[1]]),3)`).
+As expected, exogenous effects, such as tool and sub-scale have a non-trivial impact on connectivity (log-odds effects: tool (`r round(exp(ergm_tidy[3,2][[1]]),3)`); sub-scale (`r round(exp(ergm_tidy[5,2][[1]]),3)`)).
+
 
 \newpage
 \blandscape
@@ -217,9 +246,10 @@ Please refer to our summary table in the Appendix (Table 1.) for actual descript
 ## Appendix
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-knitr::kable(summary_table, format='simple', row.names=FALSE,label="Network descriptive statistics for RRS, SCRS and their combined networks",digits=2)
-
+knitr::kable(summary_table, format='simple', row.names=FALSE,caption="Network descriptive statistics for RRS, SCRS and their combined networks",label='Table 1',digits=2)
 ```
+
+*Deg.=Degree; Str.=Strength; Bet.=Betweenness; Clo.=Closeness; EI1= One-step Expected Influence; EI2= Two-step Expected Influence; Br.Str.=Bridge Strenth; Br.Bet.=Brdige Betweenness; Br.Cl.=Bridge Closeness; Br.EI1=One-step Bridge Expected Influence; Br.EI2=Two-step Bridge Expected Influence*
 
 \elandscape
 
