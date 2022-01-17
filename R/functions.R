@@ -468,7 +468,7 @@ get_bridge_estimate <- function(network, dec = 2, seed = 1234, method = "fast_gr
     itemrownames <- names(bridge_estimate[1][[1]])
 
     # standardize scores into a tibble
-    # output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
+    output_tibble <- tibble(.rows = length(bridge_estimate[[1]]))
 
     for (i in seq(1, 5)) {
         target_vector <- tibble(round(standardize(bridge_estimate[[i]]), dec))
