@@ -122,11 +122,21 @@ RRS_simulated_communities <- readRDS("output/RRS_communities.RDS")
 SCRS_simulated_communities <- readRDS("output/SCRS_communities.RDS")
 combined_simulated_communities <- readRDS("output/combined_communities.RDS")
 
+# RRS_item_TPR <- item_level_TPR(RRS_simulated_communities, RRS_graph, threshold=0.95)
+# saveRDS(RRS_item_TPR, 'output/RRS_item_TPR.RDS')
+# SCRS_item_TPR <- item_level_TPR(SCRS_simulated_communities, SCRS_graph, threshold=0.5)
+# saveRDS(SCRS_item_TPR, 'output/SCRS_item_TPR.RDS')
+# combined_item_TPR <- item_level_TPR(combined_simulated_communities, rumi)
+# saveRDS(combined_item_TPR, 'output/combined_item_TPR.RDS')
+RRS_item_TDR <- readRDS('output/RRS_item_TPR.RDS')
+SCRS_item_TDR <- readRDS('output/SCRS_item_TPR.RDS')
+combined_item_TDR <- readRDS('output/combined_item_TPR.RDS')
+
 overalltextsize <- 24
 textsize=5
-RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize)
-SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize)
-combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS & SCRS undirected graph",force_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize)
+RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=RRS_item_TDR)
+SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=SCRS_item_TDR)
+combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS & SCRS undirected graph",force_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize, item_TDR=combined_item_TDR)
 network_plot <- ggarrange(ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1,1)), combined_plot, widths=c(0.95,1.05))
 # ggsave("output/networkplot.png",network_plot, dpi=400, device='png',width=27, height=14)
 
