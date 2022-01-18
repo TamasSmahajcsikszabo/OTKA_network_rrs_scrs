@@ -27,6 +27,7 @@ library(knitr)
 library(ggpubr)
 library(broom)
 library(ergm)
+library(fdrtool)
 source("R/data_import.R")
 source("R/functions.R")
 # data import
@@ -223,7 +224,8 @@ Keeping only the *spinglass* algoritm (as used by [@Bernstein2019]), we get high
 
 Please refer to our summary table in the Appendix (Table 1.) for actual descriptives and identified communities using the *spinglass* method.
 
-### 3. Internal Structure
+### 3.2 Internal Structure with an exponential random graph model
+
 In order to measure the impact of tools (RRS, SCRS) and their respective scales (*brooding*, *reflection* and *self-critical*) on network structure, we constructed an *exponential random graph model* (ERGM).
 In the model of our combined network, endogenous (network structure related) predictors included the number of edges in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures as a reflection on **clustering** in the form of completed triangles of vertices.
 In order to capture exogenous effects (i.e., vertex attributes), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the tool and its scale will increase the log-odds of being connected by an edge).
@@ -243,6 +245,36 @@ knitr::kable(ergm_tidy,digits=3,label="", caption="ERGM model fit results with M
 An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, Residual Deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p=`r round(anova_tidy$Pr...Chisq..[2][[1]],4)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
 The detailed analysis reveals that endogenous effects decrease the log-odds of connectivity in the case of number of *edges* (by `r round(exp(ergm_tidy$Estimate[1][[1]]),3)`) and at p<0.05 level the closed triangle formulation (log-odds decreased by `r round(exp(ergm_tidy$Estimate)[2][[1]],3)`) indicates a non-trivial negative impact on clustering.
 As expected, exogenous effects, such as sub-scale have a significant positive impact on connectivity (log-odds effects: tool (sub-scale: (`r round(exp(ergm_tidy$Estimate[5][[1]]),3)`)).
+
+### 3.3 Association Network Inference
+
+In order to test for non-zero edges in our network, we used a data-driven method to assess the null distribution of partial correlation coefficients used during network creation.
+The R package **fdrtool** allowed us to model the probability density function $\eta_0$, the fraction of true null hypotheses in the data; (1-$\eta_0$) for the true alternative hypotheses.
+The mixture model for some statistic S thus takes the following form (where in our analysis, S is the partial correlation coefficient).
+
+\begin{center}
+$\ f(S)=eta_0 f_0 f(S) + (1-eta_0) f1(S)$
+\end{center}
+
+To apply adjustment due to the number of performed tests, we applied the *False Discovery Rate* (FDR) to the *p*-values (the rate of false rejections against the number of rejections).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.width=6,fig.height=6, fig.align='center', fig.cap="Association Network Inference results"}
+mute <- function(exp) {
+  invisible(capture.output(exp))
+}
+mycorr <- cor_auto(rumi_data, detectOrdinal = TRUE)
+mycorr <- cor(rumi_data, method = "spearman")
+mycorr <- mycorr[upper.tri(mycorr)]
+mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation")))
+?fdrtool
+```
+The low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicates large mixing rate for the alternative hypothesis of edges having non-zero weights.
+The histogram of absolute correlation coefficients estimated using the data (alternative component) has a centered shape in contrast to the null component.
+The density-based FDR drops once empirical correlations reach $\rho$=0.1.
+
+
+
+### 3.4 Model-based clustering
 
 
 \newpage
