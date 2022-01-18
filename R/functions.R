@@ -848,7 +848,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
     require("ggraph")
     S <- nrow(simulated_community) / vcount(graph) / 8
     set.seed(42)
-    caption <- paste0("TPR is True Positive Rate with ", S, " times reruns of community detection")
+    caption <- paste0("TPR is average True Positive Rate with ", S, " times reruns of community detection")
     if (length(articulation_points(graph)) > 0) {
         caption <- paste0("* - articulation point (cut vertex; when removed disconnects the graph)", "\n", caption)
     }
@@ -856,7 +856,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         caption <- ""
     }
     if (force_caption) {
-        caption <- paste0("TPR is True Positive Rate with ", S, " times reruns of community detection")
+        caption <- paste0("TPR is average True Positive Rate with ", S, " times reruns of community detection")
         caption <- paste0("* marks Articulation Points (cut vertices; when such vertices are  removed disconnect the graph)", "\n", caption)
         caption <- paste0(caption, "\n O [order] is # of vertices; S [size] is # of edges")
     }

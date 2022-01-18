@@ -26,6 +26,7 @@ library(scales)
 library(knitr)
 library(ggpubr)
 library(broom)
+library(ergm)
 source("R/data_import.R")
 source("R/functions.R")
 # data import
@@ -87,7 +88,7 @@ We estimated both one-step and two-step bridge expected influence measures which
 Higher influence scores indicate that a certain node is more likely to active neighbouring nodes, subgroups of nodes or communities.
 
 ### 2.4. Community detection
-In order to get an understanding of community of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established subscale-structure of RRS, SCRS and investigate their separation in their combined network, we used the community detection methods of the *igraph* R package. 
+In order to get an understanding of community of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established sub-scale structure of RRS, SCRS and investigate their separation in their combined network, we used the community detection methods of the *igraph* R package. 
 When detecting possible communities of vertices, we utilized previous insights [@Reichardt2006; @Bernstein2019, @GaborCsardi2020].
 In order to mitigate the effect of choice of community detection algorithms we performed more of them available in the *igraph* package multiple times.
 
@@ -224,20 +225,24 @@ Please refer to our summary table in the Appendix (Table 1.) for actual descript
 
 ### 3. Internal Structure
 In order to measure the impact of tools (RRS, SCRS) and their respective scales (*brooding*, *reflection* and *self-critical*) on network structure, we constructed an *exponential random graph model* (ERGM).
-In the model of our combined network, endogenous (network structure related) predictors included the number of edges in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [**Snijders hivatkozas! Csardi 92**] to involve some higher-order global network structures as a reflection on **clustering** in the form of completed triangles of vertices.
-In order to capture exogenous effects (i.e., vertex attribues), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the tool and its scale will increase the log-odds of being connected by an edge).
+In the model of our combined network, endogenous (network structure related) predictors included the number of edges in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures as a reflection on **clustering** in the form of completed triangles of vertices.
+In order to capture exogenous effects (i.e., vertex attributes), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the tool and its scale will increase the log-odds of being connected by an edge).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 ergm_model_fit <- readRDS("output/ergmfit.RDS")
 anova_tidy <- broom::tidy(anova(ergm_model_fit))
 ergm_tidy <- broom::tidy(ergm_model_fit)
-ergm_tidy[2,1] <- 'gwesp [trianlge]'
+names(ergm_tidy) <- c("Term", "Estimate", "Std. Error", "MCMC Error %", "Statistic", "p")
+ergm_tidy[2,1] <- 'GWESP [triangle]'
 knitr::kable(ergm_tidy,digits=3,label="", caption="ERGM model fit results with Markov chain Monte Carlo Maximum Likelihood Estimation")
+
+# gof(ergm_model_fit)
+# mcmc.diagnostics(ergm_model_fit)
 ```
 
-An ANOVA analysis on the overall model indicates (with df=`r anova_tidy[2,2][[1]]`, Residual Deviance=`r round(anova_tidy[2,5][[1]],3)`, p=`r round(anova_tidy[2,6][[1]],3)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
-The detailed analysis reveals that endogenous effects decrease the log-odds of connectivity in the case of number of *edges* (by `r round(exp(ergm_tidy[1,2][[1]]),3)`).
-As expected, exogenous effects, such as tool and sub-scale have a non-trivial impact on connectivity (log-odds effects: tool (`r round(exp(ergm_tidy[3,2][[1]]),3)`); sub-scale (`r round(exp(ergm_tidy[5,2][[1]]),3)`)).
+An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, Residual Deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p=`r round(anova_tidy$Pr...Chisq..[2][[1]],4)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
+The detailed analysis reveals that endogenous effects decrease the log-odds of connectivity in the case of number of *edges* (by `r round(exp(ergm_tidy$Estimate[1][[1]]),3)`) and at p<0.05 level the closed triangle formulation (log-odds decreased by `r round(exp(ergm_tidy$Estimate)[2][[1]],3)`) indicates a non-trivial negative impact on clustering.
+As expected, exogenous effects, such as sub-scale have a significant positive impact on connectivity (log-odds effects: tool (sub-scale: (`r round(exp(ergm_tidy$Estimate[5][[1]]),3)`)).
 
 
 \newpage
