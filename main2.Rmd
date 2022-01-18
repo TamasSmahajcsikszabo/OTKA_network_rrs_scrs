@@ -253,7 +253,7 @@ The R package **fdrtool** allowed us to model the probability density function $
 The mixture model for some statistic S thus takes the following form (where in our analysis, S is the partial correlation coefficient).
 
 \begin{center}
-$\ f(S)=eta_0 f_0 f(S) + (1-eta_0) f1(S)$
+$\ f(S)=eta_0 f_0(S) + (1-eta_0) f_1(S)$
 \end{center}
 
 To apply adjustment due to the number of performed tests, we applied the *False Discovery Rate* (FDR) to the *p*-values (the rate of false rejections against the number of rejections).
