@@ -28,6 +28,8 @@ library(ggpubr)
 library(broom)
 library(ergm)
 library(fdrtool)
+library(eigenmodel)
+library(ROCR)
 source("R/data_import.R")
 source("R/functions.R")
 # data import
@@ -256,7 +258,7 @@ The R package **fdrtool** allowed us to model the probability density function $
 The mixture model for some statistic S thus takes the following form (where in our analysis, S is the partial correlation coefficient).
 
 \begin{center}
-$\ f(S)=eta_0 f_0(S) + (1-eta_0) f_1(S)$
+$\ f(S)=\eta_0 f_0(S) + (1-\eta_0) f_1(S)$
 \end{center}
 
 To apply adjustment due to the number of performed tests, we applied the *False Discovery Rate* (FDR) to the *p*-values (the rate of false rejections against the number of rejections).
@@ -269,7 +271,6 @@ mycorr <- cor_auto(rumi_data, detectOrdinal = TRUE)
 mycorr <- cor(rumi_data, method = "spearman")
 mycorr <- mycorr[upper.tri(mycorr)]
 mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation")))
-?fdrtool
 ```
 The low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicates large mixing rate for the alternative hypothesis of edges having non-zero weights.
 The histogram of absolute correlation coefficients estimated using the data (alternative component) has a centered shape in contrast to the null component.
@@ -277,9 +278,9 @@ The density-based FDR drops once empirical correlations reach $\rho$=0.1.
 
 
 
-### 3.4 Eigen models
+### 3.4 Latent Network Modeling
 
-We constructed eigen models to further explore the structure of the combined graph of RRS and SCRS.
+We constructed an eigenmodel to further explore the structure of the combined graph of RRS and SCRS.
 Our expectation was that sub-scales will have non-trivial impact on the resulting eigenvalues.
 By applying eigenvalue decomposition, we obtained the first two eigenvectors and used them to plot the vertices.
 
@@ -303,6 +304,59 @@ plot_eigen(evecs, evals, rumi_graph, toolnames, subscale, labels)
 Our visual insight from *Figure 3.* is that the first eigenvector servers as a separator between RRS and SCRS having a posterior mean of $\bar{ev_1}$=`r round(evals[1],3)`.
 The second eigenvector seems to separate between the upper half of the two-dimensional space of SCRS and the *brooding* scale, and the lower half being the *reflection* scale ($\bar{ev_2}$=`r round(evals[2],3)`).
 
+In order to test the goodness-of-fit of the eigenmodel, using *k*-fold cross-validation (k=5), we refitted the model to a subset of the original data, using the complement 1/5 fraction for predicting the elements of the adjacency matrix of our original network.
+
+For this part of the analysis, we defined three conditions in the eigenmodel on top of the original model.
+In the first iteration we used the eigenmodel without the regression component defining the adjacency matrix as function of only the pairwise latent effects summarized in the following matrix.
+
+\begin{center}
+$\ Y_{ij}=f(u_i \Lambda u_j) $
+\end{center}
+
+In the second and third iterations, we defined an optional regression model in addition to the pairwise latent effects, where $\textbf{x}_{ij}$ is a pair-specific predictor vector.
+This extends our model to the following equation.
+
+\begin{center}
+$\ Y_{ij}=f(\beta^{'} x_{ij} +  u_i \Lambda u_j) $
+\end{center}
+
+Thus, in the second iteration we cross-validated an extended eigenmodel with the tool (RRS or SCRS) as nominal grouping factor of vertices playing the predictor role.
+And in the same manner, the third iteration tested a model with the scales of *brooding*, *reflection* and *self-critical* serving as pair-wise covariate predictor effects.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+A <- as_adjacency_matrix(rumi, sparse = FALSE)
+Avec <- A[lower.tri(A)]
+Avec.pred1 <- readRDS("/home/tamas/repos/rumination_lasso/output/Avecpred1.RDS")
+Avec.pred2 <- readRDS("/home/tamas/repos/rumination_lasso/output/Avecpred2.RDS")
+Avec.pred3 <- readRDS("/home/tamas/repos/rumination_lasso/output/Avecpred3.RDS")
+
+getAUC <- function(x, condition) {
+    y <- slot(x, "y.values")[[1]]
+    x <- slot(x, "x.values")[[1]]
+    Condition <- rep(condition, length(y))
+    data.frame(x, y, Condition)
+}
+
+pred1 <- prediction(Avec.pred1, Avec)
+perf1 <- performance(pred1, "tpr", "fpr")
+pred2 <- prediction(Avec.pred2, Avec)
+perf2 <- performance(pred2, "tpr", "fpr")
+pred3 <- prediction(Avec.pred3, Avec)
+perf3 <- performance(pred3, "tpr", "fpr")
+# get AUC
+aucs <- c()
+for (v in c(pred1, pred2, pred3)) {
+    auc <- performance(v, "auc")
+    v <- slot(auc, "y.values")[[1]]
+    aucs <- c(aucs, v)
+}
+
+```
+
+Summarizing the results from the eigenmodels, using the original combined network adjacency matrix as a reference, we estimated the *Area Under the Curve* (AUC) statistics for each model.
+Compared to the latent model ($\ AUC_{latent}$ =`r round(aucs[1], 3)`), the inclusion of the tool-level grouping factor resulted in a better predictive model ($\ AUC_{latent+tool}$ = `r round(aucs[2], 3)`).
+The final model involving the scale-level vertex characteristics has the best goodness-of-fit ($\ AUC_{latent+scale}$ =`r round(aucs[3],3)`).
+See Figure 4. in the Appendix for the corresponding ROC curves.
 
 \newpage
 \blandscape
@@ -316,7 +370,35 @@ knitr::kable(summary_table, format='simple', row.names=FALSE,caption="Network de
 *Deg.=Degree; Str.=Strength; Bet.=Betweenness; Clo.=Closeness; EI1= One-step Expected Influence; EI2= Two-step Expected Influence; Br.Str.=Bridge Strenth; Br.Bet.=Brdige Betweenness; Br.Cl.=Bridge Closeness; Br.EI1=One-step Bridge Expected Influence; Br.EI2=Two-step Bridge Expected Influence*
 
 \elandscape
-
 \newpage
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=16, fig.height=10, fig.cap='ROC curves of the combined RRS-SCRS network'}
+
+ROC_data <- bind_rows(getAUC(perf1, "Latent effect"), getAUC(perf2, "Latent + Tool as pair-wise"), getAUC(perf3, "Latent + Scale as pair-wise"))
+
+aucs_labels <- ""
+conds <- c("Latent effect", "Latent + Tool", "Latent + Scale")
+cond_lab <- ""
+
+for (i in seq_along(conds)) {
+    cond_lab <- paste0(cond_lab, conds[i], ":\n")
+}
+
+for (i in seq_along(conds)) {
+    aucs_labels <- paste0(aucs_labels, round(aucs[i], 3), "\n")
+}
+
+
+ggplot(ROC_data, aes(x, y)) +
+    geom_path(aes(x, y, group = Condition, color = Condition, linetype = Condition), size = 0.75) +
+    scale_color_manual(values = c("gray69", "black", "gray50")) +
+    theme_bw() +
+    labs(x = "False Positive Rate", y = "True Positive Rate") +
+    geom_rect(aes(xmin = 0.75, ymin = 0, xmax = 1.0, ymax = 0.25), fill = "white", color = "gray70") +
+    geom_text(x = 0.8, y = 0.23, label = "AUC:") +
+    geom_text(x = 0.82, y = 0.1, label = cond_lab) +
+    geom_text(x = 0.92, y = 0.1, label = aucs_labels) +
+    theme(legend.position = "bottom")
+```
 
 ## References
