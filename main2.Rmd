@@ -32,8 +32,11 @@ source("R/data_import.R")
 source("R/functions.R")
 # data import
 source("../networks_with_r/get_rumi.R")
-setwd('/home/tamas/repos/rumination_lasso')
 suppressMessages(extrafont::loadfonts(device='postscript'))
+setwd('../networks_with_r')
+source("get_rumi.R")
+source("src/functions.R")
+setwd('/home/tamas/repos/rumination_lasso')
 ```
 
 ## 2. Methods
@@ -274,7 +277,31 @@ The density-based FDR drops once empirical correlations reach $\rho$=0.1.
 
 
 
-### 3.4 Model-based clustering
+### 3.4 Eigen models
+
+We constructed eigen models to further explore the structure of the combined graph of RRS and SCRS.
+Our expectation was that sub-scales will have non-trivial impact on the resulting eigenvalues.
+By applying eigenvalue decomposition, we obtained the first two eigenvectors and used them to plot the vertices.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.width=10, fig.height=8, fig.cap="Vertices of the combined graph by the first two eigenvalues"}
+fitEM <- readRDS("output/fitEM.RDS")
+evals <- colMeans(fitEM$L_postsamp)
+evecs <- eigen(fitEM$ULU_postmean)$vec[, 1:2]
+subscale <- c("Brooding", "Reflection", "Brooding", "Reflection", "Reflection", "Brooding", "Brooding", "Brooding", "Reflection", "Reflection", rep("Self-critical", 10))
+toolnames <- c(rep("RRS", 10), rep("SCRS", 10))
+itemnames <- c(paste0("RRS_", 1:10), paste0("SCRS_", 1:10))
+toollookup <- data.frame(item = V(rumi)$name, label = V(rumi)$label)
+labels <- c()
+for (item in seq_along(itemnames)) {
+    label <- toollookup[toollookup$item == itemnames[item], ]$label
+    item_name <- paste0(paste0(strsplit(itemnames[item],"_")[[1]], collapse="("),")")
+    labels[item] <- paste0(item_name, "\n", label)
+}
+plot_eigen(evecs, evals, rumi_graph, toolnames, subscale, labels)
+```
+
+Our visual insight from *Figure 3.* is that the first eigenvector servers as a separator between RRS and SCRS having a posterior mean of $\bar{ev_1}$=`r round(evals[1],3)`.
+The second eigenvector seems to separate between the upper half of the two-dimensional space of SCRS and the *brooding* scale, and the lower half being the *reflection* scale ($\bar{ev_2}$=`r round(evals[2],3)`).
 
 
 \newpage
