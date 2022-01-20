@@ -638,7 +638,10 @@ add_articulation_point <- function(graph) {
 add_network_descriptives <- function(graph) {
     o <- vcount(graph)
     s <- ecount(graph)
-    paste0("Order=", o, "; ", "Size=", s)
+    t <- transitivity(graph)
+    d <- diameter(graph)
+    md <- mean_distance(graph)
+    paste0("Order=", o, "; ", "Size=", s,  "; ", "Clustering Coefficient=", round(t,3),"; ", "Diameter=", round(d,3),"; ", "Mean distance=", round(md,3))
 }
 
 add_toolname <- function(graph) {
@@ -858,14 +861,20 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
     if (force_caption) {
         caption <- paste0("TPR is average True Positive Rate with ", S, " times reruns of community detection")
         caption <- paste0("* marks Articulation Points (cut vertices; when such vertices are  removed disconnect the graph)", "\n", caption)
-        caption <- paste0(caption, "\n O [order] is # of vertices; S [size] is # of edges")
+        caption <- paste0(caption, "\n Order is # of vertices; Size is # of edges")
+        caption <- paste0(caption, "\n Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% CI of bootstrap stability estimate")
+        caption <- paste0(caption, "\n Dashed edge line indicates the 95% CI of stability estimate ranges below 0.0")
     }
+    custom_colors <- tibble('subscale'=c('brooding', 'reflection', 'self-critical'), color=c('white', '#CA382A', '#0C38A0'))
+    my_color_scale <- tibble('subscale'=V(graph)$subscale)  %>% left_join(custom_colors)
+    my_color_scale <- as.character(my_color_scale$color)
+    names(my_color_scale) <- V(graph)$subscale
     add_community_certainty(graph, item_TDR) %>%
         add_articulation_point() %>%
         add_toolname() %>%
         ggraph(layout = "fr") +
-        geom_edge_density(edge_fill = "grey95") +
-        geom_edge_fan(aes(alpha = strength, width = weight), color = "grey60", show.legend = FALSE) +
+        geom_edge_density(edge_fill = "grey100") +
+        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype=accuracy<0 ), color = "grey50", show.legend = FALSE) +
         geom_node_point(color = "black", size = 12) +
         geom_node_point(aes(color = subscale), size = 10) +
         geom_node_point(color = "white", size = 5) +
@@ -875,7 +884,8 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         # geom_node_label(aes(label = paste0(name, "-", subscale)),alpha=1/5, color='grey70', size = 5,vjust=-1.1) +
         geom_node_text(aes(label = paste0(tool, "(", item_number, ")", "-", subscale)), size = textsize, vjust = -2.6) +
         geom_node_text(aes(label = articulation_point), size = 13, hjust = -2.9, vjust = -1.0) +
-        scale_color_manual(values = c("white", "grey30", "grey60"), name = "Sub-scale") +
+        # scale_color_manual(values = c("white", "grey30", "grey60"), name = "Sub-scale") +
+        scale_color_manual(values =my_color_scale, name = "Sub-scale") +
         labs(
             caption = caption,
             title = title,
@@ -888,6 +898,74 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         )
 }
 
-fdr <- function(data, fdrtoolResults){
 
+network_accuracy_data <- function(accuracy, tool = "", multiple = FALSE, save_data = FALSE) {
+    sample_data <- accuracy$sampleTable %>%
+        filter(nchar(id) > 7) %>%
+        arrange(desc(value))
+
+    sample_data <- sample_data %>%
+        left_join(data_labels, by = c("node1" = "var")) %>%
+        left_join(data_labels, by = c("node2" = "var")) %>%
+        rename(
+            new_node_1 = labels.x,
+            new_node_2 = labels.y
+        ) %>%
+        filter(!is.na(new_node_2)) %>%
+        mutate(
+            tool1 = str_sub(node1, 1, str_locate(node1, "_")[, 1] - 1),
+            tool2 = str_sub(node2, 1, str_locate(node2, "_")[, 1] - 1)
+        ) %>%
+        mutate(id = if_else(tool1 == tool2,
+            paste0(tool1, ": ", new_node_1, " - ", new_node_2),
+            paste0(tool1, ": ", new_node_1, " - ", tool2, ": ", new_node_2)
+        ))
+
+    bootstrap_data_aggr <- accuracy$bootTable %>%
+        # left_join(data_labels, by = c("node1" = "var")) %>%
+        # left_join(data_labels, by = c("node2" = "var")) %>%
+        # rename(
+        #     new_node_1 = labels.x,
+        #     new_node_2 = labels.y
+        # ) %>%
+        filter(!node2 == "") %>%
+        # mutate(
+        #     tool1 = str_sub(node1, 1, str_locate(node1, "_")[, 1] - 1),
+        #     tool2 = str_sub(node2, 1, str_locate(node2, "_")[, 1] - 1)
+        # ) %>%
+        # mutate(id = if_else(tool1 == tool2,
+        #     paste0(tool1, ": ", new_node_1, " - ", new_node_2),
+        #     paste0(tool1, ": ", new_node_1, " - ", tool2, ": ", new_node_2)
+        # )) %>%
+        # filter(nchar(id) > 7) %>%
+        # arrange(desc(value)) %>%
+        group_by(node1, node2) %>%
+        summarize(
+            m = mean(value, na.rm = TRUE),
+            lower = m - 1.96 * sd(value, na.rm = TRUE),
+            upper = m + 1.96 * sd(value, na.rm = TRUE)
+        )
+
+
+
+    bootstrap_data <- accuracy$bootTable %>%
+        filter(nchar(id) > 7) %>%
+        arrange(desc(value))
+
+    list(sample_data, bootstrap_data_aggr, bootstrap_data)
+}
+
+add_stability_to_graph <- function(graph, accuracy_data, metric='lower'){
+    namevector <- V(graph)$name
+    for (i in 1:nrow(get_itemnames(namevector))){
+            pair <- get_itemnames(namevector)[i,] %>% unlist()  %>% as.character()
+            accuracy <- accuracy_data[2][[1]] %>% 
+                ungroup() %>% 
+                filter((node1==pair[1] & node2==pair[2]) | (node1==pair[2] & node2==pair[1]))
+            node1 <- accuracy$node1
+            node2 <- accuracy$node2
+            mask <- paste0(node1,'|', node2)
+        E(graph)[attributes(E(graph))$vnames ==mask]$accuracy <- accuracy$lower
+        }
+    graph
 }
