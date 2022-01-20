@@ -496,7 +496,7 @@ get_bridge_estimate <- function(network, dec = 2, seed = 1234, method = "fast_gr
     # as.data.frame(output_tibble)
     output_tibble
 }
-network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE, seed = 1234, method = "optimal", weights = TRUE) {
+network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE, seed = 1234, method = "optimal", weights = TRUE,accuracy=NULL) {
     summary <- matrix(nrow = vcount(graph))
     summary <- data.frame(summary)
     summary[, 1] <- tibble("Item" = V(graph)$name)
@@ -514,6 +514,9 @@ network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE
     names(bridge) <- c('Br.Str.','Br.Bet.', 'Br.Cl.', 'Br.EI1', 'Br.EI2', 'Community')
     summary <- bind_cols(summary, bridge)
     summary["Title"] <- c(name, rep("", vcount(graph) - 1))
+    if (!is.null(accuracy)) {
+
+    }
     summary %>% select("Title", "Item", "Scale", "Label", everything(),-'Community')
 }
 
@@ -862,8 +865,8 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         caption <- paste0("TPR is average True Positive Rate with ", S, " times reruns of community detection")
         caption <- paste0("* marks Articulation Points (cut vertices; when such vertices are  removed disconnect the graph)", "\n", caption)
         caption <- paste0(caption, "\n Order is # of vertices; Size is # of edges")
-        caption <- paste0(caption, "\n Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% CI of bootstrap stability estimate")
-        caption <- paste0(caption, "\n Dashed edge line indicates the 95% CI of stability estimate ranges below 0.0")
+        caption <- paste0(caption, "\n Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% CI of bootstrap accuracy estimate")
+        caption <- paste0(caption, "\n Dashed edge line indicates the 95% CI of accuracy estimate ranges below 0.0")
     }
     custom_colors <- tibble('subscale'=c('brooding', 'reflection', 'self-critical'), color=c('white', '#CA382A', '#0C38A0'))
     my_color_scale <- tibble('subscale'=V(graph)$subscale)  %>% left_join(custom_colors)
@@ -955,7 +958,7 @@ network_accuracy_data <- function(accuracy, tool = "", multiple = FALSE, save_da
     list(sample_data, bootstrap_data_aggr, bootstrap_data)
 }
 
-add_stability_to_graph <- function(graph, accuracy_data, metric='lower'){
+add_accuracy_to_graph <- function(graph, accuracy_data, metric='lower'){
     namevector <- V(graph)$name
     for (i in 1:nrow(get_itemnames(namevector))){
             pair <- get_itemnames(namevector)[i,] %>% unlist()  %>% as.character()
@@ -969,3 +972,40 @@ add_stability_to_graph <- function(graph, accuracy_data, metric='lower'){
         }
     graph
 }
+
+
+edge_summary <-function(accuracy_data, stability_data){
+    # adds accuracy and strength data to a table
+
+    result <- tibble()
+    result <- accuracy_data[[1]]  %>% dplyr::select('Spl.Acc.'=value)
+    result <- bind_cols(result, accuracy_data[[2]] %>% ungroup())
+    colnames(result) <- c('Spl.Acc.','Vx.1', 'Vx.2', 'Avg. Acc.', 'L.B.Acc.', 'U.B.Acc.')
+    stability_cutpoints <- summary(stability_data$bootTable$nPerson)[c(1, 2,3,5,6)] %>%
+        unname() 
+    stability_cutpoints <- tibble(nPerson=stability_cutpoints) %>% 
+        mutate(nPerson = as.integer(nPerson)) %>% 
+        mutate(Perc=1-nPerson/max(nPerson))
+    stability_aggregated <- tibble(stability_data$bootTable) %>%
+        left_join(stability_cutpoints) %>% 
+        group_by(node1, node2, Perc, type) %>% 
+        summarise(stability=mean(value, na.rm=TRUE))  %>% 
+        filter(!is.na(node2)) %>% 
+        filter(!is.na(Perc)) %>% 
+        filter(!node2=="") %>% 
+        ungroup() %>% 
+        mutate(`Miss.%`=paste0('Miss.%:',round(Perc,1))) %>% 
+        dplyr::select(-Perc) %>% 
+        group_by(node1, node2, type) %>% 
+        filter(!stability==0) %>% 
+        spread(`Miss.%`, stability)
+
+    sample_stability <- stability_data$sampleTable %>% dplyr::select(node1, node2, value)
+    stability_aggregated <- stability_aggregated  %>% left_join(sample_stability)
+    colnames(stability_aggregated) <- c('Vx.1', 'Vx.2', 'Statistic', paste0('Miss.%:', c(0.3, 0.4, 0.6, 0.8, 1.0)), 'Spl.Stab.')
+
+    result <- result %>%  left_join(stability_aggregated)
+    result  %>% dplyr::select('Vx.1', 'Vx.2', everything())
+    
+
+} 
