@@ -496,7 +496,7 @@ get_bridge_estimate <- function(network, dec = 2, seed = 1234, method = "fast_gr
     # as.data.frame(output_tibble)
     output_tibble
 }
-network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE, seed = 1234, method = "optimal", weights = TRUE,accuracy=NULL) {
+network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE, seed = 1234, method = "optimal", weights = TRUE, item_TPR) {
     summary <- matrix(nrow = vcount(graph))
     summary <- data.frame(summary)
     summary[, 1] <- tibble("Item" = V(graph)$name)
@@ -504,20 +504,19 @@ network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE
     summary["Scale"] <- tibble("subscale" = V(graph)$subscale)
     summary["Label"] <- tibble("label" = V(graph)$label)
     summary["Deg."] <- tibble("degree" = degree(graph))
-    summary["Str."] <- tibble("strength" = round(strength(graph),dec))
+    summary["Str."] <- tibble("strength" = round(strength(graph), dec))
     summary["Bet."] <- tibble("betweenness" = round(betweenness(graph), dec))
     summary["Clo."] <- tibble("closeness" = round(closeness(graph), dec))
     influence_df <- networktools::expectedInf(graph, step = c("both"), directed = FALSE)
-    summary["EI1"] <- tibble("EI1" = round(standardize(influence_df$step1),dec))
-    summary["EI2"] <- tibble("EI2" = round(standardize(influence_df$step2),dec))
+    summary["EI1"] <- tibble("EI1" = round(standardize(influence_df$step1), dec))
+    summary["EI2"] <- tibble("EI2" = round(standardize(influence_df$step2), dec))
     bridge <- get_bridge_estimate(graph, seed = seed, method = method, weights = weights) %>% as.data.frame()
-    names(bridge) <- c('Br.Str.','Br.Bet.', 'Br.Cl.', 'Br.EI1', 'Br.EI2', 'Community')
+    names(bridge) <- c("Br.Str.", "Br.Bet.", "Br.Cl.", "Br.EI1", "Br.EI2", "Community")
     summary <- bind_cols(summary, bridge)
     summary["Title"] <- c(name, rep("", vcount(graph) - 1))
-    if (!is.null(accuracy)) {
+    summary["TPR"] <- round(V(add_community_certainty(graph, item_TPR))$TPR,3)
 
-    }
-    summary %>% select("Title", "Item", "Scale", "Label", everything(),-'Community')
+    summary %>% select("Title", "Item", "Scale", "Label", everything(), -"Community")
 }
 
 degree_distribution_summary <- function(graph) {
@@ -644,7 +643,7 @@ add_network_descriptives <- function(graph) {
     t <- transitivity(graph)
     d <- diameter(graph)
     md <- mean_distance(graph)
-    paste0("Order=", o, "; ", "Size=", s,  "; ", "Clustering Coefficient=", round(t,3),"; ", "Diameter=", round(d,3),"; ", "Mean distance=", round(md,3))
+    paste0("Order=", o, "; ", "Size=", s, "; ", "Clustering Coefficient=", round(t, 3), "; ", "Diameter=", round(d, 3), "; ", "Mean distance=", round(md, 3))
 }
 
 add_toolname <- function(graph) {
@@ -868,8 +867,8 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         caption <- paste0(caption, "\n Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% CI of bootstrap accuracy estimate")
         caption <- paste0(caption, "\n Dashed edge line indicates the 95% CI of accuracy estimate ranges below 0.0")
     }
-    custom_colors <- tibble('subscale'=c('brooding', 'reflection', 'self-critical'), color=c('white', '#CA382A', '#0C38A0'))
-    my_color_scale <- tibble('subscale'=V(graph)$subscale)  %>% left_join(custom_colors)
+    custom_colors <- tibble("subscale" = c("brooding", "reflection", "self-critical"), color = c("white", "#CA382A", "#0C38A0"))
+    my_color_scale <- tibble("subscale" = V(graph)$subscale) %>% left_join(custom_colors)
     my_color_scale <- as.character(my_color_scale$color)
     names(my_color_scale) <- V(graph)$subscale
     add_community_certainty(graph, item_TDR) %>%
@@ -877,7 +876,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         add_toolname() %>%
         ggraph(layout = "fr") +
         geom_edge_density(edge_fill = "grey100") +
-        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype=accuracy<0 ), color = "grey50", show.legend = FALSE) +
+        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), color = "grey50", show.legend = FALSE) +
         geom_node_point(color = "black", size = 12) +
         geom_node_point(aes(color = subscale), size = 10) +
         geom_node_point(color = "white", size = 5) +
@@ -888,7 +887,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         geom_node_text(aes(label = paste0(tool, "(", item_number, ")", "-", subscale)), size = textsize, vjust = -2.6) +
         geom_node_text(aes(label = articulation_point), size = 13, hjust = -2.9, vjust = -1.0) +
         # scale_color_manual(values = c("white", "grey30", "grey60"), name = "Sub-scale") +
-        scale_color_manual(values =my_color_scale, name = "Sub-scale") +
+        scale_color_manual(values = my_color_scale, name = "Sub-scale") +
         labs(
             caption = caption,
             title = title,
@@ -958,54 +957,61 @@ network_accuracy_data <- function(accuracy, tool = "", multiple = FALSE, save_da
     list(sample_data, bootstrap_data_aggr, bootstrap_data)
 }
 
-add_accuracy_to_graph <- function(graph, accuracy_data, metric='lower'){
+add_accuracy_to_graph <- function(graph, accuracy_data, metric = "lower") {
     namevector <- V(graph)$name
-    for (i in 1:nrow(get_itemnames(namevector))){
-            pair <- get_itemnames(namevector)[i,] %>% unlist()  %>% as.character()
-            accuracy <- accuracy_data[2][[1]] %>% 
-                ungroup() %>% 
-                filter((node1==pair[1] & node2==pair[2]) | (node1==pair[2] & node2==pair[1]))
-            node1 <- accuracy$node1
-            node2 <- accuracy$node2
-            mask <- paste0(node1,'|', node2)
-        E(graph)[attributes(E(graph))$vnames ==mask]$accuracy <- accuracy$lower
+    for (i in 1:nrow(get_itemnames(namevector))) {
+        pair <- get_itemnames(namevector)[i, ] %>%
+            unlist() %>%
+            as.character()
+        accuracy <- accuracy_data[2][[1]] %>%
+            ungroup() %>%
+            filter((node1 == pair[1] & node2 == pair[2]) | (node1 == pair[2] & node2 == pair[1]))
+        node1 <- accuracy$node1
+        node2 <- accuracy$node2
+        mask <- paste0(node1, "|", node2)
+        test <- attributes(E(graph))$vnames == mask
+        if (sum(test) > 0){
+            E(graph)[test]$accuracy <- accuracy$lower
         }
+        E(graph)$accuracy
+    }
     graph
 }
 
 
-edge_summary <-function(accuracy_data, stability_data){
+edge_summary <- function(graph, accuracy_data, stability_data, statistic = "edge") {
     # adds accuracy and strength data to a table
 
     result <- tibble()
-    result <- accuracy_data[[1]]  %>% dplyr::select('Spl.Acc.'=value)
+    result <- accuracy_data[[1]] %>% dplyr::select("Spl.Acc." = value)
     result <- bind_cols(result, accuracy_data[[2]] %>% ungroup())
-    colnames(result) <- c('Spl.Acc.','Vx.1', 'Vx.2', 'Avg. Acc.', 'L.B.Acc.', 'U.B.Acc.')
-    stability_cutpoints <- summary(stability_data$bootTable$nPerson)[c(1, 2,3,5,6)] %>%
-        unname() 
-    stability_cutpoints <- tibble(nPerson=stability_cutpoints) %>% 
-        mutate(nPerson = as.integer(nPerson)) %>% 
-        mutate(Perc=1-nPerson/max(nPerson))
+    linknames <- attributes(E(graph))[1]
+    result <- result %>% mutate(link=paste0(node1,'|',node2)) %>% filter(link %in% unlist(linknames))  %>% dplyr::select(-link, -`Spl.Acc.`)
+    colnames(result) <- c("Vx.1", "Vx.2", "Avg. Acc.", "L.B.Acc.", "U.B.Acc.")
+    stability_cutpoints <- summary(stability_data$bootTable$nPerson)[c(1, 2, 3, 5, 6)] %>%
+        unname()
+    stability_cutpoints <- tibble(nPerson = stability_cutpoints) %>%
+        mutate(nPerson = as.integer(nPerson)) %>%
+        mutate(Perc = 1 - nPerson / max(nPerson))
     stability_aggregated <- tibble(stability_data$bootTable) %>%
-        left_join(stability_cutpoints) %>% 
-        group_by(node1, node2, Perc, type) %>% 
-        summarise(stability=mean(value, na.rm=TRUE))  %>% 
-        filter(!is.na(node2)) %>% 
-        filter(!is.na(Perc)) %>% 
-        filter(!node2=="") %>% 
-        ungroup() %>% 
-        mutate(`Miss.%`=paste0('Miss.%:',round(Perc,1))) %>% 
-        dplyr::select(-Perc) %>% 
-        group_by(node1, node2, type) %>% 
-        filter(!stability==0) %>% 
+        left_join(stability_cutpoints) %>%
+        group_by(node1, node2, Perc, type) %>%
+        summarise(stability = mean(value, na.rm = TRUE)) %>%
+        filter(!is.na(node2)) %>%
+        filter(!is.na(Perc)) %>%
+        filter(!node2 == "") %>%
+        ungroup() %>%
+        mutate(`Miss.%` = paste0("Miss.%:", round(Perc, 1))) %>%
+        dplyr::select(-Perc) %>%
+        group_by(node1, node2, type) %>%
         spread(`Miss.%`, stability)
 
-    sample_stability <- stability_data$sampleTable %>% dplyr::select(node1, node2, value)
-    stability_aggregated <- stability_aggregated  %>% left_join(sample_stability)
-    colnames(stability_aggregated) <- c('Vx.1', 'Vx.2', 'Statistic', paste0('Miss.%:', c(0.3, 0.4, 0.6, 0.8, 1.0)), 'Spl.Stab.')
+    colnames(stability_aggregated) <- c("Vx.1", "Vx.2", "Statistic", paste0("Miss.%:", c(0.3, 0.4, 0.6, 0.8, 1.0)))
 
-    result <- result %>%  left_join(stability_aggregated)
-    result  %>% dplyr::select('Vx.1', 'Vx.2', everything())
-    
+    stability_aggregated <- stability_aggregated %>% filter(Statistic == statistic)
+    result <- result %>% left_join(stability_aggregated)
+    result <- result %>%
+        dplyr::select(-Statistic)
+    result %>% dplyr::select("Vx.1", "Vx.2", everything())
+}
 
-} 

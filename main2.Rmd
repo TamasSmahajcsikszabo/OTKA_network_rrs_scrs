@@ -161,9 +161,9 @@ get_itemnames <- function(namevector){
 
 }
 # add accuracy to networks
-rumi <- add_stability_to_graph(rumi, accuracy_combined)
-RRS_graph <- add_stability_to_graph(RRS_graph, accuracy_rrs)
-SCRS_graph <- add_stability_to_graph(SCRS_graph, accuracy_scrs)
+rumi <- add_accuracy_to_graph(rumi, accuracy_combined)
+RRS_graph <- add_accuracy_to_graph(RRS_graph, accuracy_rrs)
+SCRS_graph <- add_accuracy_to_graph(SCRS_graph, accuracy_scrs)
 
 overalltextsize <- 24
 textsize=5
@@ -209,9 +209,9 @@ combined_tpr_top <- suppressMessages(combined_tpr %>%
 seed <- 647
 weights <- TRUE
 method <- 'optimal'
-summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights),
-                            network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights),
-                            network_summary(rumi, name="RRS+SCRS",seed=seed,method=method,weights=weights))
+summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights, item_TPR=RRS_item_TDR),
+                            network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights, item_TPR=SCRS_item_TDR),
+                            network_summary(rumi, name="Combined",seed=seed,method=method,weights=weights, item_TPR=combined_item_TDR))
 
 ```
 
@@ -387,6 +387,18 @@ Network **stability** estimates for our three networks were carried out by using
 We performed a *case dropping bootstrap* to simulate scenarios where fewer and fewer cases of the original sample would have been available and quantified the stability of the centrality metrics with the *Correlation Stability* (CS) coefficient. 
 Bootstrap was performed with B=2500 resamples.
 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+
+RRS_stability <- readRDS("output/RRS_stability.RDS")
+SCRS_stability <- readRDS("output/SCRS_stability.RDS")
+combined_stability <- readRDS("output/combined_stability.RDS")
+
+# edge_summary(rumi, accuracy_combined, combined_stability)
+# edge_summary(RRS_graph, accuracy_rrs, RRS_stability)
+# edge_summary(accuracy_scrs, SCRS_stability)
+```
+
 \newpage
 \blandscape
 
@@ -396,7 +408,43 @@ Bootstrap was performed with B=2500 resamples.
 knitr::kable(summary_table, format='simple', row.names=FALSE,caption="Network descriptive statistics for RRS, SCRS and their combined networks",label='Table 1',digits=2)
 ```
 
-*Deg.=Degree; Str.=Strength; Bet.=Betweenness; Clo.=Closeness; EI1= One-step Expected Influence; EI2= Two-step Expected Influence; Br.Str.=Bridge Strenth; Br.Bet.=Brdige Betweenness; Br.Cl.=Bridge Closeness; Br.EI1=One-step Bridge Expected Influence; Br.EI2=Two-step Bridge Expected Influence*
+*Deg.=Degree; Str.=Strength; Bet.=Betweenness; Clo.=Closeness; EI1= One-step Expected Influence; EI2= Two-step Expected Influence; Br.Str.=Bridge Strenth; Br.Bet.=Brdige Betweenness; Br.Cl.=Bridge Closeness; Br.EI1=One-step Bridge Expected Influence; Br.EI2=Two-step Bridge Expected Influence; TPR=average True Positive Rate*
+
+\elandscape
+
+\newpage
+\blandscape
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+knitr::kable(edge_summary(RRS_graph, accuracy_rrs,RRS_stability), format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the RRS network",label='Table 2',digits=2)
+```
+
+*Vx.1=1st Vertex the edge attaches to; Vx.2=2nd Vertex the edge attaches to;Avg.Acc.=Average Accuracy by Bootstrap; L.B.Acc.=Lower Bound of 95% CI for bootstrapped network accuracy; U.P.Acc.=Upper Bound of 95% CI for bootstrapped network accuracy; Statistic=type of network characteristic; Miss.%=Estimated average stability at the given missing rate of sample size*
+
+\elandscape
+\newpage
+\blandscape
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+knitr::kable(edge_summary(SCRS_graph, accuracy_scrs,SCRS_stability), format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the SCRS network",label='Table 2',digits=2)
+```
+
+
+*Vx.1=1st Vertex the edge attaches to; Vx.2=2nd Vertex the edge attaches to;Avg.Acc.=Average Accuracy by Bootstrap; L.B.Acc.=Lower Bound of 95% CI for bootstrapped network accuracy; U.P.Acc.=Upper Bound of 95% CI for bootstrapped network accuracy; Statistic=type of network characteristic; Miss.%=Estimated average stability at the given missing rate of sample size*
+
+\elandscape
+\newpage
+\blandscape
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+knitr::kable(edge_summary(rumi, accuracy_combined,combined_stability), format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the RRS and SCRS network",label='Table 2',digits=2)
+```
+
+*Vx.1=1st Vertex the edge attaches to; Vx.2=2nd Vertex the edge attaches to;Avg.Acc.=Average Accuracy by Bootstrap; L.B.Acc.=Lower Bound of 95% CI for bootstrapped network accuracy; U.P.Acc.=Upper Bound of 95% CI for bootstrapped network accuracy; Statistic=type of network characteristic; Miss.%=Estimated average stability at the given missing rate of sample size*
+
 
 \elandscape
 \newpage
