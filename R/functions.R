@@ -876,7 +876,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         add_toolname() %>%
         ggraph(layout = "fr") +
         geom_edge_density(edge_fill = "grey100") +
-        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), color = "grey50", show.legend = FALSE) +
+        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), color = "grey40", show.legend = FALSE) +
         geom_node_point(color = "black", size = 12) +
         geom_node_point(aes(color = subscale), size = 10) +
         geom_node_point(color = "white", size = 5) +
@@ -1006,7 +1006,7 @@ edge_summary <- function(graph, accuracy_data, stability_data, statistic = "edge
         group_by(node1, node2, type) %>%
         spread(`Miss.%`, stability)
 
-    colnames(stability_aggregated) <- c("Vx.1", "Vx.2", "Statistic", paste0("Miss.%:", c(0.3, 0.4, 0.6, 0.8, 1.0)))
+    colnames(stability_aggregated)[1:3] <- c("Vx.1", "Vx.2", "Statistic")
 
     stability_aggregated <- stability_aggregated %>% filter(Statistic == statistic)
     result <- result %>% left_join(stability_aggregated)

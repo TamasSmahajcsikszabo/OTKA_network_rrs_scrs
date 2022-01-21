@@ -143,8 +143,9 @@ Network accuracy plots show pairs of nodes (pairs of items) by ascending order o
 
 ```{r echo=FALSE, fig.height=8, fig.width=10, message=FALSE, warning=FALSE, fig.cap = "Network accuracy estimate for RRS"}
 # generate the accuracy estimate and save it
-#RRS_network <- estimateNetwork(RRS_subset, default="EBICglasso")
-#accuracy_rrs  <- bootnet(RRS_network, nBoots = 2500, cores = 6)
+RRS_data <- rumi_data[, names(rumi_data) %in% paste0('RRS_', seq(1:10))]
+RRS_network <- estimateNetwork(RRS_data, default="EBICglasso", threshold=TRUE)
+accuracy_rrs  <- bootnet(RRS_network, nBoots = 2500, cores = 6)
 #saveRDS(accuracy_rrs, "../output/accuracy_rrs.RDS")
 
 accuracy_rrs  <- readRDS("output/accuracy_rrs.RDS")
@@ -257,3 +258,11 @@ accuracy_combined  <- readRDS("output/accuracy_combined.RDS")
 
 This combined accuracy estimates for RRS and SCRS include pairs of items from both questionnaires. The last pair of items where the confidence interval does not include 0 edge-weight is the pair of *handle* from RRS and *mistakes* from SCRS. The majority of the more accurate pair estimates are homogeneous in the sense that they are not RRS-SCRS mixed pairs (they are both either from RRS or SCRS). *Handle* belonged to the community of the SCRS nodes in our community analysis.
 
+# RRS_data <- rumi_data[, names(rumi_data) %in% paste0('RRS_', seq(1:10))]
+# RRS_network <- estimateNetwork(RRS_data, default="EBICglasso", threshold=TRUE)
+# accuracy_rrs  <- bootnet(RRS_network, nBoots = 2500, cores = 6)
+# saveRDS(accuracy_rrs, "output/accuracy_rrs.RDS")
+
+# SCRS_data <- rumi_data[, names(rumi_data) %in% paste0('SCRS_', seq(1:10))]
+# SCRS_network <- estimateNetwork(SCRS_data, default="EBICglasso", threshold=TRUE)
+# accuracy_scrs  <- bootnet(SCRS_network, nBoots = 2500, cores = 6)
