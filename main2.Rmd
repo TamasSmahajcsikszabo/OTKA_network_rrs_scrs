@@ -50,7 +50,7 @@ Vertices (also called nodes) usually represent some psychological measures or it
 Having two rumination-related questionnaires, we assumed the following hypotheses:
 
 * Network analysis will reveal their respective internal structure previously established in the literature (sich as *RRS* having a two-scale structure: *reflection* and *brooding*; while *SCRS* will show a single-scale structure);
-* on the other hand, we hypothesized that in their common network, items overlapping in scope will change these clear outlines of the two measurement tools. According to our hypothesis, items of the *RRS* scale 'reflection' will have non-trivial association with the self-critical aspects of rumination;
+* on the other hand, we hypothesized that in their common network, items overlapping in scope will change these clear outlines of the two measurement tools. According to our hypothesis, items of the *RRS* scale 'brooding' will have non-trivial association with the self-critical aspects of rumination;
 * thus, we also assumed a combined rumination network, representing the generic (more trait-like) and the self-critical aspects of rumination will exhibit a three-component structure.
 
 <!-- Sample sizes have direct impact on estimated accuracy and stability of the psychological network, thus the accuracy of the network parameters and measures is crucial: By obtaining robust results we can have a more realistic picture of a network without knowing the true network shape and structure. --> 
@@ -239,7 +239,7 @@ The one-scale structure of the *SCRS* has been reestablished in these results.
 
 The combined rumination network shows a clear expected structure, with having high TPR for each sub-scale (on average, *brooding* (`r combined_tpr_s[1,2][[1]]`), *reflection* (`r combined_tpr_s[2,2][[1]]`) and *self-critical* (`r combined_tpr_s[3,2][[1]]`)).
 Commenting on the stability of the network community structure the *RRS* *reflection* sub-scale exhibits strong TPR rates, and the weakness of the two items from their respective stand-alone network for items 2 and 9 are no longer present in the combined graph.
-The *RRS* *brooding* scale has good separation in terms of TPR, except for its item 3 (*#react#*) having <0.9 TPR ("Think “Why do I always react this way?”").
+The *RRS* *brooding* scale has good separation in terms of TPR, except for its item 3 (*react*) having <0.9 TPR (*"Think Why do I always react this way?"*).
 The one-scale SCRS has also a separable community with high (>0.925) TPR.
 Keeping only the *spinglass* algoritm (as used by [@Bernstein2019]), we get high average 1.0 TPR for the combined graph.
 
@@ -310,7 +310,7 @@ The density-based FDR drops once empirical correlations reach $\rho$=0.1.
 
 We constructed an *eigenmodel* to further explore the structure of the combined graph of *RRS* and *SCRS* (following @Mair2018, @GaborCsardi2020) and how well this structure predicts edge-formulation.
 Our expectation was that sub-scales will have non-trivial impact on the resulting eigenvalues.
-The model was built with the *eigenmodel_mcmc* function of the R package **eigen**.
+The model was built with the *eigenmodel_mcmc* function of the R package **eigenmodel**.
 The function uses *Markov chain Monte Carlo* (MCMC) techniques to complete a model specification.
 By applying eigenvalue decomposition, we obtained the first two eigenvectors and used them to plot the vertices (see Figure 2).
 
@@ -395,7 +395,13 @@ The resulting **accuracy** estimates have been visually incorporated in Figure 1
 Edge shade reflects the lower bound of the 95% confidence interval (CI) for each edge, while edges are presented with dashed line for cases of the CI including 0.0 edge weights.
 For such cases,  we cannot be sure if their weight persist given different samples and varying sample characteristics.
 Darker shaded, continuous edges are stable according to this bootstrap estimate and they preserve their sampled nature.
-Cases like the relatively strong edge between *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))[1][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line and has lighter shade indicating a lower stability. 
+Cases like the relatively strong edge between *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))[1][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line and has lighter shade indicating a lower stability.
+Examples for accurate and strong edges are *RRS(4)* (*alone1*; *"Go away by yourself and think about why you feel this way"*) and *RRS(10)* (*alone2*; *"Go someplace alone to think about your feelings"*). 
+The edge weight for these items in their stand-alone *RRS* network is `r round(E(RRS_graph)[10]$strength,3)` (estimated edge-weight accuracy is with average `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)` with lower and upper CI bounds of `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`).
+These items exhibit the same pattern in the combined network with estimated edge-weight accuracy with average weight of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)`; lower and upper CI bounds of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`.
+
+In the SCRS network we can track a *path* (a graph movement [*walk*] without repeated edges or vertices) between *SCRS* 6, 5, 9 and 10 items (please refer to Table 5. for edge-level weight and accuracy estimates of *SCRS*).
+
 Such edges are less likely to exhibit similar characteristics with varying samples.
 
 Network **stability** estimates for our three networks were carried out by using the *bootnet* function from the R package bearing the same name. 
@@ -458,7 +464,23 @@ The combined network's closeness stability is low and rigid.
 Edge Weights exhibit a constant stability of `r round(CS_estimates[CS_estimates$Metric=='edge','RRS'][[1]],2)*100`%.
 Edge Strength *Correlation Stability* coefficients are `r round(CS_estimates[CS_estimates$Metric=='strength','RRS'][[1]],2)*100`% (RRS), `r round(CS_estimates[CS_estimates$Metric=='strength','SCRS'][[1]],2)*100`% (SCRS) and `r round(CS_estimates[CS_estimates$Metric=='strength','RRS & SCRS'][[1]],2)*100`% (combined graph) which indicates increased tolerance for the combined network of the two questionnaires.
 
+\newpage
 
+## Discussion
+
+In the present paper, we examined the separation of two facets of rumination (a generic one, moving on the *brooding*-*reflection* axis; and the *self-critical* aspects of rumination) using a network approach.
+In accordance with our first hypothesis, in their respective network the Ruminative Response Style Questionnaire exhibits a two-scale structure. 
+Our community detection estimates suggest though that the reflective aspects of rumination regarding analyzing one's self and strive to understand feelings (items 2 and 9 of *RRS*) have more to common with brooding, or emerge as a third aspect.
+This latter concept is underlined by our eigenmodels, as in the two-dimensional space of the first two eigenvectors creates a separation between *RRS* and *SCRS* item in this fashion.
+Items 2 and 9 are well separated even from the bulk of the rest of the RRS items.
+
+Brooding has association with the self-critical aspects of rumination, which is highlighted by our eigenvector analysis as well as the sparse, unstable and weak edges with which reflection connects to brooding and self-critical rumination in their combined network.
+In this scenario, we have gathered evidence of scale playing an important role in the edge-building process.
+According to our exponential random graph model, indeed the internal factors of the combined network indeed have a non-trivial impact on associations in the network.
+As shown, associations within the combined network only have low chances of false discovery.
+
+Results indicate that network associations are accurate aligned to the internal factor structure (e.g., the items concerning the solitary nature of rumination), while some associations are more sensitive to sampling characteristics and sampling variation.
+Edge strengths and edge weights have also high stability and relatively high resistance to sample loss, whereas betweenness is remarkably sensitive on our sample to any case-dropping.
 
 \newpage
 \blandscape
@@ -469,7 +491,7 @@ Edge Strength *Correlation Stability* coefficients are `r round(CS_estimates[CS_
 knitr::kable(summary_table, format='simple', row.names=FALSE,caption="Network descriptive statistics for RRS, SCRS and their combined networks",label='Table 1',digits=2)
 ```
 
-*Deg.=Degree; Str.=Strength; Bet.=Betweenness; Clo.=Closeness; EI1= One-step Expected Influence; EI2= Two-step Expected Influence; Br.Str.=Bridge Strenth; Br.Bet.=Brdige Betweenness; Br.Cl.=Bridge Closeness; Br.EI1=One-step Bridge Expected Influence; Br.EI2=Two-step Bridge Expected Influence; TPR=average True Positive Rate*
+*Deg.=Degree; Str.=Strength; Bet.=Betweenness; Clo.=Closeness; EI1= One-step Expected Influence; EI2= Two-step Expected Influence; Br.Str.=Bridge Strength; Br.Bet.=Bridge Betweenness; Br.Cl.=Bridge Closeness; Br.EI1=One-step Bridge Expected Influence; Br.EI2=Two-step Bridge Expected Influence; TPR=average True Positive Rate*
 
 \elandscape
 
@@ -548,5 +570,5 @@ ggplot(ROC_data, aes(x, y)) +
     # geom_rect(aes(xmin = 0.75, ymin = 0, xmax = 1.0, ymax = 0.25), fill = "white", color = "gray70") +
     theme(legend.position = "bottom")
 ```
-
+\newpage
 ## References
