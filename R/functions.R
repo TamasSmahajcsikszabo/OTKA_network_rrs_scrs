@@ -876,7 +876,9 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         add_toolname() %>%
         ggraph(layout = "fr") +
         geom_edge_density(edge_fill = "grey100") +
-        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), color = "grey40", show.legend = FALSE) +
+        # scale_edge_color_manual(values=c("grey40", "grey0"))+
+        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), show.legend = FALSE) +
+        scale_color_manual(values = my_color_scale, name = "Sub-scale") +
         geom_node_point(color = "black", size = 12) +
         geom_node_point(aes(color = subscale), size = 10) +
         geom_node_point(color = "white", size = 5) +
@@ -887,7 +889,6 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         geom_node_text(aes(label = paste0(tool, "(", item_number, ")", "-", subscale)), size = textsize, vjust = -2.6) +
         geom_node_text(aes(label = articulation_point), size = 13, hjust = -2.9, vjust = -1.0) +
         # scale_color_manual(values = c("white", "grey30", "grey60"), name = "Sub-scale") +
-        scale_color_manual(values = my_color_scale, name = "Sub-scale") +
         labs(
             caption = caption,
             title = title,

@@ -44,8 +44,6 @@ setwd('/home/tamas/repos/rumination_lasso')
 
 ## 2. Methods
 
-### Hypotheses and the use of Network Analysis
-
 *Psychological networks* have their own characteristics which differentiate them from other kinds of networks of graph theory (@Epskamp2017; @Epskamp_2018; @Newman2010). 
 Vertices (also called nodes) usually represent some psychological measures or items of a psychological assessment tool, while the edges of the network reflect the corresponding estimates of association derived from the data.
 Having two rumination-related questionnaires, the **Ruminative Response Style **(*RRS*) and the **Self-critical Rumination Scale** (*SCRS*), we assumed the following hypotheses:
@@ -255,9 +253,10 @@ Please note where applicable, we used the standardized the scores.
 ### 3.2 Internal Structure with an exponential random graph model
 
 In order to measure the impact of tools (*RRS*, *SCRS*) and their respective scales (*brooding*, *reflection* and *self-critical*) on the combined network structure, we constructed an *exponential random graph model* (ERGM; @Hunter2007).
-In the model of our combined network (predicting edges), *endogenous* predictors (related to the nature of the network structure) included the **number of edges** in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures as a reflection on **clustering** in the form of completed triangles of vertices (we used *GWESP* (see @Goodreau2009), which stands for *geometrically weighted edgewise shared partner distribution*).
+In the model of our combined network predicting edges, *endogenous* predictors (related to the nature of the network structure) included the **number of edges** in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures. 
+This predictor served as a reflection on **clustering** in the form of completed triangles of vertices (we used *GWESP* (see @Goodreau2009), which stands for *geometrically weighted edgewise shared partner distribution*).
 *GWESP* has the advantage of taking a parametric form of the shared common vertex count distribution on each edge, giving each connecting vertex a declining positive probability of two selected vertices being connected.
-In order to capture *exogenous* effects (i.e., vertex attributes), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the tool and its scale will increase the log-odds of being connected by an edge).
+In order to capture *exogenous* effects (i.e., vertex attributes), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the same tool and its scale will increase the log-odds of being connected by an edge).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 ergm_model_fit <- readRDS("output/ergmfit.RDS")
@@ -285,25 +284,27 @@ knitr::kable(ergm_tidy,digits=3,label="", caption="ERGM model fit results with M
 The model was built with *Markov chain Monte Carlo* (MCMC) maximum likelihood estimation (1000 iterations) to obtain model parameters by generating samples from the space of possible networks allowed by the data.
 
 
-An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, Residual Deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p=`r round(anova_tidy$Pr...Chisq..[2][[1]],4)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
-The detailed analysis reveals that *endogenous* effects such as the overall density of the network( number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`) and at p<0.05 level the closed triangle formulation (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`) indicates a non-trivial impact on clustering.
+An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, Residual Deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p=`r format(round(anova_tidy$Pr...Chisq..[2][[1]],4),nsmal=4)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
+The detailed analysis reveals that *endogenous* effects such as the overall density of the network( number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`), and at p<0.05 level the closed triangle formulation  indicates a non-trivial impact on clustering (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`).
 As expected, *exogenous* effects, such as two items belonging to the same sub-scale have a significant positive impact on connectivity (sub-scale changes edge probability by `r round(get_p(ergm_tidy$Estimate[5][[1]]),3)`, keeping the rest of the network fixed).
+Tool in itself has no impact on edge formation.
 In terms of goodness-of-fit, observed frequencies of degree levels differ in non-significant manner from *MCMC*-simulated expectations.
-In two cases (d=3 and d=6), the observed frequencies are above the simulated average (`r as.data.frame(goffit[18])[4,1]` > the expected avg. of`r as.data.frame(goffit[18])[4,3]` for d=3; and `r as.data.frame(goffit[18])[7,1]`  > the expected avg. of `r as.data.frame(goffit[18])[7,3]`  for d=6), but differences are not non-trivial.
+In two cases of vertex degree ($\ V_d$=3 and $\ V_d$=6), the observed frequencies are above the simulated average (`r as.data.frame(goffit[18])[4,1]` > the expected avg. of `r as.data.frame(goffit[18])[4,3]` for $\ V_d$=3; and `r as.data.frame(goffit[18])[7,1]`  > the expected avg. of `r as.data.frame(goffit[18])[7,3]`  for $\ V_d$=6), but differences are not significant.
+ 
 Regarding the expected edgewise shares partners, the only deviation from expected levels it for 1 partner, where the observed frequency is 17 against 13.28.
 Additional MCMC diagnostics revealed good fit of the model.
 
 ### 3.3 Association Network Inference
 
 In order to test for non-zero edges in our network, we used a data-driven method to assess the null distribution of partial correlation coefficients used during network creation.
-The R package **fdrtool** (@Strimmer2008) allowed us to model the probability density function $\eta_0$, the fraction of true null hypotheses in the data; and (1-$\eta_0$) for the true alternative hypotheses.
+The R package **fdrtool** (@Strimmer2008, @Strimmer2008a) allowed us to model the probability density function and estimate $\eta_0$, the fraction of true null hypotheses in the data; and (1-$\eta_0$) for the true alternative hypotheses.
 The mixture model for some statistic *S* thus takes the following form (where in our analysis, S is the partial correlation coefficient).
 
 \begin{center}
 $\ f(S)=\eta_0 f_0(S) + (1-\eta_0) f_1(S)$
 \end{center}
 
-To apply adjustment due to the number of performed tests, we applied the *False Discovery Rate* (FDR) to the *p*-values (the rate of false rejections against the number of rejections).
+To apply adjustment due to the number of performed tests, we controlled p-value by the *False Discovery Rate* (*FDR*; the rate of false rejections against the number of rejections).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.width=6,fig.height=6, fig.align='center', fig.cap="Association Network Inference results"}
 mute <- function(exp) {
@@ -314,19 +315,17 @@ mycorr <- cor(rumi_data, method = "spearman")
 mycorr <- mycorr[upper.tri(mycorr)]
 mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation", plot=FALSE)))
 ```
-The low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicates large mixing rate for the alternative hypothesis of edges having non-zero weights.
-The histogram of absolute correlation coefficients estimated using the data (alternative component) has a centered shape in contrast to the null component.
-The density-based FDR drops once empirical correlations reach $\rho$=0.1.
-
-
+Results show low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicates large mixing rate for the alternative hypothesis of edges having non-zero weights.
+The histogram of absolute correlation coefficients (see Figure 3. in Appendix) has a centered shape in contrast to the null component.
+The density-based *FDR* drops once empirical correlations reach $\rho$=0.1 (see the lowest seciton of Figure 3.).
 
 ### 3.4 Latent Network Modeling
 
-We constructed an *eigenmodel* to further explore the structure of the combined graph of *RRS* and *SCRS* (@Hoff2002; methodology following @Mair2018, @GaborCsardi2020) and how well the network structure predicts edge-formulation.
+We constructed an *eigenmodel* to further explore the structure of the combined graph of *RRS* and *SCRS* (@Hoff2002; methodology following @Mair2018, @GaborCsardi2020) and how well the network structure predicts edges.
 Our expectation was that sub-scales will have non-trivial impact on the resulting eigenvalues.
 The model was built with the *eigenmodel_mcmc* function of the R package **eigenmodel**.
 The function uses *Markov chain Monte Carlo* (MCMC) techniques to complete a model specification.
-By applying eigenvalue decomposition, we obtained the first two eigenvectors and used them to plot the vertices (see Figure 2).
+By applying eigenvalue decomposition, we obtained the first two eigenvectors (see Figure 2).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.width=10, fig.height=8, fig.cap="Vertices of the combined graph by the first two eigenvalues"}
 fitEM <- readRDS("output/fitEM.RDS")
@@ -345,7 +344,7 @@ for (item in seq_along(itemnames)) {
 plot_eigen(evecs, evals, rumi_graph, toolnames, subscale, labels)
 ```
 
-Our visual insight from *Figure 2.* is that the first eigenvector servers as a separator between *RRS* and *SCRS* having a posterior mean of $\bar{ev_1}$=`r round(evals[1],3)`.
+Our visual insight from Figure 2. is that the first eigenvector servers as a separator between *RRS* and *SCRS* having a posterior mean of $\bar{ev_1}$=`r round(evals[1],3)`.
 The second eigenvector seems to separate between the upper half of the two-dimensional space of *SCRS* and the *brooding* scale, and the lower half being the *reflection* scale ($\bar{ev_2}$=`r round(evals[2],3)`).
 
 In order to test the goodness-of-fit of the eigenmodel, using *k*-fold cross-validation (k=5), we refitted the model to a subset of the original data, using the complement 1/5 fraction for predicting the elements of the adjacency matrix of our original network.
@@ -364,7 +363,7 @@ This extends our model to the following equation.
 $\ Y_{ij}=f(\beta^{'} x_{ij} +  u_i \Lambda u_j) $
 \end{center}
 
-Thus, in the second iteration we cross-validated an extended *eigenmodel* with the **tool** (*RRS* or *SCRS*) as nominal grouping factor of vertices playing the predictor role.
+Thus, in the second iteration we cross-validated an extended *eigenmodel* with the **tool** (*RRS* or *SCRS*) as nominal grouping factor of vertices playing important predictor role.
 And in the same manner, the third iteration tested a model with the scales of *brooding*, *reflection* and *self-critical* serving as pair-wise covariate predictor effects.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
@@ -402,6 +401,8 @@ Compared to the latent model ($\ AUC_{latent}$ =`r round(aucs[1], 3)`), the incl
 The final model involving the scale-level vertex characteristics has the best goodness-of-fit ($\ AUC_{latent+scale}$ =`r round(aucs[3],3)`).
 See Figure 4. in the Appendix for the corresponding ROC curves.
 
+
+
 ### 3.6 Network accuracy and stability
 
 We used the *bootnet* R package to have an estimate of edge-weight accuracy with *non-parametric bootstrap* (2500 times sampling).
@@ -409,7 +410,7 @@ The resulting **accuracy** estimates have been visually incorporated in Figure 1
 Edge shade reflects the lower bound of the 95% confidence interval (CI) for each edge, while edges are presented with dashed line for cases of the CI including 0.0 edge weights.
 For such cases,  we cannot be sure if their weight persist given different samples and varying sample characteristics.
 Darker shaded, continuous edges are stable according to this bootstrap estimate and they preserve their sampled nature.
-Cases like the relatively strong edge between *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))[1][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line and has lighter shade indicating a lower stability.
+Edges as between the *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))[1][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line and has lighter shade indicating a lower stability.
 Examples for accurate and strong edges are *RRS(4)* (*alone1*; *"Go away by yourself and think about why you feel this way"*) and *RRS(10)* (*alone2*; *"Go someplace alone to think about your feelings"*). 
 The edge weight for these items in their stand-alone *RRS* network is `r round(E(RRS_graph)[10]$strength,3)` (estimated edge-weight accuracy is with average `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)` with lower and upper CI bounds of `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`).
 These items exhibit the same pattern in the combined network with estimated edge-weight accuracy with average weight of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)`; lower and upper CI bounds of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`.
@@ -475,17 +476,17 @@ knitr::kable(CS_estimates,
 Results indicate for betweenness centrality that neither networks tolerate much sample loss having CS-coefficients around 5% or lower.
 For the *RRS* and *SCRS* graphs, the closeness metrics are stable in the sense that around `r round(CS_estimates[CS_estimates$Metric=='closeness','RRS'][[1]],2)*100`% and respectively `r round(CS_estimates[CS_estimates$Metric=='closeness','SCRS'][[1]],2)*100`% of the case can be dropped to still maintain 0.7 or higher correlation with their original estimates. 
 The combined network's closeness stability is low and rigid.
-Edge Weights exhibit a constant stability of `r round(CS_estimates[CS_estimates$Metric=='edge','RRS'][[1]],2)*100`%.
-Edge Strength *Correlation Stability* coefficients are `r round(CS_estimates[CS_estimates$Metric=='strength','RRS'][[1]],2)*100`% (RRS), `r round(CS_estimates[CS_estimates$Metric=='strength','SCRS'][[1]],2)*100`% (SCRS) and `r round(CS_estimates[CS_estimates$Metric=='strength','RRS & SCRS'][[1]],2)*100`% (combined graph) which indicates increased tolerance for the combined network of the two questionnaires.
+Edge weights exhibit a constant stability of `r round(CS_estimates[CS_estimates$Metric=='edge','RRS'][[1]],2)*100`%.
+The edge strength *Correlation Stability* coefficients are `r round(CS_estimates[CS_estimates$Metric=='strength','RRS'][[1]],2)*100`% (RRS), `r round(CS_estimates[CS_estimates$Metric=='strength','SCRS'][[1]],2)*100`% (SCRS) and `r round(CS_estimates[CS_estimates$Metric=='strength','RRS & SCRS'][[1]],2)*100`% (combined graph) which indicates increased tolerance for the combined network of the two questionnaires.
 
 \newpage
 
 ## 4. Discussion
 
-In the present paper, we examined the separation of two facets of rumination (a generic one, moving on the *brooding*-*reflection* axis; and the *self-critical* aspects of rumination) using a network approach.
+In the present paper, we examined the separation of two facets of rumination (a generic one, lying along the *brooding*-*reflection* axis; and the *self-critical* aspects of rumination) using a network approach.
 In its respective network the **Ruminative Response Style Questionnaire** exhibits a two-scale structure.
 Our community detection estimates suggest though that the reflective aspects of rumination regarding analyzing one's self and strive to understand feelings (items 2 and 9 of *RRS*) have more to common with brooding, or have a tendency to emerge as a third aspect.
-The **Self-Critical Rumination Scale** proved to have a one-scale structure
+The **Self-Critical Rumination Scale** proved to have a one-scale structure.
 Separation between scales in the combined graph is underlined by our eigenmodel, as in the two-dimensional space of the first two eigenvectors, expected grouping of *RRS* and *SCRS* items can be achieved.
 Items 2 and 9 are well separated from the bulk of the rest of the RRS items, supporting our above conclusion of them being a part of reflection or found a new component.
 Brooding has more associations with the self-critical aspects of rumination than reflection, which is highlighted by our eigenvector analysis as well as the sparse, unstable and weak edges with which reflection connects to brooding and self-critical rumination in their combined network.
@@ -495,10 +496,10 @@ According to our exponential random graph model, the internal scales of the comb
 This suggest that all three scales are effective in assessing a separate facet of rumination when used together.
 As shown, associations within the combined network only have low chances of false discovery.
 
-Results indicate that network associations are accurate aligned to the internal factor structure, while some associations are more sensitive to sampling characteristics and sampling variation.
+Results indicate that network associations are accurately aligned to the internal factor structure, while some associations are more sensitive to sampling characteristics and sampling variation.
 Edge strengths and edge weights have also high stability and relatively high resistance to sample loss, whereas betweenness is remarkably sensitive to case-dropping.
 
-Future steps include analyzing such data from a person-level graph perspective, where vertices are individual, and edges can be some distance measure between vertices based upon demographics and questionnaire scale data.
+Future steps include analyzing such data from a person-level graph perspective, where vertices are individuals, and edges can be some distance measure between vertices based upon demographics and survey data.
 Also, if keeping our analysis on the item-level, as in the present paper, we would extend our methodology to directed acyclic graphs (DAGs) which would allow causal assumptions to support our understanding various facets of rumination.
 
 \newpage
@@ -581,7 +582,7 @@ aucs_data <- tibble('Condition'= unique(ROC_data$Condition), 'AUC_value'=aucs) %
 # ROC_data <- ROC_data %>% left_join(aucs_data)
 
 ggplot(ROC_data, aes(x, y)) +
-    geom_path(aes(x, y, group = Condition, color = Condition, linetype = Condition), size = 2) +
+    geom_path(aes(x, y, group = Condition, color = Condition), size = 1.5) +
     geom_label(data=aucs_data, aes(x=rep(0.9, 3),y=c(0.4,0.5, 0.6),group=Condition,label=paste0(round(AUC_value,3)*100,'%'),fill=Condition), alpha=1/2)+
     scale_color_manual(values =c("#CA382A", "#0C38A0", "grey60")) +
     scale_fill_manual(values =c("#CA382A", "#0C38A0", "grey60")) +

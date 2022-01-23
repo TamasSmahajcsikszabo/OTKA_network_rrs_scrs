@@ -247,3 +247,16 @@
   doi       = {10.18637/jss.v048.i04},
   publisher = {Foundation for Open Access Statistic},
 }
+
+@Article{Hoff2002,
+  author    = {Peter D Hoff and Adrian E Raftery and Mark S Handcock},
+  journal   = {Journal of the American Statistical Association},
+  title     = {Latent Space Approaches to Social Network Analysis},
+  year      = {2002},
+  month     = {dec},
+  number    = {460},
+  pages     = {1090--1098},
+  volume    = {97},
+  doi       = {10.1198/016214502388618906},
+  publisher = {Informa {UK} Limited},
+}
