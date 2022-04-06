@@ -5,6 +5,8 @@ library(WRS)
 library(dplyr)
 library(tidyr)
 library(rogme)
+library(magrittr)
+library(stringr)
 
 rumi <- readRDS("/home/tamas/repos/networks_with_r/full_data.RDS")
 rumi <- na.omit(rumi[,c(4, 13:32)])
@@ -137,3 +139,63 @@ cohen_summary <- tribble(
 )
 
 summary_table <- bind_cols(summary_table, cohen_summary)
+
+
+# score summaries
+score_summary <- scores %>% 
+    rowwise() %>% 
+    mutate(tool = if_else(str_detect("SCRS", scale), "SCRS", "RRS")) %>% 
+    group_by(scale, gender) %>% 
+    summarise(M=mean(score),
+              SD=sd(score))
+
+score_summary_RRS <- scores %>% 
+    rowwise() %>% 
+    mutate(tool = if_else(str_detect("SCRS", scale), "SCRS", "RRS")) %>% 
+    filter(tool=='RRS') %>% 
+    group_by(tool, gender) %>% 
+    summarise(M=mean(score),
+              SD=sd(score)) %>% 
+    ungroup() %>% 
+    dplyr::select(-tool) %>% 
+    mutate(scale='RRS')
+
+score_summary <- bind_rows(score_summary, score_summary_RRS) %>% arrange(scale)
+score_summary <- score_summary %>% 
+    mutate(MSD = paste0(round(M,2), ' (',round(SD,2), ')')) %>% 
+    dplyr::select(-M, -SD) %>% 
+    pivot_wider(names_from='gender', values_from="MSD") %>% 
+    ungroup() %>% 
+    dplyr::select(-scale)
+
+summary_table <- bind_cols(summary_table, score_summary)
+
+
+# corr matrix
+cormat <- scores %>% pivot_wider(names_from='scale', values_from='score') %>% 
+    ungroup() %>% 
+    dplyr::select(-gender, -ID) %>% 
+    mutate(RRS = brooding+reflection) %>% 
+    dplyr::select(RRS, brooding, reflection, SCRS)
+corr <- data.frame(cor(cormat))
+
+corr[upper.tri(cor(cormat), diag=TRUE)] <- ""
+corr[lower.tri(corr, diag=FALSE)] <- round(as.double(corr[lower.tri(corr, diag=FALSE)] ),2)
+colnames(corr) <- 1:4
+
+cormat <- pcor(cormat)
+
+cormat$p.value[cormat$p.value==0] <- 0.001
+
+lower_table <- summary_table %>% 
+    pivot_longer(`Cronbach's Alpha`:male, names_to='col', values_to='val', values_transform=as.character) %>% 
+    mutate(val=if_else(!is.na(as.numeric(val)), as.character(round(as.numeric(val),3)), val)) %>% 
+pivot_wider(names_from='Scale', values_from='val') %>% 
+dplyr::select(col, `RRS total`, `RRS brooding`, `RRS reflection`, `SCRS total`)
+
+lower_table <- lower_table[c(5,6,1,2,3,4),]
+colnames(lower_table)[2:5] <- 1:4
+tibble(corr)
+corr <- bind_cols(tibble(col=c('RRS','brooding','reflection','SCRS')),corr)
+summary_table <-bind_rows(corr, lower_table)
+
