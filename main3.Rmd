@@ -8,7 +8,8 @@ header-includes:
 - \newcommand{\elandscape}{\end{landscape}}
 
 output:
-  bookdown::pdf_document2
+  pdf_document:
+    latex_engine: xelatex
 
 ---
 
@@ -40,40 +41,111 @@ setwd('../networks_with_r')
 source("get_rumi.R")
 source("src/functions.R")
 setwd('/home/tamas/repos/rumination_lasso')
+source('R/summary.R')
 ```
+## 1. Introduction
 
-## 2. Methods
+According to the *Response Style Theory*, rumination, or depressive rumination, is repetitive thinking about the causes, symptoms, circumstances and consequences of negative mood states and distress [@Hoeksema1991; @Watkins2008]. 
+Cross-sectional and longitudinal studies [@Butler_1994; @Nolen_Hoeksema_1999; @Whisman_2020] suggest that rumination could maintain and exacerbate existing psychopathology. 
+Depressive rumination can contribute to the onset or recurrence of several symptoms and disorders [@Aldao_2012; @Lyubomirsky_2015; @Lyubomirsky_1993; @Nolen_Hoeksema_2008; @Ruscio_2015; @Watkins_2020; @Whisman_2020].
+As a trans-diagnostic characteristic [@Nolen_Hoeksema_2011], rumination was found to predict the onset of major depressive disorder across one year in adolescent [@Broderick_2004; @Wilkinson_2013] and adults samples [@Nolen_Hoeksema_2008], and was involved in generalized anxiety disorder [@Nolen_Hoeksema_2000] and PTSD [@Moulds_2020]. 
+Rumination was found to have a role in depression and anxiety [@McLaughlin_2014], bipolar disorder [@Kov_cs_2020], borderline personality disorder [@Selby_2008], social phobia [@Abbott_2004], or psychosis [@Hartley_2013].
+
+Rumination can lead to negative mood states and thoughts mutually amplify and prolong each other [@Watkins_2020]. 
+However, consequences and effects of rumination are not specific to clinical samples, and can be identified in the background of the ruminative processes of healthy people [@Ciesla_2007; @Moulds_2007]. 
+As such, rumination could interfere with effective problem-solving by reducing self-confidence [@Watkins_2005]; reduce willingness to engage in pleasant activities [@Lyubomirsky_2015]; lead to elevated level of uncertainty [@Ward_2003], avoidance or personal difficulties [@Hayes_2004; @Yasinski_2019]. 
+As a multifaceted construct, rumination is often operationalized as depressive rumination and consequently measured by the *Response Style Questionnaire* (**RSQ**, or its shorter form the *Ruminative Response Scale*, **RRS**) [@Hoeksema1991; @Treynor_2003]. 
+Two sub-factors within the **RRS**; the *brooding* and *reflective pondering* (or *reflection*) were identified [@Treynor_2003]. 
+Brooding is a maladaptive, passive dwelling on negative events and associated affects, while reflection is a more adaptive (or less pathological) form of thinking, a non-evaluative introspection towards one’s mood. 
+Several empirical findings support the adaptive-maladaptive distinction of brooding and reflection. 
+Brooding alone was associated with substance use among people with history of illicit drug use [@Memedovic_2019], and with attentional disengagement difficulties, while controlling for depression and anxiety [@Allard_2019].
+Apart from brooding and reflection, many other rumination types or facets were described in the last decades. 
+People (especially with social phobia) tend to ruminate about their mood after a social event or performance [@Abbott_2004]. 
+Individuals can dwell upon infuriating memories or on anger itself [@Bushman_2005; @du_Pont_2017].
+Repetitive thinking can target sadness as well [@Peled_2009]. 
+
+These results indicate that not just the style of thinking, but the content of these ruminative thoughts has special relevance [@Smart_2015].
+More recently, research has started to investigate the role that rumination plays in maintaining levels of self-criticism [@Kolubinski_2017; @Smart_2015]. 
+Self-criticism is a form of negative self-evaluation with one harshly and hostilely judging oneself, especially in the context of mistakes, failures, unreached goals or unmet standards [@Rose_2018; @Shahar_2014]. 
+Self-criticism was found to be a vulnerability factor in many forms psychopathology such as depressive and anxiety disorders, binge eating or non-suicidal self injury [@Glassman_2007; @Rose_2018; @Shahar_2014]. 
+Since rumination resulted to be a significant mediator between self-criticism and depression across 2.5 years [@Spasojevi__2001], and between self-criticism and suicidal ideation over 3 months [@O_Connor_2008], we can assume that rumination is one of those processes by which these negative self-devaluating thoughts are sustained and connected to psychopathology. 
+Investigating rumination in the context of self-critical thoughts is paramount, especially in light of the results of a recent meta-analysis which indicated that the harsh and persistent forms of self-criticism did not change through short-term interventions [@Werner_2019].
+
+Self-critical rumination significantly differ from depressive rumination, mostly by the focus of thoughts [@Smart_2015]. 
+While in self-critical rumination, individuals concentrate on the their lack of self-worth or those aspects of the self of which they are ashamed of, in depressive rumination one’s attention is directed towards the symptoms of depression [@Nolen_Hoeksema_2000]. 
+Indeed, in a recent study self-critical rumination was strongly related to shame and predicted sensitivity to stress after a perceived failure [@Milia_2020]. 
+Positive meta-cognitions in self-critical rumination [@Kolubinski_2017] likely has less importance than in depressive rumination [@Papageorgiou_2001]. 
+One can assume that in depressive rumination the positive, while in self-critical rumination the negative meta-cognitions (e.g. “*I will get depressed if I don’t stop reviewing my self-critical thoughts*”) are those processes which maintain the ruminative process [@Kolubinski_2017].
+The Self-Critical Rumination Scale (**SCRS**, [@Smart_2015]) showed incremental validity over other rumination scales (including the widely used **RRS** and **RSQ**) in predicting bipolar personality features and general distress. 
+However, in the same study **SCRS** and **RRS** were highly correlated (which is not surprising considering the above mentioned similarities between self-critical and depressive rumination), indicating that those individuals who ruminate in a more general or broader way are also likely to ruminate on numerous topics, including self-devaluating thoughts and vice versa. 
+Previous work also supported the notion that individuals can show different forms of repetitive thought at the same time, for example, they can ruminate and worry simultaneously, or they are able to passively brooding on something and adaptively reflect on other topics [@Watkins2008]. 
+
 
 *Psychological networks* have their own characteristics which differentiate them from other kinds of networks of graph theory (@Epskamp2017; @Epskamp_2018; @Newman2010). 
 Vertices (also called nodes) usually represent some psychological measures or items of a psychological assessment tool, while the edges of the network reflect the corresponding estimates of association derived from the data.
+Because of this multifaceted structure and the blurry boundaries between the different subtypes of rumination, it could be beneficial to investigate them in a network perspective. Contrary to latent variable models, network analysis does not seek for a common cause of co-occurrence of indicators (e.g. different items of a questionnaire) but shift the focus toward the relationships and interactions between variables [@Epskamp_2017]. 
+In this way, in a network model the construct of rumination could be interpreted as a system in which some aspects relate or even stimulate each other, while other aspects have negative or inhibiting effects [@Costantini_2015]. 
+Thanks to this data-driven approach we can test how self-critical and depressive ruminative processes or the different items of the ruminative questionnaires cluster and relate to each other and we can gain important insights which could remain hidden by relying only on latent variable models [@Bernstein2019]. 
 Having two rumination-related questionnaires, the **Ruminative Response Style **(*RRS*) and the **Self-critical Rumination Scale** (*SCRS*), we assumed the following hypotheses:
 
 * Network analysis will reveal their respective internal structure previously established in the literature (sich as *RRS* having a two-scale structure: *reflection* and *brooding*; while *SCRS* will show a single-scale structure);
 * on the other hand, we hypothesized that in their common network, items overlapping in scope will change these clear outlines of the two measurement tools. According to our hypothesis, items of the *RRS* scale *brooding* will have non-trivial association with the self-critical aspects of rumination;
 * we also assumed a combined rumination network, representing the generic (more trait-like) and the self-critical aspects of rumination will exhibit a three-component structure.
 
+Previously, the network model was successfully applied to investigate depressive rumination by testing the original 22-item version of **RRS** [@Bernstein2019], but to the best of our knowledge no other rumination questionnaires was investigated, especially in terms of self-critical thoughts. 
+For this reason, in the present study we aimed to 1.)  test how the items of 10-item **RRS** and **SCRS** relate to each other and whether they could form a network; 2.) investigate whether the different variables or nodes could be grouped intro neighbourhoods or communities 3.) understand the putative importance and influence of certain variables  4.) and test the accuracy and stability of these networks.
+
+\newpage
+## 2. Methods
+
+### 2.1 Participants and procedure
+Students from several Hungarian high schools participated in the study on a voluntary basis. 
+The first stage of the recruitment process was to contact the heads of the schools to acquire institutional consent. 
+Afterwards, classes were visited asking the students to participate. 
+Since, the participants were under-aged, parents as well as students were issued with written informed consent letters. 
+Following their consent, students were asked to fill out paper-pencil questionnaires in their own classroom within one class session. 
+Participation in the study was anonymous and voluntary. 
+Data collection was supervised by trained undergraduate students of psychology. 
+No teaching staff were present. 
+The total sample of the study comprises data from `r nrow(origdata)` participants (aged `r min(origdata$kor, na.rm=TRUE)`-`r max(origdata$kor, na.rm=TRUE)` years, females= `r sum(origdata$nem == 'lany')` (`r round(sum(origdata$nem == 'lany')/nrow(origdata),2) * 100` %), males=`r sum(origdata$nem == 'fiu')` (`r round(sum(origdata$nem == 'fiu')/nrow(origdata),2) * 100` %) collected via convenience sampling method. 
+The mean age was `r round(mean(origdata$kor, na.rm=TRUE),2)` age (SD=`r round(sd(origdata$kor, na.rm=TRUE),2)`). 
+The protocol was designed in accordance with the Declaration of Helsinki and the study was ethically approved by the Institutional Review Board (note: the name of the university is masked for review process).
+
+### 2.2 Measures
+
+The *Self-Critical Rumination Scale* (**SCRS**; [@Smart_2015]) was used to assess those thoughts that criticize the self for perceived failures, mistakes or bad habits in a prolonged and repetitive manner. 
+The SCRS is a self-reported, one factor scale that consists of 10 items. 
+Participants were asked to rate the statements (i.e. “*My attention is often focused on aspects of myself that I’m ashamed of*”; “*I criticize myself a lot for how I act around other people*”) on a 4-point Likert scale from 1 (not at all) to 4 (very much). 
+The scale showed high internal consistency in our study (Cronbach α= .90), similarly to the original version (Cronbach α= .92).
+
+The short form of *Ruminative Response Scale* (**RRS**; [@Treynor_2003]) was used to measure mood dependent rumination, which consists of 10 items and quantifies ruminative thoughts via two dimensions (each composed of 5 items). 
+*Brooding* subscale of **RRS** measures the maladaptive form or ruminative thinking (i.e. “*What am I doing to deserve this?*”), while reflective pondering (or reflection) factor measures a more adaptive form of self-reflecting thinking (i.e. “*I write down what I am thinking and analyze it*”). 
+Participants are asked to indicate on a 4-point Likert scale how often the items apply to themselves when they feel down, sad or depressed (1=almost never; 4=almost always). 
+Internal consistency of the scale was acceptable in the present study (Cronbach αs were ranging from .65 to .75).
+Besides the **SCRS** and **RRS** basic sociodemographic information (e.g. age, gender, parents’ level of education) was recorded.
+
 <!-- Sample sizes have direct impact on estimated accuracy and stability of the psychological network, thus the accuracy of the network parameters and measures is crucial: By obtaining robust results we can have a more realistic picture of a network without knowing the true network shape and structure. --> 
 <!-- Just like any other psychological variables, network characteristics are also sensitive to sampling, estimation methods, included variables, outliers and various other components of an analysis. --> 
 <!-- As [@Epskamp2017a] points out, psychological networks differ from *reflective latent variable models* by not seeking for a common cause of co-occurrence of variables (such as symptoms or different items of a questionnaire), but instead their focus is on quantifying and visually show the multivariate dependencies and the different pathways of direct relationships between the nodes. --> 
 <!-- A major conceptual difference emerges from the network perspective for psychological data: psychological variables, such as symptoms, states, attitudes and other constructs (represented as nodes) have direct impact on each other, and are not caused by some latent variables.  [@Epskamp_2018]. --> 
-In the current study, we used a fairly large sample of indiviuals (N=`r nrow(rumi_data)`) to construct a dense, undirected network of rumination-related psychological constructs. 
-The vertices represent the items of the *RRS* and *SCRS*, while edges are penalized partial correlations (using LASSO penalization, see @Friedman2007; @Tibshirani1996).
 
-### 2.1. Building networks with the Least Absolute Shrinkage and Selection Operator (LASSO)
 
-We constructed individual and combined networks of *RRS* and *SCRS* with respective penalized correlation matrices using the *EBICglasso* function of the **qgraph** package (@Epskamp2012a; see our Git repository for other parameter specifications).
+### 2.3. Network modeling, descriptives and communities
+
+In the current study, we used a sample of indiviuals (N=`r nrow(rumi_data)`) to construct a dense, undirected network of rumination-related psychological constructs. 
+The vertices represent the items of the *RRS* and *SCRS*, while edges are penalized partial correlations using LASSO penalization, see [@Friedman2007; @Tibshirani1996].
+
+We constructed individual and combined networks of *RRS* and *SCRS* with respective penalized correlation matrices using the *EBICglasso* function of the **qgraph** package ([@Epskamp2012a]; see our Git repository for other parameter specifications).
 In order to shrink the edges, achieve high specificity, and get a less dense network, we let the function to exclude any elements of the underlying precision matrix below a threshold value (*threshold* parameter set to TRUE).
 
-The **LASSO** uses *L1* (absolute) regularization (@Tibshirani1996, @Friedman2007). 
+The **LASSO** uses *L1* (absolute) regularization [@Tibshirani1996; @Friedman2007]. 
 In the current study, the method resulted in a partial correlation network where edges represent direct associations between pairs of items, while the influence of all other items in the network are kept controlled. 
-The regularization by *L1* penalty lets trivially small partial correlations to be set to zero (@McNally_2017), thus ensure a *sparse* network which are more interpretable (@Epskamp_2018). 
+The regularization by *L1* penalty lets trivially small partial correlations to be set to zero [@McNally_2017], thus ensure a *sparse* network which are more interpretable [@Epskamp_2018]. 
 
-The tuning parameter of *gamma* in the graphical LASSO algorithm has been set to 0.5 value in accordance with (@McNally_2017 @Bernstein2019). 
+The tuning parameter of *gamma* in the graphical LASSO algorithm has been set to 0.5 value in accordance with [@McNally_2017; @Bernstein2019]. 
 The final networks were chosen by the lowest values of the *extended Bayesian Information Criterion* (EBIC).
 
 <!-- Before going further into network modeling, we estimated the 95% confidence intervals of network centrality measures to have an understanding of the sampling distribution of our estimates. According to @Epskamp2017a low sample size and non-regularized estimates might lead to amplify any bootstrap bias; by having a larger sample of individuals, we expect lesser levels of bias of any bootstrap estimates for network accuracy and stability. -->
-
-### 2.2 Redundant items
 
 We applied the *goldbricker* function from the R package *networktools* [@Jones2017] in order to search for pairs of items in the *RRS*, *SCRS* and their combined networks that were highly correlated (r > 0.75) and exhibited the same pattern with other items. 
 
@@ -84,26 +156,25 @@ var_names <- names(dataset)
 ```
 After the LASSO regularization no further dimensionality reduction was necessary based upon the *goldbricker* evaluation.
 
-### 2.3 Network descriptives and community detection
-A comparative overview of the three networks was produced with their descriptives (degree distribution) and their centrality measures (strength, closeness, betweenness; @GaborCsardi2020), and their One- and Two-Step Expected Influence (EI) measures to understand the cumulative importance of vertices (@Robinaugh2016, @Heeren2018, @Bernstein2019).
-In order to further elaborate the question of vertex importance, we identified *bridge nodes* using the functions provided by the *networktools* R package (@Jones2017) to identify bridge vertices (connectors between sub-graphs, see and example at @Bernstein2019). 
+A comparative overview of the three networks was produced with their descriptives (degree distribution) and their centrality measures (strength, closeness, betweenness; [@GaborCsardi2020]), and their One- and Two-Step Expected Influence (EI) measures to understand the cumulative importance of vertices [@Robinaugh2016; @Heeren2018; @Bernstein2019].
+In order to further elaborate the question of vertex importance, we identified *bridge nodes* using the functions provided by the *networktools* R package (@Jones2017) to identify bridge vertices (connectors between sub-graphs, see and example at [@Bernstein2019]). 
 We estimated both one-step and two-step bridge expected influence measures which reflect the sum of edge weights connecting one vertex to other groups on vertices (or communities); and also express a vertex's secondary influence on the rest of the network, respectively. 
 Higher influence scores indicate that a certain vertex is more likely to active neighbouring vertices or communities.
 In order to estimate the Expected Influence metrics, we used the *expectedInf* function of the *networktools* R package.
 In order to get an understanding of community of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established sub-scale structure of *RRS*, *SCRS* and investigate their separation in their combined network, we used the community detection methods available in the *igraph* R package (@GaborCsardi2020). 
-When detecting possible communities of vertices, we followed guidlines by @Reichardt2006, @Bernstein2019 and @GaborCsardi2020.
+When detecting possible communities of vertices, we followed guidelines by [@Reichardt2006], [@Bernstein2019] and [@GaborCsardi2020].
 In order to mitigate the effect of choice of community detection algorithms, we performed more of them available in the *igraph* package multiple times.
 
 ### 2.4 Internal Structure with an exponential random graph model
-In order to measure the impact of tools (*RRS*, *SCRS*) and their respective scales (*brooding*, *reflection* and *self-critical*) on the combined network structure, we constructed an *exponential random graph model* (ERGM; @Hunter2007).
+In order to measure the impact of tools (*RRS*, *SCRS*) and their respective scales (*brooding*, *reflection* and *self-critical*) on the combined network structure, we constructed an *exponential random graph model* (ERGM; [@Hunter2007]).
 In the model of our combined network predicting edges, *endogenous* predictors (related to the nature of the network structure) included the **number of edges** in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures. 
-This predictor served as a reflection on **clustering** in the form of completed triangles of vertices (we used *GWESP* (see @Goodreau2009), which stands for *geometrically weighted edgewise shared partner distribution*).
+This predictor served as a reflection on **clustering** in the form of completed triangles of vertices (we used *GWESP* (see [@Goodreau2009]), which stands for *geometrically weighted edgewise shared partner distribution*).
 *GWESP* has the advantage of taking a parametric form of the shared common vertex count distribution on each edge, giving each connecting vertex a declining positive probability of two selected vertices being connected.
 In order to capture *exogenous* effects (i.e., vertex attributes), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the same tool and its scale will increase the log-odds of being connected by an edge).
 
 ### 2.5 Association Network Inference
 In order to understand the nature of the edges of the combined association network, we utilized Association Network Inference techniques.
-The R package **fdrtool** (@Strimmer2008, @Strimmer2008a) allowed us to model the probability density function and estimate $\eta_0 of the fraction of true null hypotheses in the data; and (1-$\eta_0$) for the true alternative hypotheses.
+The R package **fdrtool** [@Strimmer2008; @Strimmer2008a] allowed us to model the probability density function and estimate $\eta_0 of the fraction of true null hypotheses in the data; and (1-$\eta_0$) for the true alternative hypotheses.
 The mixture model for some statistic *S* thus takes the following form (where in our analysis, S is the partial correlation coefficient).
 
 \begin{center}
@@ -113,7 +184,7 @@ $\ f(S)=\eta_0 f_0(S) + (1-\eta_0) f_1(S)$
 To apply adjustment due to the number of performed tests, we controlled p-value by the *False Discovery Rate* (*FDR*; the rate of false rejections against the number of rejections).
 
 ### 2.6. Latent Network Modeling
-We constructed an *eigenmodel* to further explore the structure of the combined graph of *RRS* and *SCRS* (@Hoff2002; methodology following @Mair2018, @GaborCsardi2020) and how well the network structure predicts edges.
+We constructed an *eigenmodel* to further explore the structure of the combined graph of *RRS* and *SCRS* ([@Hoff2002]; methodology following [@Mair2018; @GaborCsardi2020]) and how well the network structure predicts edges.
 Our expectation was that sub-scales will have non-trivial impact on the resulting eigenvalues.
 In our two-part analysis, first we used eigenvalue decomposition in order to use the first two eigenvectors reflective to our scale- and sub-scale structures of *RRS* and *SCRS*.
 In the second part, we defined three conditions in the *eigenmodel* on top of the original model.
@@ -139,10 +210,21 @@ One way of estimating network accuracy is to produce a 95% confidence interval o
 In the present paper, we chose the non-parametric bootstrap estimate for interpretability.
 Network stability is quantified with the *Correlation Stability* (*CS*-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality higher than some fixed threshold value (in the present paper, 0.7). 
 Simulation studies [@Epskamp2017] lead us in our expectation as the *CS*-coefficient should be between 0.25 and 0.5. 
- 
+
+\newpage 
+
 ## 3. Results
 
-### 3.1 Network descriptives and community detection
+### 3.1 Descriptives, network descriptives and community detection
+Pearson correlation coefficients, Cronbach’s alphas of the scales, means and standard deviations (for the total sample, and for females and males separately) are presented in Table 1. Significant differences (with medium effect sizes) were found between genders in the total scores of SCRS and RRS, also in brooding and reflective pondering factors of RRS.  As expected (Smart et al., 2016), significant positive correlations were found between SCRS and RRS total scores (and both subscales), indicating that self-critical rumination somewhat differs from depressive mood related rumination, but people who are likely to ruminative self-critically are also likely to ruminate about their mood.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+knitr::kable(summary_table, row.names=FALSE, format='simple', caption="Sample and Scale Descriptives")
+```
+
+*Upper triangle reflects inter-scale Pearson correlations between sub-scales; 'male' and 'female' rows are descriptives of each scale in terms of means and standard deviations; the lower three rows are summaries of effect size measures.*
+
 The undirected, weighted, associational networks of *RRS*, *SCRS* and their combined structure can be seen below (see Figure 1).
 All three networks proved to be connected (any vertex is reachable from every other).
 Comparing diameters to mean distances, we see densely connected graphs (for the *RRS* network, its diameter is `r round(diameter(RRS_graph),3)` compared to its mean distance of `r round(mean_distance(RRS_graph),3)`; the *SCRS* and the combined networks show similar ratio patterns).
@@ -327,7 +409,7 @@ mycorr <- cor(rumi_data, method = "spearman")
 mycorr <- mycorr[upper.tri(mycorr)]
 mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation", plot=FALSE)))
 ```
-Results show low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicates large mixing rate for the alternative hypothesis of edges having non-zero weights.
+Results show low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicating large mixing rate for the alternative hypothesis of edges having non-zero weights.
 The histogram of absolute correlation coefficients (see Figure 3. in Appendix) has a centered shape in contrast to the null component.
 The density-based *FDR* drops once empirical correlations reach $\rho$=0.1 (see the lowest seciton of Figure 3.).
 
@@ -451,7 +533,7 @@ rownames(CS_estimates) <- names(RRScorStab)
 
 CS_estimates <- CS_estimates %>% 
   mutate(measure = rownames(CS_estimates)) %>% 
-  select(Metric = measure, RRS, SCRS, `RRS & SCRS`)
+  dplyr::select(Metric = measure, RRS, SCRS, `RRS & SCRS`)
 
 CS_estimates <- as_tibble(CS_estimates)
 
