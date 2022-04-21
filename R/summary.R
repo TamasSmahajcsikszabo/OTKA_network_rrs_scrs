@@ -8,18 +8,23 @@ library(rogme)
 library(magrittr)
 library(stringr)
 
-rumi <- readRDS("/home/tamas/repos/networks_with_r/full_data.RDS")
-rumi <- na.omit(rumi[,c(4, 13:32)])
-rumi$gender <- ""
-rumi$gender[rumi$nem=='lany'] <- 'female'
-rumi$gender[rumi$nem=='fiu'] <- 'male'
-rumi$gender <- factor(rumi$gender)
-dataset <- rumi
+rumidata <- readRDS("/home/tamas/repos/networks_with_r/full_data.RDS")
+rumidata <- rumidata %>% mutate(ID = row_number())
+origdata <- rumidata
+rumidata <- na.omit(rumidata[,c(4, 13:32, 56)])
+filterd_idx <- rumidata$ID
+origdata <- origdata %>% filter(ID %in% filterd_idx)
+rumidata  <- rumidata[,1:21]
+rumidata$gender <- ""
+rumidata$gender[rumidata$nem=='lany'] <- 'female'
+rumidata$gender[rumidata$nem=='fiu'] <- 'male'
+rumidata$gender <- factor(rumidata$gender)
+dataset <- rumidata
 
 scales <- data.frame(scale=c(rep('brooding', 5), rep('reflection',5), rep('SCRS',10)), 
     item=c(paste0('RRS_',c(2,4,5,9,10)), paste0("RRS_",c(1,3,6,7,8)), paste0("SCRS_",seq(1,10))))
 
-rumi <- rumi  %>% 
+rumidata <- rumidata  %>% 
     mutate(ID = row_number())  %>% 
     pivot_longer(RRS_1:SCRS_10, names_to='item', values_to='value') %>% 
     dplyr::select(-nem) %>% 
@@ -48,7 +53,7 @@ summary_table <- tribble(
     "SCRS total", crA_SCRS_total$alpha[[1]]
 )
 
-scores <- rumi %>% group_by(gender, ID, scale) %>% summarise(score=sum(value))
+scores <- rumidata %>% group_by(gender, ID, scale) %>% summarise(score=sum(value))
 
 check_homoscedasticity <- function(dataset, group_index_vector, measured) {
     res <- list()
@@ -105,7 +110,7 @@ reflectionCliff <- cidv2(reflectionf,  reflectionm)[c(5,8)]
 
 
 ### RRS total
-RRSscoresf <- rumi %>% 
+RRSscoresf <- rumidata %>% 
     group_by(gender, ID, scale) %>% 
     summarise(score=sum(value)) %>% 
     ungroup() %>% 
@@ -114,7 +119,7 @@ RRSscoresf <- rumi %>%
     ungroup() %>% 
     filter(gender=='female') %>% 
     dplyr::select(-gender, -ID, score) %>% unlist()  %>%  unname()
-RRSscoresm <- rumi %>% 
+RRSscoresm <- rumidata %>% 
     group_by(gender, ID, scale) %>% 
     summarise(score=sum(value)) %>% 
     ungroup() %>% 
@@ -193,9 +198,9 @@ lower_table <- summary_table %>%
 pivot_wider(names_from='Scale', values_from='val') %>% 
 dplyr::select(col, `RRS total`, `RRS brooding`, `RRS reflection`, `SCRS total`)
 
-lower_table <- lower_table[c(5,6,1,2,3,4),]
-colnames(lower_table)[2:5] <- 1:4
-tibble(corr)
-corr <- bind_cols(tibble(col=c('RRS','brooding','reflection','SCRS')),corr)
+lower_table <- lower_table[c(5,6,1,2,3),]
+colnames(lower_table)[2:5] <- c(1:4)
+corr <- bind_cols(tibble(col=c('RRS','RRS - brooding','RRS - reflection','SCRS')),corr)
 summary_table <-bind_rows(corr, lower_table)
+colnames(summary_table) <- c("", 1:4)
 
