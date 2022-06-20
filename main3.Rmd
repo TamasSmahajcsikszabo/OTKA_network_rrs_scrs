@@ -172,8 +172,9 @@ As estimator, we used *GWESP* [see @Goodreau2009], which stands for *geometrical
 In order to capture *exogenous* effects (i.e., vertex attributes), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the same tool and its scale will increase the log-odds of being connected by an edge).
 
 ### 2.5 Association Network Inference
-In order to understand the nature of the edges in the combined association network, we utilized Association Network Inference techniques.
-The R package **fdrtool** [@Strimmer2008; @Strimmer2008a] allowed us to model the probability density function and estimate **$\eta_0$**, the fraction of true null hypotheses in the data; and (1-**$eta_0$**) for the true alternative hypotheses.
+In order to understand the nature of the edges in the combined association network, we conceptualized the combined network an an association network, associations given by the correlation coefficients between responses to items (i.e.,the vertices).
+Our aim was here to discern real edges from non-edges (when two items are not correlated) and derive the mixture null distribution in a data-driven fashion. 
+The R package **fdrtool** [@Strimmer2008; @Strimmer2008a] allowed us to model the probability density function and estimate **$\eta_0$**, the fraction of true null hypotheses expected in the correlaction coefficients of the data; and (1-**$eta_0$**) for the true alternative hypotheses.
 The mixture model for some statistic *S* thus takes the following form (where in our analysis, S is the partial correlation coefficient).
 
 \begin{center}
@@ -401,7 +402,7 @@ In terms of goodness-of-fit, observed frequencies of degree levels differ in non
 In two cases of vertex degree ($\ V_d$=3 and $\ V_d$=6), the observed frequencies are above the simulated average (`r as.data.frame(goffit[18])[4,1]` > the expected avg. of `r as.data.frame(goffit[18])[4,3]` for $\ V_d$=3; and `r as.data.frame(goffit[18])[7,1]`  > the expected avg. of `r as.data.frame(goffit[18])[7,3]`  for $\ V_d$=6), but differences are not significant.
  
 Regarding the expected edgewise shares partners, the only deviation from expected levels is for 1 partner, where the observed frequency is 17 against 13.28.
-Additional MCMC diagnostics revealed good fit of the model.
+Additional MCMC diagnostics revealed good fit of the model, as the observed graph does not differ from the *MCMC* simulated graphs.
 
 ### 3.3 Association Network Inference
 
@@ -421,7 +422,7 @@ The density-based *FDR* drops once empirical correlations reach at least $\rho$=
 ### 3.4 Latent Network Modeling
 Our next model was built with the *eigenmodel_mcmc* function of the R package **eigenmodel**.
 The function uses *Markov chain Monte Carlo* (MCMC) techniques to complete a model specification.
-By applying eigenvalue decomposition, we obtained the first two eigenvectors (see Figure 2).
+By applying eigenvalue decomposition, we obtained the first two eigenvectors (see Figure 2) on the combined network (S=10000, number of iterations).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.width=10, fig.height=8, fig.cap="Vertices of the combined graph by the first two eigenvalues"}
 fitEM <- readRDS("output/fitEM.RDS")
