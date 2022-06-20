@@ -46,7 +46,7 @@ source('R/summary.R')
 According to the *Response Style Theory*, rumination, or depressive rumination, is repetitive thinking about the causes, symptoms, circumstances and consequences of negative mood states and distress [@Hoeksema1991; @Watkins2008]. 
 Cross-sectional and longitudinal studies [@Butler_1994; @Nolen_Hoeksema_1999; @Whisman_2020] suggest that rumination could maintain and exacerbate existing psychopathology. 
 Depressive rumination can contribute to the onset or recurrence of several symptoms and disorders [@Aldao_2012; @Lyubomirsky_2015; @Lyubomirsky_1993; @Nolen_Hoeksema_2008; @Ruscio_2015; @Watkins_2020; @Whisman_2020].
-As a trans-diagnostic characteristic [@Nolen_Hoeksema_2011], rumination was found to predict the onset of major depressive disorder across one year in adolescent [@Broderick_2004; @Wilkinson_2013] and adults samples [@Nolen_Hoeksema_2008], and was involved in generalized anxiety disorder [@Nolen_Hoeksema_2000] and PTSD [@Moulds_2020]. 
+As a trans-diagnostic characteristic [@Nolen_Hoeksema_2011], rumination was found to predict the onset of major depressive disorder across one year in adolescent [@Broderick_2004; @Wilkinson_2013] and adult samples [@Nolen_Hoeksema_2008], and was involved in generalized anxiety disorder [@Nolen_Hoeksema_2000] and PTSD [@Moulds_2020]. 
 Rumination was found to have a role in depression and anxiety [@McLaughlin_2014], bipolar disorder [@Kov_cs_2020], borderline personality disorder [@Selby_2008], social phobia [@Abbott_2004], or psychosis [@Hartley_2013].
 
 Rumination can lead to negative mood states and thoughts mutually amplify and prolong each other [@Watkins_2020]. 
@@ -154,19 +154,20 @@ dataset <- rumi_data
 var_names <- names(dataset)
 ```
 
-A comparative overview of the three networks was produced with their descriptives (degree distribution) and their centrality measures (strength, closeness, betweenness) [@GaborCsardi2020], and their One- and Two-Step Expected Influence (EI) measures to understand the cumulative importance of vertices [@Robinaugh2016; @Heeren2018; @Bernstein2019].
+A comparative overview of the three networks was produced with their descriptives (degree distribution) and their centrality measures (strength, closeness, betweenness; @GaborCsardi2020), and their One- and Two-Step Expected Influence (EI) measures to understand the cumulative importance of vertices [@Robinaugh2016; @Heeren2018; @Bernstein2019].
 In order to further elaborate the question of vertex importance, we identified *bridge nodes* using the functions provided by the *networktools* R package [@Jones2017] to identify bridge vertices, in other words, connectors between sub-graphs, see and example at [@Bernstein2019]. 
 We estimated both one-step and two-step bridge expected influence measures which reflect the sum of edge weights connecting one vertex to other groups on vertices (or communities); and also express a vertex's secondary influence on the rest of the network, respectively. 
 Higher influence scores indicate that a certain vertex is more likely to active neighbouring vertices or communities.
 In order to estimate the Expected Influence metrics, we used the *expectedInf* function of the *networktools* R package.
-In order to get an understanding of community of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established sub-scale structure of *RRS*, *SCRS* and investigate their separation in their combined network, we used the community detection methods available in the *igraph* R package [@GaborCsardi2020]. 
+Also, to get an understanding of communities of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established sub-scale structure of *RRS*, *SCRS* and investigate their separation in their combined network, we used the community detection methods available in the *igraph* R package [@GaborCsardi2020]. 
 When detecting possible communities of vertices, we followed guidelines by [@Reichardt2006; @Bernstein2019; @GaborCsardi2020].
 In order to mitigate the effect of choice of community detection algorithms, we performed more of them available in the *igraph* package multiple times (B=1000).
 
 ### 2.4 Internal Structure with an exponential random graph model
 In order to measure the impact of tools (*RRS*, *SCRS*) and their respective scales (*brooding*, *reflection* and *self-critical*) on the combined network structure, we constructed an *exponential random graph model* ERGM [@Hunter2007].
-In the model of our combined network predicting edges, *endogenous* predictors (related to the nature of the network structure) included the **number of edges** in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures. 
-This predictor served as a reflection on **clustering** in the form of completed triangles of vertices; we used *GWESP* [see @Goodreau2009], which stands for *geometrically weighted edgewise shared partner distribution*.
+In our model, *endogenous* predictors (related to the nature of the network structure) included the **number of edges** in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures. 
+This predictor served as a reflection on **clustering** in the form of completed triangles of vertices.
+As estimator, we used *GWESP* [see @Goodreau2009], which stands for *geometrically weighted edgewise shared partner distribution*.
 *GWESP* has the advantage of taking a parametric form of the shared common vertex count distribution on each edge, giving each connecting vertex a declining positive probability of two selected vertices being connected.
 In order to capture *exogenous* effects (i.e., vertex attributes), we added *tool* and *sub-scale * as predictors, especially testing for *homophily* (assuming that belonging to the same tool and its scale will increase the log-odds of being connected by an edge).
 
@@ -346,7 +347,7 @@ network_plot
 As the choice of algorithm has non-trivial impact on the identified community structure, after having selected the *"optimal"*, the *"spinglass"*, the *"walktrap"* and (to also include hierarchical clustering) the *"fast greedy"* methods, we tested each a `r i` times on the three networks.
 We also provided an edge weight vector for community detection in the form of the *LASSO*-penalized partial correlation coefficients (or alternatively, omitted weights).
 
-The **RRS** two-scale structure could be recreated with all four algorithms with the inclusion of the weight vector not having effect on the measures.
+The **RRS** two-scale structure could be recreated with all four algorithms with the inclusion of the weight vector not having effect on sub-scale membership.
 For the sub-scale of *brooding* the average **true positive rate** (TPR) was `r RRS_tpr_s[1,2][[1]]`; for *reflection*  `r round(RRS_tpr_s[2,2][[1]],3)`.
 In case of the *reflection* sub-scale, lower average TPR becomes tangible with the inspection of items 2 (*"analyze"*; *"Analyze recent events to try to understand why you are depressed"*) and 9 (*"person"*; *"Analyze your personality to try to understand why you are depressed"*) whose low TPR indicates that depending in the choice of community detection they have a chance of forming their own community or being classified as members of the *brooding* scale, rather than being part of *reflection*.
 The one-scale structure of the *SCRS* has been reestablished.
@@ -373,7 +374,7 @@ Our ERGM model was built with *Markov chain Monte Carlo* (MCMC) maximum likeliho
 ergm_model_fit <- readRDS("output/ergmfit.RDS")
 anova_tidy <- broom::tidy(anova(ergm_model_fit))
 ergm_tidy <- broom::tidy(ergm_model_fit)
-names(ergm_tidy) <- c("Term", "Estimate", "Std. Error", "MCMC Error %", "Statistic", "p")
+names(ergm_tidy) <- c("Term", "Estimate", "Std. Error", "MCMC Error %", "Statistic", "p (level of sig.)")
 ergm_tidy[2,1] <- 'GWESP [triangle]'
 ergm_tidy[1,1] <- '# of edges'
 ergm_tidy[3,1] <- 'Tool (main effect)'
@@ -384,14 +385,16 @@ get_p <- function(logit){
     exp(logit)/(1+exp(logit))
 }
 
+probs=get_p(ergm_tidy[,2])
+ergm_tidy$`P of Edge Building` = round(probs,3)
 knitr::kable(ergm_tidy,digits=3,label="", caption="ERGM model fit results with Markov chain Monte Carlo Maximum Likelihood Estimation")
 
 # gof(ergm_model_fit)
 # mcmc.diagnostics(ergm_model_fit)
 ```
 
-An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, Residual Deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p=`r format(round(anova_tidy$Pr...Chisq..[2][[1]],3),nsmal=3)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
-The detailed analysis reveals that *endogenous* effects such as the overall density of the network( number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`), and at p<0.05 level the closed triangle formulation  indicates a non-trivial impact on clustering (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`).
+An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p=`r format(round(anova_tidy$Pr...Chisq..[2][[1]],3),nsmal=3)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
+The detailed analysis reveals that *endogenous* effects such as the overall density of the network (number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`), and at p<0.05 level the closed triangle formulation  indicates a non-trivial impact on clustering (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`).
 As expected, *exogenous* effects, such as two items belonging to the same sub-scale have a significant positive impact on connectivity (sub-scale changes edge probability by `r round(get_p(ergm_tidy$Estimate[5][[1]]),3)`, keeping the rest of the network fixed).
 Tool in itself has no impact on edge formation.
 In terms of goodness-of-fit, observed frequencies of degree levels differ in non-significant manner from *MCMC*-simulated expectations.
@@ -484,8 +487,8 @@ We used the *bootnet* R package to have an estimate of edge-weight accuracy with
 The resulting **accuracy** estimates have been visually incorporated in Figure 1 in the following manner.
 Edge shade reflects the lower bound of the 95% confidence interval (CI) for each edge, while edges are presented with dashed line for cases of the CI including 0.0 edge weights.
 For such cases,  we cannot be sure if their weight persist given different samples and varying sample characteristics.
-Darker shaded, continuous edges are stable according to the bootstrap estimate and they preserve their sampled nature.
-Edges as between the *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))[1][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line and has lighter shade indicating a lower stability.
+Darker shaded, continuous edges represent stable edges according to the bootstrap estimate.
+Edges such as between the *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))[1][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line and has lighter shade indicating a lower stability.
 Examples for accurate and strong edges are *RRS(4)* (*alone1*; *"Go away by yourself and think about why you feel this way"*) and *RRS(10)* (*alone2*; *"Go someplace alone to think about your feelings"*). 
 The edge weight for these items in their stand-alone *RRS* network is `r round(E(RRS_graph)[10]$strength,3)` (estimated edge-weight accuracy is with average `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)` with lower and upper CI bounds of `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`).
 These items exhibit the same pattern in the combined network with estimated edge-weight accuracy with average weight of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)`; lower and upper CI bounds of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`.
@@ -537,7 +540,7 @@ CS_estimates <- CS_estimates %>%
   mutate(measure = rownames(CS_estimates)) %>% 
   dplyr::select(Metric = measure, RRS, SCRS, `RRS & SCRS`)
 
-CS_estimates <- as_tibble(CS_estimates)
+CS_estimates <- as_tibble(CS_estimates[c(1,2,4),])
 
 ```
 \newpage
@@ -552,7 +555,7 @@ knitr::kable(CS_estimates,
 Results indicate for betweenness centrality that neither networks tolerate much sample loss having CS-coefficients around 5% or lower.
 For the *RRS* and *SCRS* graphs, the closeness metrics are stable in the sense that around `r round(CS_estimates[CS_estimates$Metric=='closeness','RRS'][[1]],2)*100`% and respectively `r round(CS_estimates[CS_estimates$Metric=='closeness','SCRS'][[1]],2)*100`% of the case can be dropped to still maintain 0.7 or higher correlation with their original estimates. 
 The combined network's closeness stability is low and rigid.
-Edge weights exhibit a constant stability of `r round(CS_estimates[CS_estimates$Metric=='edge','RRS'][[1]],2)*100`%.
+<!-- Edge weights exhibit a constant stability of `r round(CS_estimates[CS_estimates$Metric=='edge','RRS'][[1]],2)*100`%. -->
 The edge strength *Correlation Stability* coefficients are `r round(CS_estimates[CS_estimates$Metric=='strength','RRS'][[1]],2)*100`% (RRS), `r round(CS_estimates[CS_estimates$Metric=='strength','SCRS'][[1]],2)*100`% (SCRS) and `r round(CS_estimates[CS_estimates$Metric=='strength','RRS & SCRS'][[1]],2)*100`% (combined graph) which indicates increased tolerance of sample loss in the case of the combined network of the two questionnaires.
 
 \newpage
