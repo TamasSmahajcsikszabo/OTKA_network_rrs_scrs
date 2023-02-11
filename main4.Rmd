@@ -1,6 +1,6 @@
 ---
 title: "Self-critical rumination - A network approach"
-bibliography: rumination.bibtex.bib
+fibliography: rumination.bibtex.bib
 csl: apa7.csl
 header-includes:
 - \usepackage{pdflscape}
@@ -92,6 +92,22 @@ Having two rumination-related questionnaires, the **Ruminative Response Style **
 * we also assumed a combined rumination network, representing the generic (more trait-like) and the self-critical aspects of rumination will exhibit a three-component structure.
 
 Previously, the network model was successfully applied to investigate depressive rumination by testing the original 22-item version of **RRS** [@Bernstein2019], but to the best of our knowledge no other rumination questionnaires was investigated, especially in terms of self-critical thoughts. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+ glossary_tb <- tribble(
+     ~Term, ~Definition,
+      "Community Detection", "A group of algorithmic methods to find clusters or likely groups of nodes  whose community can be described by systematic variance encoded in data represented in edges and node characteristics, and therefore are non-trivial.",
+     "Edge", "Link (E, link) between nodes of a network. Undirected if direction of link (e.g. flow of energy or information is not essential to the network); directed (uni- or bidirectional) otherwise. Can be weighted by some measure of association, frequency or other attribue.",
+     "Network", "Graph G = (V,E), a construct of V vertices and E edges.",
+     "Network Order", "Descriptive; order of a network is the number of vertices in a graph.",
+     "Network Size","Descriptive; size of a network is the total number of edges in a graph.",
+     "Node", "Nodes (V,vertices) are representation of constructs, latent variables, subjects or any level of attributes in a network. Like edges, they can inherently bear any attributes.",
+       "Penalization", "In regression, penalization introduces additional penalty to the sum of squared errors, the model is trying to minimize. This way, by allowing a small increase in bias, the model is expected to exhibit  a lower level of variance. The graphical LASSO method, used in the current paper, uses absolute fraction of coefficiens as penalties. Insignificant or weak associations are expected to shrink towards 0."
+ )
+pander::pander(glossary_tb, format='simple', caption='Glossary of network analysis relevant terms mentioned in the article')
+```
+
 
 \newpage
 ## 2. Methods
@@ -589,6 +605,7 @@ Also, if keeping our analysis on the item-level, as in the present paper, we wou
 
 ## Appendix
 
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 knitr::kable(summary_table, format='simple', row.names=FALSE,caption="Network descriptive statistics for RRS, SCRS and their combined networks",label='Table 1',digits=2)
 ```
@@ -673,4 +690,6 @@ ggplot(ROC_data, aes(x, y)) +
     theme(legend.position = "bottom")
 ```
 \newpage
+
+
 ## References
