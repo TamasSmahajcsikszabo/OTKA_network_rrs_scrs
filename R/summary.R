@@ -200,7 +200,7 @@ dplyr::select(col, `RRS total`, `RRS brooding`, `RRS reflection`, `SCRS total`)
 
 lower_table <- lower_table[c(5,6,1,2,3),]
 colnames(lower_table)[2:5] <- c(1:4)
-corr <- bind_cols(tibble(col=c('RRS','RRS - brooding','RRS - reflection','SCRS')),corr)
+corr <- bind_cols(tibble(col=c('1. RRS','2. RRS - brooding','3. RRS - reflection','4. SCRS')),corr)
 summary_table <-bind_rows(corr, lower_table)
-colnames(summary_table) <- c("", 1:4)
+colnames(summary_table) <- c("", paste0(1:4, "."))
 

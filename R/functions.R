@@ -516,7 +516,7 @@ network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE
     summary["Title"] <- c(name, rep("", vcount(graph) - 1))
     summary["TPR"] <- round(V(add_community_certainty(graph, item_TPR))$TPR,3)
 
-    summary %>% select("Title", "Item", "Scale", "Label", everything(), -"Community")
+    summary %>% dplyr::select("Title", "Item", "Scale", "Label", everything(), -"Community")
 }
 
 degree_distribution_summary <- function(graph) {
@@ -849,9 +849,21 @@ add_community_certainty <- function(graph, item_TPR) {
     }
     graph
 }
-beautify <- function(graph, simulated_community, title = "Graph", no_caption = FALSE, force_caption = FALSE, textsize = 6, overalltextsize = 18, item_TDR) {
+
+add_label <- function(graphPlot, rowVector, styleVector) {
+    vjust <- 1.4
+    for (i in 1:length(rowVector)) {
+        graphPlot <- graphPlot + geom_text_node(aes(label=rowVector[i]), fontface = styleVector[i], vjust=vjust+0.2)
+
+    }
+    graphPlot
+}
+
+
+beautify <- function(graph, simulated_community, title = "Graph", no_caption = FALSE, force_caption = FALSE, textsize = 6, overalltextsize = 18, item_TDR, overallnodesize=12, legend="right") {
     require("ggraph")
     S <- nrow(simulated_community) / vcount(graph) / 8
+    fontfamily <- "Times New Roman"
     set.seed(42)
     caption <- paste0("TPR is average True Positive Rate with ", S, " times reruns of community detection")
     if (length(articulation_points(graph)) > 0) {
@@ -861,43 +873,41 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         caption <- ""
     }
     if (force_caption) {
-        caption <- paste0("TPR is average True Positive Rate with ", S, " times reruns of community detection")
-        caption <- paste0("* marks Articulation Points (cut vertices; when such vertices are  removed disconnect the graph)", "\n", caption)
-        caption <- paste0(caption, "\n Order is # of vertices; Size is # of edges")
-        caption <- paste0(caption, "\n Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% CI of bootstrap accuracy estimate")
-        caption <- paste0(caption, "\n Dashed edge line indicates the 95% CI of accuracy estimate ranges below 0.0")
+        caption <- paste0(" a., TPR is average True Positive Rate with ", S, " times reruns of community detection")
+        caption <- paste0(caption, "\n b., * marks Articulation Points (cut vertices; when such vertices are removed disconnect the graph)")
+        caption <- paste0(caption, "\n c., Order is # of vertices; Size is # of edges")
+        caption <- paste0(caption, "\n d., Edge width reflect edge weight (penalized part. corr.),\n while edge shade reflects lower bound of 95% CI of bootstrap accuracy estimate")
+        caption <- paste0(caption, "\n e., Dashed edge line indicates the 95% CI of accuracy estimate ranges below 0.0")
     }
     custom_colors <- tibble("subscale" = c("brooding", "reflection", "self-critical"), color = c("white", "#CA382A", "#0C38A0"))
     my_color_scale <- tibble("subscale" = V(graph)$subscale) %>% left_join(custom_colors)
     my_color_scale <- as.character(my_color_scale$color)
     names(my_color_scale) <- V(graph)$subscale
-    add_community_certainty(graph, item_TDR) %>%
+    plot <- add_community_certainty(graph, item_TDR) %>%
         add_articulation_point() %>%
         add_toolname() %>%
         ggraph(layout = "fr") +
-        geom_edge_density(edge_fill = "grey100") +
-        # scale_edge_color_manual(values=c("grey40", "grey0"))+
-        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), show.legend = FALSE) +
+        geom_edge_density(edge_fill = "white") +
+        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), show.legend = FALSE, color='grey70') +
         scale_color_manual(values = my_color_scale, name = "Sub-scale") +
-        geom_node_point(color = "black", size = 12) +
-        geom_node_point(aes(color = subscale), size = 10) +
-        geom_node_point(color = "white", size = 5) +
-        geom_node_point(aes(alpha = TPR), size = 5) +
-        # geom_node_label(aes(label = label), alpha=1/5, color='grey70', size = 5, vjust=-0.6) +
-        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold") +
-        # geom_node_label(aes(label = paste0(name, "-", subscale)),alpha=1/5, color='grey70', size = 5,vjust=-1.1) +
-        geom_node_text(aes(label = paste0(tool, "(", item_number, ")", "-", subscale)), size = textsize, vjust = -2.6) +
-        geom_node_text(aes(label = articulation_point), size = 13, hjust = -2.9, vjust = -1.0) +
-        # scale_color_manual(values = c("white", "grey30", "grey60"), name = "Sub-scale") +
+        geom_node_point(color = "black", size = overallnodesize) +
+        geom_node_point(aes(color = subscale), size = overallnodesize * (10/12)) +
+        geom_node_point(color = "white", size = overallnodesize * (5/12)) +
+        geom_node_point(aes(alpha = TPR), size = overallnodesize * (5/12)) + 
+        # geom_node_text(aes(label=paste0(tool, "(", item_number, ")",articulation_point, "\n", subscale, "\n", label)), size=textsize, vjust=1.5) + 
+        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold", family=fontfamily) +
+        geom_node_text(aes(label = paste0(subscale, "(", item_number, ")")), size = textsize, vjust = -2.6, family=fontfamily) +
+        geom_node_text(aes(label = articulation_point), size = overalltextsize * (13/18), hjust = -2.9, vjust = -1.0, family=fontfamily) +
         labs(
             caption = caption,
             title = title,
             subtitle = add_network_descriptives(graph)
         ) +
         theme(
-            legend.position = "right",
-            text = element_text(size = overalltextsize),
-            panel.background = element_rect(color = "black", fill = "white")
+            legend.position = legend,
+            text = element_text(size = overalltextsize, family=fontfamily),
+            panel.background = element_rect(color = "black", fill = "white"),
+            plot.caption = element_text(hjust=0)
         )
 }
 
@@ -1016,3 +1026,9 @@ edge_summary <- function(graph, accuracy_data, stability_data, statistic = "edge
     result %>% dplyr::select("Vx.1", "Vx.2", everything())
 }
 
+
+table_nums <- captioner::captioner(prefix = "Tab.")
+
+f.ref <- function(x) {
+  stringr::str_extract(table_nums(x), "[^:]*")
+}
