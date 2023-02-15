@@ -516,7 +516,8 @@ network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE
     summary["Title"] <- c(name, rep("", vcount(graph) - 1))
     summary["TPR"] <- round(V(add_community_certainty(graph, item_TPR))$TPR,3)
 
-    summary %>% dplyr::select("Title", "Item", "Scale", "Label", everything(), -"Community")
+    summary %>% dplyr::select("Graph"="Title", "Item", "Scale", "Label", everything(), -"Community")
+
 }
 
 degree_distribution_summary <- function(graph) {
@@ -876,7 +877,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         caption <- paste0(" a., TPR is average True Positive Rate with ", S, " times reruns of community detection")
         caption <- paste0(caption, "\n b., * marks Articulation Points (cut vertices; when such vertices are removed disconnect the graph)")
         caption <- paste0(caption, "\n c., Order is # of vertices; Size is # of edges")
-        caption <- paste0(caption, "\n d., Edge width reflect edge weight (penalized part. corr.),\n while edge shade reflects lower bound of 95% CI of bootstrap accuracy estimate")
+        caption <- paste0(caption, "\n d., Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% \n CI of bootstrap accuracy estimate")
         caption <- paste0(caption, "\n e., Dashed edge line indicates the 95% CI of accuracy estimate ranges below 0.0")
     }
     custom_colors <- tibble("subscale" = c("brooding", "reflection", "self-critical"), color = c("white", "#CA382A", "#0C38A0"))
@@ -895,9 +896,9 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         geom_node_point(color = "white", size = overallnodesize * (5/12)) +
         geom_node_point(aes(alpha = TPR), size = overallnodesize * (5/12)) + 
         # geom_node_text(aes(label=paste0(tool, "(", item_number, ")",articulation_point, "\n", subscale, "\n", label)), size=textsize, vjust=1.5) + 
-        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold", family=fontfamily) +
-        geom_node_text(aes(label = paste0(subscale, "(", item_number, ")")), size = textsize, vjust = -2.6, family=fontfamily) +
-        geom_node_text(aes(label = articulation_point), size = overalltextsize * (13/18), hjust = -2.9, vjust = -1.0, family=fontfamily) +
+        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold") +
+        geom_node_text(aes(label = paste0(subscale, "(", item_number, ")")), size = textsize, vjust = -2.6) +
+        geom_node_text(aes(label = articulation_point), size = overalltextsize * (13/18), hjust = -2.9, vjust = -1.0) +
         labs(
             caption = caption,
             title = title,
@@ -905,7 +906,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         ) +
         theme(
             legend.position = legend,
-            text = element_text(size = overalltextsize, family=fontfamily),
+            text = element_text(size = overalltextsize),
             panel.background = element_rect(color = "black", fill = "white"),
             plot.caption = element_text(hjust=0)
         )
@@ -996,7 +997,7 @@ edge_summary <- function(graph, accuracy_data, stability_data, statistic = "edge
     result <- tibble()
     result <- accuracy_data[[1]] %>% dplyr::select("Spl.Acc." = value)
     result <- bind_cols(result, accuracy_data[[2]] %>% ungroup())
-    linknames <- attributes(E(graph))[1]
+    linknames <- attributes(E(graph))['vnames']
     result <- result %>% mutate(link=paste0(node1,'|',node2)) %>% filter(link %in% unlist(linknames))  %>% dplyr::select(-link, -`Spl.Acc.`)
     colnames(result) <- c("Vx.1", "Vx.2", "Avg. Acc.", "L.B.Acc.", "U.B.Acc.")
     stability_cutpoints <- summary(stability_data$bootTable$nPerson)[c(1, 2, 3, 5, 6)] %>%
