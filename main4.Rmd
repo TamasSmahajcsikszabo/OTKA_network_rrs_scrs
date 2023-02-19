@@ -531,7 +531,7 @@ CS_estimates[2,6] <- 0.001
 CS_estimates$Metric  <-  c("Betweenness", "Closeness", "Edge Strength", "Expected Influence", "Edge Weight")
 ```
 
-As shown at [@Epskamp2017], the *Correlation Stability* coefficent is ideally between 0.25 and 0.5, the latter being the cut-off point for the estimate. 
+As shown at [@Epskamp2017], the *Correlation Stability* coefficent is not below 0.25, and preferably above 0.5. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 pander::pander(CS_estimates, 
@@ -540,10 +540,10 @@ pander::pander(CS_estimates,
 
 We found satisfactory correlation stability of the Betweenness statistic of the Brooding (RRS) stand-alone network ($\ CS_{Brooding}$=`r round(CS_estimates[1,3], 3)`) as Brooding has retraceble communities, and as we already pointed out above, had the only Articulation Point of the RRS network.
 Brooding, Reflection and the SCRS networks have acceptable correlation statistics for the closeness statistic ($\ CS_{Brooding}$=`r round(CS_estimates[2,3], 3)`, $\ CS_{Reflection}$=`r round(CS_estimates[2,4], 3)` and $\ CS_{SCRS}$=`r round(CS_estimates[2,5], 3)`).
-The Edge Strength (the sum of edge weight, in the present paper the partial correlation coefficients) and the Expected Influence statistics have good correlation stabilities on all networks; however, the Reflection stand-alone network exhibits higher than expected estimates  for Edge Strength (<0.5; $\ CS_{Reflection}$=`r  round(CS_estimates[3,4],3)`)  and Expected Influence (<0.5; $\ CS_{Reflection}$=`r  round(CS_estimates[4,4],3)`) which might be driven by the high correlation between items 4. and 10. of RRS.
-The Edge Weight shows higher-than-expected, but overall satisfactory patterns on all networks (*"Edge Weight"* row of Table 3.) which is the stability of our penalized partial correlation coefficients.
+The Edge Strength (the sum of edge weight, in the present paper the partial correlation coefficients) and the Expected Influence statistics have good correlation stabilities on all networks; specifically, the Reflection stand-alone network exhibits hig estimates  for Edge Strength ($\ CS_{Reflection}$=`r  round(CS_estimates[3,4],3)`) and Expected Influence ( $\ CS_{Reflection}$=`r  round(CS_estimates[4,4],3)`) which might be driven by the high correlation between items 4. and 10. of RRS.
+The Edge Weight shows highly satisfactory patterns on all networks (*"Edge Weight"* row of Table 3.) which is the expected stability of our penalized partial correlation coefficients.
 For the combined network of RRS and SCRS, we see stable Edge Strength, Edge Weight and Expected Influence stability estimates, whereas Betweenness ($\ CS_{combined}$=`r round(CS_estimates[1,6], 3)`) and Closeness ($\ CS_{combined}$=`r round(CS_estimates[2,6], 3)`) are unsatisfactory.
-These findings suggest that the combined network tolerates very few sample loss and sample variance when it comes to the Betweenness centrality and the Closeness centrality measures.
+These findings suggest that the combined network tolerates very few sample loss and sample variance when it comes to the Betweenness centrality and the Closeness centrality measures, as all networks are densely connected and fewer items can stand out with higher local importance such as being between sub-networks or being closer to other items.
 
 
 
