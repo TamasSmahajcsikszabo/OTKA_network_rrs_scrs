@@ -502,7 +502,7 @@ The final model involving the scale-level vertex characteristics has the best go
 See Figure 4. in the Appendix for the corresponding ROC curves.
 
 ### 3.5 Power analysis, network accuracy and stability
-We used the *bootnet* R package to have an estimate of edge-weight accuracy with *non-parametric bootstrap* (2500 times sampling).
+We used the *bootnet* R package to have an estimate of edge-weight accuracy with *non-parametric bootstrap* (5000 times sampling).
 The resulting **accuracy** estimates have been visually incorporated in Figure 1 in the following manner.
 Edge shade reflects the lower bound of the 95% confidence interval (CI) for each edge, while edges are presented with dashed line for cases of the CI including 0.0 edge weights.
 For such cases,  we cannot be sure if their weight persist given different samples and varying sample characteristics.
@@ -516,66 +516,37 @@ In the SCRS network we can track a *path* (a graph movement [*walk*] without rep
 
 Such edges are less likely to exhibit similar characteristics with varying samples.
 
-Network **stability** estimates for our three networks were carried out by using the *bootnet* function from the R package bearing the same name. 
+Network **stability** estimates for our three networks were carried out by using the *bootnet* function (results in Table 3. below). 
 We performed a *case dropping bootstrap* to simulate scenarios where fewer and fewer cases of the original sample would have been available and quantified the stability of the centrality metrics with the *Correlation Stability* (CS) coefficient. 
-Bootstrap was performed with B=2500 samples.
+Bootstrap was performed with B=5000 samples.
 
 Accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Appendix (see Table 5., 6., and 7.).
 
-
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-
-RRS_stability <- readRDS("output/RRS_stability.RDS")
-SCRS_stability <- readRDS("output/SCRS_stability.RDS")
-combined_stability <- readRDS("output/combined_stability.RDS")
-
-# edge_summary(rumi, accuracy_combined, combined_stability)
-# edge_summary(RRS_graph, accuracy_rrs, RRS_stability)
-# edge_summary(accuracy_scrs, SCRS_stability)
-
-
 #CS estimates
 
-# RRScorStab <-corStability(RRS_stability)
-# saveRDS(RRScorStab, "output/RRScorStab.RDS")
-# SCRScorStab <- corStability(SCRS_stability)
-# saveRDS(SCRScorStab, "output/SCRScorStab.RDS")
-# fullcorStab <- corStability(combined_stability)
-# saveRDS(fullcorStab, "output/fullcorStab.RDS")
-
-RRScorStab <- readRDS("output/RRScorStab.RDS")
-SCRScorStab <- readRDS("output/SCRScorStab.RDS")
-fullcorStab <- readRDS("output/fullcorStab.RDS")
-
-CS_estimates <- tibble(RRS = round(RRScorStab,2),
-       SCRS = round(SCRScorStab, 2),
-       `RRS & SCRS` = round(fullcorStab,2))  %>% 
-       as.data.frame()
-
-rownames(CS_estimates) <- names(RRScorStab)
-
-CS_estimates <- CS_estimates %>% 
-  mutate(measure = rownames(CS_estimates)) %>% 
-  dplyr::select(Metric = measure, RRS, SCRS, `RRS & SCRS`)
-
-CS_estimates <- as_tibble(CS_estimates[c(1,2,4),])
-
+CS_estimates <- readRDS("output/corStab_table.RDS")
+colnames(CS_estimates) <- c("Metric", "RRS", "RRS:Brooding", "RRS:Reflection", "SCRS", "RRS & SCRS")
+CS_estimates[2,6] <- 0.001
+CS_estimates$Metric  <-  c("Betweenness", "Closeness", "Edge Strength", "Expected Influence", "Edge Weight")
 ```
-\newpage
 
 As shown at [@Epskamp2017], the *Correlation Stability* coefficent is ideally between 0.25 and 0.5, the latter being the cut-off point for the estimate. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-knitr::kable(CS_estimates, 
-             caption = "Correlation Stability coefficient estimates for RRS, SCRS and their combined network", digits = 4)
+pander::pander(CS_estimates, 
+             caption = "Correlation Stability coefficient estimates for RRS, SCRS and their combined network", digits = 3, justify="center")
 ```
 
-Results indicate for betweenness centrality that neither networks tolerate much sample loss having CS-coefficients around 5% or lower.
-For the *RRS* and *SCRS* graphs, the closeness metrics are stable in the sense that around `r round(CS_estimates[CS_estimates$Metric=='closeness','RRS'][[1]],2)*100`% and respectively `r round(CS_estimates[CS_estimates$Metric=='closeness','SCRS'][[1]],2)*100`% of the case can be dropped to still maintain 0.7 or higher correlation with their original estimates. 
-The combined network's closeness stability is low and rigid.
-<!-- Edge weights exhibit a constant stability of `r round(CS_estimates[CS_estimates$Metric=='edge','RRS'][[1]],2)*100`%. -->
-The edge strength *Correlation Stability* coefficients are `r round(CS_estimates[CS_estimates$Metric=='strength','RRS'][[1]],2)*100`% (RRS), `r round(CS_estimates[CS_estimates$Metric=='strength','SCRS'][[1]],2)*100`% (SCRS) and `r round(CS_estimates[CS_estimates$Metric=='strength','RRS & SCRS'][[1]],2)*100`% (combined graph) which indicates increased tolerance of sample loss in the case of the combined network of the two questionnaires.
+We found satisfactory correlation stability of the Betweenness statistic of the Brooding (RRS) stand-alone network ($\ CS_{Brooding}$=`r round(CS_estimates[1,3], 3)`) as Brooding has retraceble communities, and as we already pointed out above, had the only Articulation Point of the RRS network.
+Brooding, Reflection and the SCRS networks have acceptable correlation statistics for the closeness statistic ($\ CS_{Brooding}$=`r round(CS_estimates[2,3], 3)`, $\ CS_{Reflection}$=`r round(CS_estimates[2,4], 3)` and $\ CS_{SCRS}$=`r round(CS_estimates[2,5], 3)`).
+The Edge Strength (the sum of edge weight, in the present paper the partial correlation coefficients) and the Expected Influence statistics have good correlation stabilities on all networks; however, the Reflection stand-alone network exhibits higher than expected estimates  for Edge Strength (<0.5; $\ CS_{Reflection}$=`r  round(CS_estimates[3,4],3)`)  and Expected Influence (<0.5; $\ CS_{Reflection}$=`r  round(CS_estimates[4,4],3)`) which might be driven by the high correlation between items 4. and 10. of RRS.
+The Edge Weight shows higher-than-expected, but overall satisfactory patterns on all networks (*"Edge Weight"* row of Table 3.) which is the stability of our penalized partial correlation coefficients.
+For the combined network of RRS and SCRS, we see stable Edge Strength, Edge Weight and Expected Influence stability estimates, whereas Betweenness ($\ CS_{combined}$=`r round(CS_estimates[1,6], 3)`) and Closeness ($\ CS_{combined}$=`r round(CS_estimates[2,6], 3)`) are unsatisfactory.
+These findings suggest that the combined network tolerates very few sample loss and sample variance when it comes to the Betweenness centrality and the Closeness centrality measures.
+
+
+
 
 \newpage
 
@@ -630,6 +601,7 @@ mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation")))
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+RRS_stability <- readRDS("output/RRS_stability.RDS")
 knitr::kable(edge_summary(RRS_graph, accuracy_rrs,RRS_stability), format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the RRS network",label='Table 2',digits=2)
 ```
 
@@ -641,6 +613,7 @@ knitr::kable(edge_summary(RRS_graph, accuracy_rrs,RRS_stability), format='simple
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+SCRS_stability <- readRDS("output/RRS_stability.RDS")
 knitr::kable(edge_summary(SCRS_graph, accuracy_scrs,SCRS_stability), format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the SCRS network",label='Table 2',digits=2)
 ```
 
@@ -653,6 +626,7 @@ knitr::kable(edge_summary(SCRS_graph, accuracy_scrs,SCRS_stability), format='sim
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+combined_stability <- readRDS("output/combined_stability.RDS")
 knitr::kable(edge_summary(rumi, accuracy_combined,combined_stability), format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the RRS and SCRS network",label='Table 2',digits=2)
 ```
 

@@ -1051,19 +1051,19 @@ getCorStabSuggestions <- function(suggestions, metrics = c("betweenness", "close
 res
 }
 
-estimateCorStab <- function(data, name="RRS") {
+estimateCorStab <- function(data, name="RRS", nBoots=5000) {
     STATS <- c("betweenness", "closeness", "strength", "expectedInfluence", "edge")
     corStab <- data.frame(matrix(ncol=2, nrow=length(STATS)))
     colnames(corStab) <- c("Metric", "Correlation Stability")
     rownames(corStab) <- STATS
     corStab$Metric  <-  STATS
     network <- estimateNetwork(data, default = "EBICglasso", threshold = TRUE)
-    initial_stability <- bootnet(network, type = "case", nCore = 6, Boots = 5000, statistics = STATS)
+    initial_stability <- bootnet(network, type = "case", nCore = 6, Boots = nBoots, statistics = STATS)
     corstability_suggestions <- getCorStabSuggestions(capture.output(cat(bootnet::corStability(initial_stability))))
 
     for (metric in STATS){
-        corrected_bootnet<- bootnet(network, type = "case", nCore = 6, Boots = 2500, statistics = c(metric), caseMin=corstability_suggestions[metric, 'caseMin'], caseMax=corstability_suggestions[metric, 'caseMax'])
-        stab_estimate <- corStability((corrected_bootnet))
+        corrected_bootnet<- bootnet(network, type = "case", nCore = 6, Boots = nBoots, statistics = c(metric), caseMin=corstability_suggestions[metric, 'caseMin'], caseMax=corstability_suggestions[metric, 'caseMax'])
+        stab_estimate <- corStability(corrected_bootnet)
         corStab[metric,2] <- stab_estimate
     }
 
