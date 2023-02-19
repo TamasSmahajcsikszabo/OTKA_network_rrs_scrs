@@ -518,7 +518,7 @@ Such edges are less likely to exhibit similar characteristics with varying sampl
 
 Network **stability** estimates for our three networks were carried out by using the *bootnet* function from the R package bearing the same name. 
 We performed a *case dropping bootstrap* to simulate scenarios where fewer and fewer cases of the original sample would have been available and quantified the stability of the centrality metrics with the *Correlation Stability* (CS) coefficient. 
-Bootstrap was performed with B=2500 resamples.
+Bootstrap was performed with B=2500 samples.
 
 Accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Appendix (see Table 5., 6., and 7.).
 

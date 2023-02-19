@@ -1033,3 +1033,41 @@ table_nums <- captioner::captioner(prefix = "Tab.")
 f.ref <- function(x) {
   stringr::str_extract(table_nums(x), "[^:]*")
 }
+
+getCorStabSuggestions <- function(suggestions, metrics = c("betweenness", "closeness", "strength", "expectedInfluence", "edge")) {
+    res <- data.frame(matrix(ncol = 3, nrow = length(metrics)))
+    colnames(res) <- c("metric", "caseMin", "caseMax")
+    rownames(res) <- metrics
+
+    for (metric in metrics) {
+        for (i in 1:length(suggestions)) {
+            if (str_detect(suggestions[i], metric)) {
+                res[metric, 1] <- metric
+                res[metric, 2] <- as.numeric(str_sub(suggestions[i + 1], str_locate(suggestions[i + 1], "caseMin = ")[1, 2], str_locate(suggestions[i + 1], ", caseMax")[1, 1][[1]] - 1))
+                res[metric, 3] <- as.numeric(str_sub(suggestions[i + 1], str_locate(suggestions[i + 1], "caseMax = ")[1, 2], nchar(suggestions[i+1])-2))
+            }
+        }
+    }
+res
+}
+
+estimateCorStab <- function(data, name="RRS") {
+    STATS <- c("betweenness", "closeness", "strength", "expectedInfluence", "edge")
+    corStab <- data.frame(matrix(ncol=2, nrow=length(STATS)))
+    colnames(corStab) <- c("Metric", "Correlation Stability")
+    rownames(corStab) <- STATS
+    corStab$Metric  <-  STATS
+    network <- estimateNetwork(data, default = "EBICglasso", threshold = TRUE)
+    initial_stability <- bootnet(network, type = "case", nCore = 6, Boots = 5000, statistics = STATS)
+    corstability_suggestions <- getCorStabSuggestions(capture.output(cat(bootnet::corStability(initial_stability))))
+
+    for (metric in STATS){
+        corrected_bootnet<- bootnet(network, type = "case", nCore = 6, Boots = 2500, statistics = c(metric), caseMin=corstability_suggestions[metric, 'caseMin'], caseMax=corstability_suggestions[metric, 'caseMax'])
+        stab_estimate <- corStability((corrected_bootnet))
+        corStab[metric,2] <- stab_estimate
+    }
+
+    saveRDS(corStab, paste0("output/", name, "_corStab.RDS"))
+    corStab
+}
+

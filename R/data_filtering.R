@@ -21,13 +21,13 @@ SCRS_subset <- dataset[, SCRS_items]
 SCRS_goldbricker <- goldbricker(SCRS_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
 SCRS_goldbricker$proportion_matrix
 suggested_SCRS <- SCRS_goldbricker$suggested_reductions
-SCRS_subset_reduced <- net_reduce(SCRS_subset, SCRS_goldbricker, method = c("PCA", "best_goldbricker"))
+# SCRS_subset_reduced <- net_reduce(SCRS_subset, SCRS_goldbricker, method = c("PCA", "best_goldbricker"))
 
 # MHC
-MHC_items <- grep("MHC_[1,2,3,4,5,6,7,8,9,10]", var_names)
-MHC_subset <- dataset[, MHC_items]
+# MHC_items <- grep("MHC_[1,2,3,4,5,6,7,8,9,10]", var_names)
+# MHC_subset <- dataset[, MHC_items]
 
-MHC_goldbricker <- goldbricker(MHC_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
-MHC_goldbricker$proportion_matrix
-MHC_goldbricker$suggested_reductions
-MHC_subset_reduced <- net_reduce(MHC_subset, MHC_goldbricker, method = c("PCA", "best_goldbricker"))
+# MHC_goldbricker <- goldbricker(MHC_subset, p = 0.05, method = "hittner2003", threshold = 0.25, corMin = 0.5, progressbar = TRUE)
+# MHC_goldbricker$proportion_matrix
+# MHC_goldbricker$suggested_reductions
+# MHC_subset_reduced <- net_reduce(MHC_subset, MHC_goldbricker, method = c("PCA", "best_goldbricker"))
