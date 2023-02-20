@@ -35,24 +35,20 @@ library(ROCR)
 library(bookdown)
 source("R/data_import.R")
 source("R/functions.R")
-# data import
-source("../networks_with_r/get_rumi.R")
-suppressMessages(extrafont::loadfonts(device='postscript'))
-setwd('../networks_with_r')
 source("get_rumi.R")
-source("src/functions.R")
+suppressMessages(extrafont::loadfonts(device='postscript'))
 setwd('/home/tamas/repos/rumination_lasso')
 source('R/summary.R')
 ```
 ## 1. Introduction
 
-According to the *Response Style Theory*, rumination, or depressive rumination, is repetitive thinking about the causes, symptoms, circumstances and consequences of negative mood states and distress [@Hoeksema1991; @Watkins2008]. 
+According to the *Response Style Theory*, rumination or depressive rumination, is a repetitive thinking pattern about the causes, symptoms, circumstances and consequences of negative mood states and distress [@Hoeksema1991; @Watkins2008]. 
 Cross-sectional and longitudinal studies [@Butler_1994; @Nolen_Hoeksema_1999; @Whisman_2020] suggest that rumination could maintain and exacerbate existing psychopathology. 
 Depressive rumination can contribute to the onset or recurrence of several symptoms and disorders [@Aldao_2012; @Lyubomirsky_2015; @Lyubomirsky_1993; @Nolen_Hoeksema_2008; @Ruscio_2015; @Watkins_2020; @Whisman_2020].
 As a trans-diagnostic characteristic [@Nolen_Hoeksema_2011], rumination was found to predict the onset of major depressive disorder across one year in adolescent [@Broderick_2004; @Wilkinson_2013] and adult samples [@Nolen_Hoeksema_2008], and was involved in generalized anxiety disorder [@Nolen_Hoeksema_2000] and PTSD [@Moulds_2020]. 
 Rumination was found to have a role in depression and anxiety [@McLaughlin_2014], bipolar disorder [@Kov_cs_2020], borderline personality disorder [@Selby_2008], social phobia [@Abbott_2004], or psychosis [@Hartley_2013].
 
-Rumination can lead to negative mood states and thoughts mutually amplify and prolong each other [@Watkins_2020]. 
+Rumination can lead to negative mood states and thoughts mutually amplifying and prolonging each other [@Watkins_2020]. 
 However, consequences and effects of rumination are not specific to clinical samples, and can be identified in the background of the ruminative processes of healthy people [@Ciesla_2007; @Moulds_2007]. 
 As such, rumination could interfere with effective problem-solving by reducing self-confidence [@Watkins_2005]; reduce willingness to engage in pleasant activities [@Lyubomirsky_2015]; lead to elevated level of uncertainty [@Ward_2003], avoidance or personal difficulties [@Hayes_2004; @Yasinski_2019]. 
 As a multifaceted construct, rumination is often operationalized as depressive rumination and consequently measured by the *Response Style Questionnaire* **RSQ**, or its shorter form the *Ruminative Response Scale*, **RRS** [@Hoeksema1991; @Treynor_2003]. 
@@ -85,8 +81,8 @@ Previous work also supported the notion that individuals can show different form
 Because of its multifaceted structure and the question of boundaries between the different subtypes of rumination, it could be beneficial to investigate them in a network perspective. 
 Contrary to latent variable models, network analysis does not seek for a common cause of co-occurrence of indicators (e.g. different items of a questionnaire) but shift the focus toward the relationships and interactions between variables [@Epskamp_2017]. 
 *Psychological networks* have their own characteristics which differentiate them from other kinds of networks of graph theory (@Epskamp2017; @Epskamp_2018; @Newman2010). 
-Vertices (also called nodes) usually represent some psychological measures or items of a psychological surveys or questionnaires, while the edges of the network reflect the corresponding estimates of association derived from the data.
-In this way, in a network model the construct of rumination could be interpreted as a system in which some aspects relate or even stimulate each other, while other aspects have negative or inhibiting effects [@Costantini_2015]. 
+Vertices (also called nodes) usually represent some psychological measures or items of psychological surveys or questionnaires, while the edges of the network reflect the corresponding estimates of association derived from the data.
+Thus in a network model, the construct of rumination could be interpreted as a system in which some aspects relate or even stimulate each other, while other aspects have negative or inhibiting effects [@Costantini_2015]. 
 Thanks to this data-driven approach we can test how self-critical and depressive ruminative processes or the different items of the ruminative questionnaires cluster and relate to each other and we can gain important insights which could remain hidden by relying only on latent variable models [@Bernstein2019]. 
 Having two rumination-related questionnaires, the **Ruminative Response Style **(*RRS*) and the **Self-critical Rumination Scale** (*SCRS*), we assumed the following hypotheses:
 
@@ -132,7 +128,7 @@ The protocol was designed in accordance with the Declaration of Helsinki and the
 The *Self-Critical Rumination Scale* **SCRS**; [@Smart_2015] was used to assess those thoughts that criticize the self for perceived failures, mistakes or bad habits in a prolonged and repetitive manner. 
 The SCRS is a self-reported, one factor scale that consists of 10 items. 
 Participants were asked to rate the statements (i.e. “*My attention is often focused on aspects of myself that I’m ashamed of*”; “*I criticize myself a lot for how I act around other people*”) on a 4-point Likert scale from 1 (not at all) to 4 (very much). 
-The scale showed high internal consistency in the original version (Cronbach's Alpha(CA)=0.92). We obtained a satisfactory estiamte (CA=`r round(crA_SCRS_total$alpha[1],2)`). 
+The scale showed high internal consistency in the original version (Cronbach's Alpha (CA)=0.92). We obtained a satisfactory estimate (CA=`r round(crA_SCRS_total$alpha[1],2)`). 
 
 The short form of *Ruminative Response Scale* **RRS**; [@Treynor_2003] was used to measure mood dependent rumination, which consists of 10 items and quantifies ruminative thoughts via two dimensions (each composed of 5 items). 
 The *brooding* subscale of **RRS** measures the maladaptive form or ruminative thinking (i.e. “*What am I doing to deserve this?*”), while the  *reflective pondering* (or reflection) factor measures a more adaptive form of self-reflecting thinking (i.e. “*I write down what I am thinking and analyze it*”). 
@@ -149,13 +145,13 @@ Besides the **SCRS** and **RRS** basic socio-demographic information (e.g. age, 
 ### 2.3. Network modeling, descriptives and communities
 
 In the current study, we constructed a dense, undirected network of rumination-related psychological constructs. 
-The vertices represent the items of the *RRS* and *SCRS*, while edges are penalized partial correlations using LASSO penalization, see [@Friedman2007; @Tibshirani1996].
+The vertices represent the items of the *RRS* and *SCRS*, while edges are penalized partial correlations using LASSO (Least Absolute Shrinkage and Selection Operator) penalization [ @Friedman2007; @Tibshirani1996].
 
 We used individual and combined networks of *RRS* and *SCRS* with respective penalized correlation matrices using the *EBICglasso* function of the **qgraph** package [@Epskamp2012a]. 
 See our Git repository for other parameter specifications.
 In order to shrink the edges, achieve high specificity, and get a less dense network, we let the function to exclude any elements of the underlying precision matrix below a threshold value (*threshold* parameter set to TRUE).
 
-The **LASSO** uses *L1* (absolute) regularization [@Tibshirani1996; @Friedman2007]. 
+The LASSO uses *L1* (absolute) regularization [@Tibshirani1996; @Friedman2007]. 
 In the current study, the method resulted in a partial correlation network where edges represent direct associations between pairs of items, while the influence of all other items in the network are kept controlled. 
 The regularization by *L1* penalty lets trivially small partial correlations to be set to zero [@McNally_2017], thus ensure a *sparse* network which are more interpretable [@Epskamp_2018]. 
 
@@ -173,26 +169,26 @@ var_names <- names(dataset)
 ```
 
 A comparative overview of the three networks was produced with their descriptives (degree distribution) and their centrality measures (strength, closeness, betweenness; @GaborCsardi2020), and their One- and Two-Step Expected Influence (EI) measures to understand the cumulative importance of vertices [@Robinaugh2016; @Heeren2018; @Bernstein2019].
-In order to further elaborate the question of vertex importance, we identified *bridge nodes* using the functions provided by the *networktools* R package [@Jones2017] to identify bridge vertices, in other words, connectors between sub-graphs, see an example at [@Bernstein2019]. 
+In order to further elaborate the question of vertex importance, we identified *bridge nodes* using the functions provided by the *networktools* R package [@Jones2017] to identify bridge vertices, in other words, connectors between sub-graphs [see an example at @Bernstein2019]. 
 We estimated both one-step and two-step bridge expected influence measures which reflect the sum of edge weights connecting one vertex to other groups on vertices (or communities); and also express a vertex's secondary influence on the rest of the network, respectively. 
 Higher influence scores indicate that a certain vertex is more likely to active neighbouring vertices or communities.
 In order to estimate the Expected Influence metrics, we used the *expectedInf* function of the *networktools* R package.
-Also, to get an understanding of communities of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established sub-scale structure of *RRS*, *SCRS*; and to investigate their separation in their combined network, we used the community detection methods available in the *igraph* R package [@GaborCsardi2020]. 
+Also, to get an understanding of communities of vertices and to see if vertices can be grouped into neighbourhoods corresponding to the previously established sub-scale structure of *RRS* and *SCRS*; and to investigate their separation in their combined network, we used the community detection methods available in the *igraph* R package [@GaborCsardi2020]. 
 When detecting possible communities of vertices, we followed guidelines by [@Reichardt2006; @Bernstein2019; @GaborCsardi2020].
-In order to mitigate the effect of choice of community detection algorithms, we performed more available algorithms from the *igraph* package multiple times (B=1000).
+In order to mitigate the effect of choice of community detection algorithms, we performed more available algorithms from the *igraph* package multiple times (B=1000) in weighted and unweighted settings, too.
 
 ### 2.4 Internal Structure with an exponential random graph model
 In order to measure the impact of of one item belonging to a questionnaire (*RRS*, *SCRS*) and their respective scales (*brooding*, *reflection* and *self-critical*) on the combined network structure, we constructed an *exponential random graph model* (ERGM) [@Hunter2007].
 In our model, *endogenous* predictors (related to the nature of the network structure) included the **number of edges** in the network (*edges* member), and a generalization of triadic structures based on alternating sums of *k-triangles* [@Hunter2007; @Goodreau2009] to involve some higher-order global network structures. 
 This predictor served as a reflection on **clustering** in the form of completed triangles of vertices.
-As estimator, we used *GWESP* [see @Goodreau2009], which stands for *geometrically weighted edgewise shared partner distribution*.
+As estimator, we used *GWESP* (*geometrically weighted edgewise shared partner distribution*) [see @Goodreau2009].
 *GWESP* has the advantage of taking a parametric form of the shared common vertex count distribution on each edge, giving each connecting vertex a declining positive probability of two selected vertices being connected.
-In order to capture *exogenous* effects (i.e., vertex attributes), we added *questionnaire* and *sub-scale * as predictors, especially testing for *homophily* (assuming that items belonging to the same questionnaire and its scale will increase the log-odds of being connected by an edge).
+In order to capture *exogenous* effects (i.e., vertex attributes), we added *questionnaire* and *sub-scale * as predictors, especially testing for *homophily* (assuming that items belonging to the same questionnaire and its scale will have higher probability of being connected by an edge).
 
 ### 2.5 Association Network Inference
-In order to understand the nature of the edges in the combined association network, we conceptualized the combined network as an association network, associations given by the correlation coefficients between responses to items.
-Our aim was here to discern real edges from non-edges (when two items are not correlated) and derive the mixture null distribution in a data-driven fashion. 
-The R package **fdrtool** [@Strimmer2008; @Strimmer2008a] allowed us to model the probability density function and estimate **$\eta_0$**, the fraction of true null hypotheses expected in the correlaction coefficients of the data; and (1-**$eta_0$**) for the true alternative hypotheses.
+In order to understand the nature of the edges in the combined association network, we conceptualized the combined network as an *association network*, associations given by the correlation coefficients between responses to items.
+Our aim was to discern real edges from non-edges (when two items are not correlated) and derive the mixture null distribution in a data-driven fashion. 
+The R package **fdrtool** [@Strimmer2008; @Strimmer2008a] allowed us to model the probability density function and estimate **$\eta_0$** (the fraction of true null hypotheses); and (1-**$eta_0$**) for the true alternative hypotheses.
 The mixture model for some statistic *S* thus takes the following form (where in our analysis, S is the partial correlation coefficient).
 
 \begin{center}
@@ -205,29 +201,29 @@ To apply adjustment due to the number of performed tests, we controlled p-value 
 We constructed an *eigenmodel* to further explore the structure of the combined graph of *RRS* and *SCRS* [@Hoff2002; methodology following @Mair2018; @GaborCsardi2020] and how well the network structure predicts edges.
 Our expectation was that sub-scales will have non-trivial impact on the resulting eigenvalues.
 In our two-part analysis, first we used eigenvalue decomposition in order to use the first two eigenvectors reflective to our scale- and sub-scale structures of *RRS* and *SCRS*.
-In the second part, we defined three conditions in the *eigenmodel* on top of the original model.
-In the first iteration we used the original *eigenmodel* (discussed above) without the regression component, defining the adjacency matrix as function of only the pairwise latent effects summarized in the following matrix.
+In the second part, we defined three conditions of our *eigenmodel*.
+In the first condition we used the original *eigenmodel* (discussed above) without any additional regression components, defining the adjacency matrix only as a function of the pairwise latent effects summarized in the following matrix.
 
 \begin{center}
 $\ Y_{ij}=f(u_i \Lambda u_j) $
 \end{center}
 
-In the second and third iterations, we defined an optional regression model in addition to the pairwise latent effects, where $\textbf{x}_{ij}$ is a pair-specific predictor vector.
+In the second and third conditions, we defined optional regression components in addition to the pairwise latent effects, where $\textbf{x}_{ij}$ is a pair-specific predictor vector.
 This extends our model to the following equation.
 
 \begin{center}
 $\ Y_{ij}=f(\beta^{'} x_{ij} +  u_i \Lambda u_j) $
 \end{center}
 
-In the second iteration, we cross-validated an extended *eigenmodel* with **Questionnaire** (*RRS* or *SCRS*) serving as nominal grouping factor of vertices.
-In the same manner, the third iteration tested a model with the **Scales** of *brooding*, *reflection* and *self-critical* serving as pair-wise covariate predictor effects.
+In the second condition, we cross-validated an extended *eigenmodel* with **Questionnaire** (*RRS* or *SCRS*) serving as grouping factor of vertices (the model captured the pairwise connections and Questionnaire playing an additional role in the edge formation process).
+In the same manner, the third condition tested a model with the **Scales** of *brooding*, *reflection* and *self-critical* serving as pair-wise covariate predictor effects.
 
 ### 2.7. Power analysis, network accuracy and stability
 Accuracy and stability have an important role in estimating network parameters when samples might vary in characteristics and size [@Epskamp2017; @Epskamp2017a]. 
 One way of estimating network accuracy is to produce a 95% confidence interval of edge-weights with some variant of bootstrap. 
 In the present paper, we chose the non-parametric bootstrap estimate for interpretability.
 Network stability is quantified with the *Correlation Stability* (*CS*-coefficient): an estimate of the maximum proportion of cases that can be dropped (with 95% certainty) to retain a correlation with the original centrality higher than some fixed threshold value (in the present paper, 0.7). 
-Simulation studies [@Epskamp2017] lead us in our expectation as the *CS*-coefficient should be between 0.25 and 0.5. 
+Simulation studies [@Epskamp2017] lead us in our expectation as the *CS*-coefficient should be between above 0.25, preferably higher than 0.5. 
 
 \newpage 
 
@@ -308,7 +304,7 @@ RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected
 SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=SCRS_item_TDR, overallnodesize=overallnodesize)
 combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS & SCRS undirected graph",force_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize, item_TDR=combined_item_TDR, overallnodesize=overallnodesize)
 network_plot <- ggarrange(ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1,1)), combined_plot, widths=c(0.95,1.05))
-ggsave("output/networkplot.png",network_plot, dpi=400, device='png',width=27, height=14)
+ggsave("output/networkplot.png",network_plot, dpi=400, device='png',width=35, height=18)
 
 # RRS_simulated_communities  %>%
 #     group_by(Item, Community)  %>%
@@ -456,7 +452,10 @@ for (item in seq_along(itemnames)) {
     item_name <- paste0(paste0(strsplit(itemnames[item],"_")[[1]], collapse="("),")")
     labels[item] <- paste0(item_name, "\n", label)
 }
-plot_eigen(evecs, evals, rumi_graph, toolnames, subscale, labels)
+ploteigen <- plot_eigen(evecs, evals, rumi_graph, toolnames, subscale, labels)
+
+ggsave("output/eigenplot.png",ploteigen, dpi=400, device='png',width=15, height=10)
+ploteigen
 ```
 
 Our visual insight from Figure 2. is that the first eigenvector serves as a separator between *RRS* and *SCRS* having a posterior mean of $\bar{ev_1}$=`r round(evals[1],3)`.
@@ -514,8 +513,6 @@ These items exhibit the same pattern in the combined network with estimated edge
 
 In the SCRS network we can track a *path* (a graph movement [*walk*] without repeated edges or vertices) between *SCRS* 6, 5, 9 and 10 items (please refer to Table 5. for edge-level weight and accuracy estimates of *SCRS*).
 
-Such edges are less likely to exhibit similar characteristics with varying samples.
-
 Network **stability** estimates for our three networks were carried out by using the *bootnet* function (results in Table 3. below). 
 We performed a *case dropping bootstrap* to simulate scenarios where fewer and fewer cases of the original sample would have been available and quantified the stability of the centrality metrics with the *Correlation Stability* (CS) coefficient. 
 Bootstrap was performed with B=5000 samples.
@@ -531,7 +528,7 @@ CS_estimates[2,6] <- 0.001
 CS_estimates$Metric  <-  c("Betweenness", "Closeness", "Edge Strength", "Expected Influence", "Edge Weight")
 ```
 
-As shown at [@Epskamp2017], the *Correlation Stability* coefficent is not below 0.25, and preferably above 0.5. 
+As shown at [@Epskamp2017], the *Correlation Stability* coefficent is not acceptable below 0.25, and preferably stays above 0.5. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 pander::pander(CS_estimates, 
@@ -540,10 +537,10 @@ pander::pander(CS_estimates,
 
 We found satisfactory correlation stability of the Betweenness statistic of the Brooding (RRS) stand-alone network ($\ CS_{Brooding}$=`r round(CS_estimates[1,3], 3)`) as Brooding has retraceble communities, and as we already pointed out above, had the only Articulation Point of the RRS network.
 Brooding, Reflection and the SCRS networks have acceptable correlation statistics for the closeness statistic ($\ CS_{Brooding}$=`r round(CS_estimates[2,3], 3)`, $\ CS_{Reflection}$=`r round(CS_estimates[2,4], 3)` and $\ CS_{SCRS}$=`r round(CS_estimates[2,5], 3)`).
-The Edge Strength (the sum of edge weight, in the present paper the partial correlation coefficients) and the Expected Influence statistics have good correlation stabilities on all networks; specifically, the Reflection stand-alone network exhibits hig estimates  for Edge Strength ($\ CS_{Reflection}$=`r  round(CS_estimates[3,4],3)`) and Expected Influence ( $\ CS_{Reflection}$=`r  round(CS_estimates[4,4],3)`) which might be driven by the high correlation between items 4. and 10. of RRS.
+The Edge Strength (the sum of edge weight, in the present paper the partial correlation coefficients) and the Expected Influence statistics have good correlation stabilities on all networks; specifically, the Reflection stand-alone network exhibits high estimates  for Edge Strength ($\ CS_{Reflection}$=`r  round(CS_estimates[3,4],3)`) and Expected Influence ( $\ CS_{Reflection}$=`r  round(CS_estimates[4,4],3)`) which might be driven by the high correlation between items 4. and 10. of RRS.
 The Edge Weight shows highly satisfactory patterns on all networks (*"Edge Weight"* row of Table 3.) which is the expected stability of our penalized partial correlation coefficients.
 For the combined network of RRS and SCRS, we see stable Edge Strength, Edge Weight and Expected Influence stability estimates, whereas Betweenness ($\ CS_{combined}$=`r round(CS_estimates[1,6], 3)`) and Closeness ($\ CS_{combined}$=`r round(CS_estimates[2,6], 3)`) are unsatisfactory.
-These findings suggest that the combined network tolerates very few sample loss and sample variance when it comes to the Betweenness centrality and the Closeness centrality measures, as all networks are densely connected and fewer items can stand out with higher local importance such as being between sub-networks or being closer to other items.
+These findings suggest that the combined network tolerates very few sample loss and sample variance when it comes to the Betweenness centrality and the Closeness centrality measures, as all networks are densely connected and fewer items can stand out with higher local importance such as being between sub-networks.
 
 
 
@@ -672,6 +669,8 @@ ggplot(ROC_data, aes(x, y)) +
  glossary_tb <- tribble(
      ~Term, ~Definition,
      "Articulation point", "A measure of vertex influence: V(i) vertex of G graph is an Articulation Point, if removed from the graph, would segment, cut or disintegrate the graph; therefore is considered locally important.",
+     "","",
+     "Association network","A network where neighbouring vertices when connected are assumed to being associated; in other words, edges represent some measure of correlation or other kind of association; this makes them different from energy or information flow networks, for instance.",
      "","",
       "Community Detection", "A group of algorithmic methods to find clusters of nodes  whose community can be described by systematic variance encoded in data represented in edges and node characteristics, and therefore are non-trivial. In the current paper, we used four selected algorithms to estimate how well they identify the original subscale-structure of the RRS and SCRS questionnaires.",
      "","",
