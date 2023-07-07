@@ -69,8 +69,8 @@ Rumination was found to be a significant mediator between self-criticism and dep
 Thus, we can assume that rumination is one of those processes by which these negative self-devaluating thoughts are sustained and connected to psychopathology. 
 Investigating rumination in the context of self-critical thoughts is paramount, especially in light of the results of a recent meta-analysis which indicated that the harsh and persistent forms of self-criticism did not change through short-term interventions [@Werner_2019].
 
-Self-critical rumination significantly differ from depressive rumination, mostly by the focus of thoughts [@Smart_2015]. 
-While in self-critical rumination, individuals concentrate on the their lack of self-worth or those aspects of the self of which they are ashamed of, in depressive rumination one’s attention is directed towards the symptoms of depression [@Nolen_Hoeksema_2000]. 
+Self-critical rumination significantly differs from depressive rumination, mostly by the focus of thoughts [@Smart_2015]. 
+While in self-critical rumination, individuals concentrate on their lack of self-worth or those aspects of the self of which they are ashamed of, in depressive rumination one’s attention is directed towards the symptoms of depression [@Nolen_Hoeksema_2000]. 
 Indeed, in a recent study, self-critical rumination was strongly related to shame and predicted sensitivity to stress after a perceived failure [@Milia_2020]. 
 Positive meta-cognitions in self-critical rumination [@Kolubinski_2017] likely has less importance than in depressive rumination [@Papageorgiou_2001]. 
 One can assume that in depressive rumination the positive, while in self-critical rumination the negative meta-cognitions (e.g. “*I will get depressed if I don’t stop reviewing my self-critical thoughts*”) are those processes which maintain the ruminative process [@Kolubinski_2017].
@@ -232,7 +232,7 @@ Simulation studies [@Epskamp2017] lead us in our expectation as the *CS*-coeffic
 ### 3.1 Descriptives, network descriptives and community detection
 Pearson correlation coefficients and Cronbach’s Alphas of the scales, means and standard deviations (for the total sample, and for females and males separately) are presented in Table 1. below.
 The data being skewed and homoscedasticity being hurt between gender groups, we estimated 20% trimmed Cohen's d coefficients. 
-With medium-to-high effect sizes, Cliff's delta suggest group differences for female participants having higher scores on **RRS**, **SCRS** and RRS sub-scales (with at least 0.577 or higher probability).
+With medium-to-high effect sizes, Cliff's delta suggests group differences for female participants having higher scores on **RRS**, **SCRS** and RRS sub-scales (with at least 0.577 or higher probability).
 As expected [@Smart_2015], significant positive correlations were found between SCRS and RRS total scores (and both sub-scales), indicating that self-critical rumination somewhat differs from depressive mood related rumination, but people who are likely to ruminative self-critically are also likely to ruminate about their mood.
 
 
@@ -358,7 +358,7 @@ network_plot
 
 \elandscape
 
-As the choice of algorithm has non-trivial impact on the identified community structure, after having selected the *"optimal"*, the *"spinglass"*, the *"walktrap"* and (to also include hierarchical clustering) the *"fast greedy"* methods, we tested each a `r i` times on the three networks.
+As the choice of algorithm has non-trivial impact on the identified community structure, after having selected the *"optimal"*, the *"spinglass"*, the *"walktrap"* and (to also include hierarchical clustering) the *"fast greedy"* methods, we tested each `r i` times on the three networks.
 We also provided an edge weight vector for community detection in the form of the *LASSO*-penalized partial correlation coefficients (or alternatively, omitted weights).
 Presented TPR values are therefore averages of estimates from all these conditions.
 
@@ -408,7 +408,7 @@ knitr::kable(ergm_tidy,digits=3,label="", caption="ERGM model fit results with M
 # mcmc.diagnostics(ergm_model_fit)
 ```
 
-An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p=`r format(round(anova_tidy$Pr...Chisq..[2][[1]],3),nsmal=3)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
+An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$residual.deviance[2][[1]],3)`, p=`r format(round(anova_tidy$Pr...Chisq..[2][[1]],3),nsmal=3)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
 The detailed analysis reveals that *endogenous* effects such as the overall density of the network (number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`), and at p<0.05 level the closed triangle formulation  indicates a non-trivial impact on clustering (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`).
 As expected, *exogenous* effects, such as two items belonging to the same sub-scale have a significant positive impact on connectivity (sub-scale changes edge probability by `r round(get_p(ergm_tidy$Estimate[5][[1]]),3)`, keeping the rest of the network fixed).
 Questionnaires themselves have no impact on edge formation ('Questionnaire main effect').

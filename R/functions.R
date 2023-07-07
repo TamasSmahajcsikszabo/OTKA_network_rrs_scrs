@@ -1071,3 +1071,38 @@ estimateCorStab <- function(data, name="RRS", nBoots=5000) {
     corStab
 }
 
+
+library(tidyverse)
+library(ggrepel)
+
+plot_eigen <- function(evecs, postmeans, graph, namevecs, subscale, labels,textsize=14) {
+    plot_data <- data.frame(evecs)
+    colnames(plot_data) <- c("dim1", "dim2")
+    colors <- data.frame(tool=namevecs)
+    plot_data <- bind_cols(plot_data, colors)
+    item_name <- namevecs
+    plot_data['name'] <- item_name
+    plot_data['Sub-scale'] <- subscale
+    names(plot_data)[3] <- 'Questionnaire'
+    territory <- plot_data %>%
+        group_by(Questionnaire) %>%
+        slice(chull(dim1, dim2))
+
+    custom_colors <- tibble('Sub-scale'=c('Brooding', 'Reflection', 'Self-critical'), color=c('white', '#CA382A', '#0C38A0'))
+    my_color_scale <- plot_data %>%  left_join(custom_colors)
+    my_color_scale <- as.character(my_color_scale$color)
+    names(my_color_scale) <- plot_data$`Sub-scale`
+
+    ggplot() +
+        geom_polygon(data=territory, aes(dim1, dim2, fill=Questionnaire), alpha=1/3,color='black', show.legend=TRUE) +
+        geom_point(data=plot_data, aes(dim1, dim2, shape=`Sub-scale`),size=6,alpha=1/2,color='black',fill='white') +
+        geom_point(data=plot_data, aes(dim1, dim2, color=`Sub-scale`, shape=`Sub-scale`),size=5) +
+        geom_text_repel(data=plot_data,aes(dim1, dim2, label=labels), size=textsize/3)+
+        theme_bw() +
+        scale_color_manual(values=my_color_scale) +
+        scale_fill_manual(values=c("#CA382A", "#0C38A0")) +
+        labs(x=paste0('1. Eigen Vector [m=', round(postmeans[1],3), "]"), y=paste0('2. Eigen Vector [m=', round(postmeans[2],3), ']')) +
+        labs(caption='* posterior means of eigenvalues are in [] after axis labels')+
+        theme(legend.position = "bottom",
+            text=element_text(size=textsize))
+}
