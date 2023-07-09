@@ -877,7 +877,8 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         caption <- paste0(" a., TPR is average True Positive Rate with ", S, " times reruns of community detection")
         caption <- paste0(caption, "\n b., * marks Articulation Points (cut vertices; when such vertices are removed disconnect the graph)")
         caption <- paste0(caption, "\n c., Order is # of vertices; Size is # of edges")
-        caption <- paste0(caption, "\n d., Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% \n CI of bootstrap accuracy estimate")
+        # caption <- paste0(caption, "\n d., Edge width reflect edge weight (penalized part. corr.), while edge shade reflects lower bound of 95% \n CI of bootstrap accuracy estimate")
+        caption <- paste0(caption, "\n d., Edge width reflect edge weight (penalized part. corr.)")
         caption <- paste0(caption, "\n e., Dashed edge line indicates the 95% CI of accuracy estimate ranges below 0.0")
     }
     custom_colors <- tibble("subscale" = c("brooding", "reflection", "self-critical"), color = c("white", "#CA382A", "#0C38A0"))
@@ -889,7 +890,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         add_toolname() %>%
         ggraph(layout = "fr") +
         geom_edge_density(edge_fill = "white") +
-        geom_edge_fan(aes(alpha = accuracy, width = weight, linetype = accuracy < 0), show.legend = FALSE, color='grey70') +
+        geom_edge_fan(aes(width = weight, linetype = accuracy < 0), show.legend = FALSE, color='grey70') +
         scale_color_manual(values = my_color_scale, name = "Sub-scale") +
         geom_node_point(color = "black", size = overallnodesize) +
         geom_node_point(aes(color = subscale), size = overallnodesize * (10/12)) +
