@@ -42,27 +42,27 @@ source('R/summary.R')
 ```
 ## 1. Introduction
 
-According to the *Response Style Theory*, rumination or depressive rumination, is a repetitive thinking pattern about the causes, symptoms, circumstances and consequences of negative mood states and distress [@Hoeksema1991; @Watkins2008]. 
-Cross-sectional and longitudinal studies [@Butler_1994; @Nolen_Hoeksema_1999; @Whisman_2020] suggest that rumination could maintain and exacerbate existing psychopathology. 
-Depressive rumination can contribute to the onset or recurrence of several symptoms and disorders [@Aldao_2012; @Lyubomirsky_2015; @Lyubomirsky_1993; @Nolen_Hoeksema_2008; @Ruscio_2015; @Watkins_2020; @Whisman_2020].
+Rumination is a repetitive thinking pattern about the causes, symptoms, circumstances and consequences of negative mood states and distress [@Hoeksema1991; @Watkins2008]. 
+Rumination could maintain and exacerbate existing psychopathology [@Butler_1994; @Nolen_Hoeksema_1999; @Whisman_2020]. 
+Depressive rumination can also contribute to the onset or recurrence of several symptoms and disorders [@Aldao_2012; @Lyubomirsky_2015; @Lyubomirsky_1993; @Nolen_Hoeksema_2008; @Ruscio_2015; @Watkins_2020; @Whisman_2020].
 As a trans-diagnostic characteristic [@Nolen_Hoeksema_2011], rumination was found to predict the onset of major depressive disorder across one year in adolescent [@Broderick_2004; @Wilkinson_2013] and adult samples [@Nolen_Hoeksema_2008], and was involved in generalized anxiety disorder [@Nolen_Hoeksema_2000] and PTSD [@Moulds_2020]. 
-Rumination was found to have a role in depression and anxiety [@McLaughlin_2014], bipolar disorder [@Kov_cs_2020], borderline personality disorder [@Selby_2008], social phobia [@Abbott_2004], or psychosis [@Hartley_2013].
+Rumination predicted depression and anxiety [@McLaughlin_2014], bipolar disorder [@Kov_cs_2020], borderline personality disorder [@Selby_2008], social phobia [@Abbott_2004], or psychosis [@Hartley_2013].
 
 Rumination can lead to negative mood states and thoughts mutually amplifying and prolonging each other [@Watkins_2020]. 
 However, consequences and effects of rumination are not specific to clinical samples, and can be identified in the background of the ruminative processes of healthy people [@Ciesla_2007; @Moulds_2007]. 
 As such, rumination could interfere with effective problem-solving by reducing self-confidence [@Watkins_2005]; reduce willingness to engage in pleasant activities [@Lyubomirsky_2015]; lead to elevated level of uncertainty [@Ward_2003], avoidance or personal difficulties [@Hayes_2004; @Yasinski_2019]. 
-As a multifaceted construct, rumination is often operationalized as depressive rumination and consequently measured by the *Response Style Questionnaire* **RSQ**, or its shorter form the *Ruminative Response Scale*, **RRS** [@Hoeksema1991; @Treynor_2003]. 
+Rumination is often operationalized as depressive rumination and consequently measured by the *Response Style Questionnaire* **RSQ**, or its shorter form the *Ruminative Response Scale*, **RRS** [@Hoeksema1991; @Treynor_2003]. 
 Two sub-factors within the **RRS**: the *brooding* and *reflective pondering* (or *reflection*) were identified [@Treynor_2003]. 
 Brooding is a maladaptive, passive dwelling on negative events and associated affects, while reflection is a more adaptive (or less pathological) form of thinking, a non-evaluative introspection towards one’s mood. 
 Several empirical findings support the adaptive-maladaptive distinction of brooding and reflection. 
-Brooding alone was associated with substance use among people with history of illicit drug use [@Memedovic_2019], and with attentional disengagement difficulties, while controlling for depression and anxiety [@Allard_2019].
+Brooding alone increased the risk of substance use among people with history of illicit drug use [@Memedovic_2019], and with attentional disengagement difficulties, while controlling for depression and anxiety [@Allard_2019].
 Apart from brooding and reflection, many other rumination types or facets were described in the last decades. 
 People (especially with social phobia) tend to ruminate about their mood after a social event or performance [@Abbott_2004]. 
 Individuals can dwell upon infuriating memories or on anger itself [@Bushman_2005; @du_Pont_2017].
 Repetitive thinking can target sadness as well [@Peled_2009]. 
 
 These results indicate that not just the style of thinking, but the content of these ruminative thoughts has special relevance [@Smart_2015].
-More recently, research has started to investigate the role that rumination plays in maintaining levels of self-criticism [@Kolubinski_2017; @Smart_2015]. 
+More recently, research has started to investigate the role that rumination plays in maintaining high levels of self-criticism [@Kolubinski_2017; @Smart_2015]. 
 Self-criticism is a form of negative self-evaluation with one harshly and hostilely judging oneself, especially in the context of mistakes, failures, unreached goals or unmet standards [@Rose_2018; @Shahar_2014]. 
 Self-criticism was found to be a vulnerability factor in many forms psychopathology such as depressive and anxiety disorders, binge eating or non-suicidal self injury [@Glassman_2007; @Rose_2018; @Shahar_2014]. 
 Rumination was found to be a significant mediator between self-criticism and depression across 2.5 years [@Spasojevi__2001], and between self-criticism and suicidal ideation over 3 months [@O_Connor_2008]. 
@@ -75,11 +75,15 @@ Indeed, in a recent study, self-critical rumination was strongly related to sham
 Positive meta-cognitions in self-critical rumination [@Kolubinski_2017] likely has less importance than in depressive rumination [@Papageorgiou_2001]. 
 One can assume that in depressive rumination the positive, while in self-critical rumination the negative meta-cognitions (e.g. “*I will get depressed if I don’t stop reviewing my self-critical thoughts*”) are those processes which maintain the ruminative process [@Kolubinski_2017].
 The Self-Critical Rumination Scale (**SCRS**, @Smart_2015) showed incremental validity over other rumination scales (including the widely used **RRS** and **RSQ**) in predicting bipolar personality features and general distress. 
-However, in the same study, **SCRS** and **RRS** were highly correlated (which is not surprising considering the above mentioned similarities between self-critical and depressive rumination), indicating that those individuals who ruminate in a more general or broader way are also likely to ruminate on numerous topics, including self-devaluating thoughts and vice versa. 
+However, in the same study, **SCRS** and **RRS** were highly correlated, indicating that those individuals who ruminate in a more general or broader way are also likely to ruminate on numerous topics, including self-devaluating thoughts and vice versa. 
 Previous work also supported the notion that individuals can show different forms of repetitive thought and they can ruminate and worry simultaneously, or they are able to passively brooding on something and adaptively reflect on other topics [@Watkins2008]. 
 
-Because of its multifaceted structure and the question of boundaries between the different subtypes of rumination, it could be beneficial to investigate them in a network perspective. 
-Contrary to latent variable models, network analysis does not seek for a common cause of co-occurrence of indicators (e.g. different items of a questionnaire) but shift the focus toward the relationships and interactions between variables [@Epskamp_2017]. 
+Because of its multifaceted structure and the question of boundaries between the different subtypes and more importantly, patterns of rumination, it could be beneficial to investigate them in a network perspective.
+Modeling rumination as activation in a system of interacting components, such as a network would allow us to shift away from the distinctive labeling of brooding, relfection or self-critical aspects of rumination and would allow a more detailed, pattern-like view on the psychology of repetitive thoughts [see also at @Bernstein2019].
+In the network approach we follow, items are not assumed to have a common, underlying cause, nor can we expect that resulting networks fully map and cover the whole construct of trait rumination.
+Psychological networks such the ones presented below rather can be used to model components (items, and in our case scales) in dynamic interaction and also can be used to test past distinctions and classifications of rumination in a data-driven way.
+Contrary to latent variable models, network analysis does not seek for a common cause of co-occurrence of indicators (e.g. different items of a questionnaire) but shift the focus toward the relationships and interactions between variables, items or or other constructs of interest [@Epskamp_2017]. 
+//TODO: Schmittmann cikk!
 *Psychological networks* have their own characteristics which differentiate them from other kinds of networks of graph theory (@Epskamp2017; @Epskamp_2018; @Newman2010). 
 Vertices (also called nodes) usually represent some psychological measures or items of psychological surveys or questionnaires, while the edges of the network reflect the corresponding estimates of association derived from the data.
 Thus in a network model, the construct of rumination could be interpreted as a system in which some aspects relate or even stimulate each other, while other aspects have negative or inhibiting effects [@Costantini_2015]. 
