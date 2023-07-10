@@ -246,7 +246,7 @@ knitr::kable(summary_table, row.names=FALSE, format='simple', caption="Sample an
 ```
 
 <!-- *Upper triangle reflects inter-scale Pearson correlations between sub-scales; 'male' and 'female' rows are descriptives of each scale in terms of means and standard deviations; the lower three rows are summaries of effect size measures.* -->
-*RRS= Ruminative Response Scale. SCRS= Self-Critical Rumination Scale. SD=standard deviation. P(f>m)=probability of difference of female scores over male. All correlations are significant at p<.001.*
+Note. *RRS= Ruminative Response Scale. SCRS= Self-Critical Rumination Scale. SD=standard deviation. P(f>m)=probability of difference of female scores over male. All correlations are significant at p<.001.*
 
 The undirected, weighted, associational networks of *RRS*, *SCRS* and their combined structure can be seen below (see Figure 1).
 All three networks proved to be connected (any vertex is reachable from every other).
@@ -395,7 +395,7 @@ Our ERGM model was built with *Markov chain Monte Carlo* (MCMC) maximum likeliho
 ergm_model_fit <- readRDS("output/ergmfit.RDS")
 anova_tidy <- broom::tidy(anova(ergm_model_fit))
 ergm_tidy <- broom::tidy(ergm_model_fit)
-names(ergm_tidy) <- c("Term", "Estimate", "Std. Error", "MCMC Error %", "Statistic", "p (level of sig.)")
+names(ergm_tidy) <- c("Term", "Estimate", "Std. Error", "MCMC Error %", "Statistic", "p")
 ergm_tidy[2,1] <- 'GWESP [triangle]'
 ergm_tidy[1,1] <- '# of edges'
 ergm_tidy[3,1] <- 'Questionnaire (main effect)'
@@ -407,14 +407,15 @@ get_p <- function(logit){
 }
 
 probs=get_p(ergm_tidy[,2])
-ergm_tidy$`P of Edge Building` = round(probs,3)
-knitr::kable(ergm_tidy,digits=3,label="", caption="ERGM model fit results with Markov chain Monte Carlo Maximum Likelihood Estimation")
+ergm_tidy$`p of EB` = round(probs,2)
+knitr::kable(ergm_tidy,digits=2,label="", caption="ERGM model fit results with Markov chain Monte Carlo Maximum Likelihood Estimation", align="lcccc")
 
 # gof(ergm_model_fit)
 # mcmc.diagnostics(ergm_model_fit)
 ```
+*Note. MCMC=Monte Carlo Markov Chain; GWESP=Geometrically Weighted Edgewise Shared Partner Distribution; p of EB=probability of Edge Building*
 
-An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$residual.deviance[2][[1]],3)`, p=`r format(round(anova_tidy$Pr...Chisq..[2][[1]],3),nsmal=3)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
+An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$residual.deviance[2][[1]],3)`, p `r format.pval(round(anova_tidy$Pr...Chisq..[2][[1]],3),eps=0.001)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
 The detailed analysis reveals that *endogenous* effects such as the overall density of the network (number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`), and at p<0.05 level the closed triangle formulation  indicates a non-trivial impact on clustering (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`).
 As expected, *exogenous* effects, such as two items belonging to the same sub-scale have a significant positive impact on connectivity (sub-scale changes edge probability by `r round(get_p(ergm_tidy$Estimate[5][[1]]),3)`, keeping the rest of the network fixed).
 Questionnaires themselves have no impact on edge formation ('Questionnaire main effect').

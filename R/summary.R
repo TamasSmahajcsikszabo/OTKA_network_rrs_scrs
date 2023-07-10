@@ -222,6 +222,8 @@ colnames(summary_table) <- c("", paste0(1:4, "."))
 
 summary_table[5,1] <- 'Female Mean (SD)'
 summary_table[6,1] <- 'Male Mean (SD)'
+opening_line <- tibble_row("Correlations:", `1.`="", `2.`="", `3.`="", `4.`="")
+colnames(opening_line)[1] <- ''
+summary_table <- bind_rows(opening_line, summary_table)
+colnames(summary_table)[1] <- ''
 print(summary_table)
-
-
