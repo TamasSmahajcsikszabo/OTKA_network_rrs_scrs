@@ -8,6 +8,14 @@ library(rogme)
 library(magrittr)
 library(stringr)
 
+Alpha <- function(){
+    '$\\alpha$'
+}
+
+Round <- function(value) {
+        return(format(round(as.numeric(value), 2), nsmall=2))
+}
+
 rumidata <- readRDS("/home/tamas/repos/networks_with_r/full_data.RDS")
 rumidata <- rumidata %>% mutate(ID = row_number())
 origdata <- rumidata
@@ -44,14 +52,16 @@ crA_RRS_brooding <- ltm::cronbach.alpha(RRS_brooding)
 
 SCRS_total <- dataset[paste0("SCRS_", seq(1:10))]
 crA_SCRS_total <- ltm::cronbach.alpha(SCRS_total)
+crA_title <- paste0("Cronbach's ", Alpha())
 
 summary_table <- tribble(
-    ~Scale, ~`Cronbach's Alpha`,
-    "RRS brooding", crA_RRS_brooding$alpha[[1]],
-    "RRS reflection", crA_RRS_reflection$alpha[[1]],
-    "RRS total", crA_RRS_total$alpha[[1]],
-    "SCRS total", crA_SCRS_total$alpha[[1]]
+    ~Scale, ~crA,
+    "RRS brooding", Round(crA_RRS_brooding$alpha[[1]]),
+    "RRS reflection", Round(crA_RRS_reflection$alpha[[1]]),
+    "RRS total", Round(crA_RRS_total$alpha[[1]]),
+    "SCRS total", Round(crA_SCRS_total$alpha[[1]])
 )
+colnames(summary_table)  <-  c('Scale', crA_title)
 
 scores <- rumidata %>% group_by(gender, ID, scale) %>% summarise(score=sum(value))
 
@@ -76,9 +86,9 @@ check_normality <- function(dataset, mapping, method='histogram_overlay') {
 
 # akp.effect(dataset[!dataset$gender=='male',]$reflection,dataset[dataset$gender=='male',]$reflection,tr=0.2)
 
-check_homoscedasticity(scores[scores$scale=='brooding',], scores[scores$scale=='brooding',]$gender,"score")
+# check_homoscedasticity(scores[scores$scale=='brooding',], scores[scores$scale=='brooding',]$gender,"score")
 
-check_normality(scores, aes(x=score, group=gender, fill=gender)) + facet_wrap(~gender)
+# check_normality(scores, aes(x=score, group=gender, fill=gender)) + facet_wrap(~gender)
 
 ### Cohen's d
 ### SCRS
@@ -137,10 +147,10 @@ RRSTOTALCliff <- cidv2(RRSscoresf,  RRSscoresm)[c(5,8)]
 
 cohen_summary <- tribble(
     ~`Cohen's d (20% trimmed)`, ~`Cliff's delta`, ~`Explanatory measure of ES`,
-    brooingcohenDtr,   paste0("P(f>m)=",round(broodingCliff$summary.dvals[1,3],3)), broodingcohenDexpl$Effect.Size,
-    reflectioncohenDtr,   paste0("P(f>m)=",round(reflectionCliff$summary.dvals[1,3],3)), reflectioncohenDexpl$Effect.Size,
-    SCRScohenDtr,   paste0("P(f>m)=",round(SCRSCliff$summary.dvals[1,3],3)), SCRScohenDexpl$Effect.Size,
-    RRSTOTALcohenDtr,   paste0("P(f>m)=",round(RRSTOTALCliff$summary.dvals[1,3],3)), RRSTOTALcohenDexpl$Effect.Size,
+    Round(brooingcohenDtr),   paste0("P(f>m)=",round(broodingCliff$summary.dvals[1,3],2)), Round(broodingcohenDexpl$Effect.Size),
+    Round(reflectioncohenDtr),   paste0("P(f>m)=",round(reflectionCliff$summary.dvals[1,3],2)), Round(reflectioncohenDexpl$Effect.Size),
+    Round(SCRScohenDtr),   paste0("P(f>m)=",round(SCRSCliff$summary.dvals[1,3],2)), Round(SCRScohenDexpl$Effect.Size),
+    Round(RRSTOTALcohenDtr),   paste0("P(f>m)=",round(RRSTOTALCliff$summary.dvals[1,3],2)), Round(RRSTOTALcohenDexpl$Effect.Size),
 )
 
 summary_table <- bind_cols(summary_table, cohen_summary)
@@ -167,11 +177,12 @@ score_summary_RRS <- scores %>%
 
 score_summary <- bind_rows(score_summary, score_summary_RRS) %>% arrange(scale)
 score_summary <- score_summary %>% 
-    mutate(MSD = paste0(round(M,2), ' (',round(SD,2), ')')) %>% 
+    mutate(MSD = paste0(Round(M), ' (',Round(SD), ')')) %>% 
     dplyr::select(-M, -SD) %>% 
     pivot_wider(names_from='gender', values_from="MSD") %>% 
     ungroup() %>% 
     dplyr::select(-scale)
+
 
 summary_table <- bind_cols(summary_table, score_summary)
 
@@ -185,22 +196,32 @@ cormat <- scores %>% pivot_wider(names_from='scale', values_from='score') %>%
 corr <- data.frame(cor(cormat))
 
 corr[upper.tri(cor(cormat), diag=TRUE)] <- ""
-corr[lower.tri(corr, diag=FALSE)] <- round(as.double(corr[lower.tri(corr, diag=FALSE)] ),2)
+corr[lower.tri(corr, diag=FALSE)] <- Round(as.double(corr[lower.tri(corr, diag=FALSE)] ))
 colnames(corr) <- 1:4
 
 cormat <- pcor(cormat)
 
 cormat$p.value[cormat$p.value==0] <- 0.001
+# corr <- as.vector(unlist(corr))
+# corr <- lapply(corr, function(c){Round(c)})
+# corr <- data.frame(matrix(corr, ncol=4))
+
 
 lower_table <- summary_table %>% 
-    pivot_longer(`Cronbach's Alpha`:male, names_to='col', values_to='val', values_transform=as.character) %>% 
-    mutate(val=if_else(!is.na(as.numeric(val)), as.character(round(as.numeric(val),3)), val)) %>% 
+    pivot_longer(crA_title:male, names_to='col', values_to='val', values_transform=as.character) %>%
+    mutate(val=if_else(!is.na(as.numeric(val)), Round(val), val)) %>% 
 pivot_wider(names_from='Scale', values_from='val') %>% 
 dplyr::select(col, `RRS total`, `RRS brooding`, `RRS reflection`, `SCRS total`)
+
 
 lower_table <- lower_table[c(5,6,1,2,3),]
 colnames(lower_table)[2:5] <- c(1:4)
 corr <- bind_cols(tibble(col=c('1. RRS','2. RRS - brooding','3. RRS - reflection','4. SCRS')),corr)
 summary_table <-bind_rows(corr, lower_table)
 colnames(summary_table) <- c("", paste0(1:4, "."))
+
+summary_table[5,1] <- 'Female Mean (SD)'
+summary_table[6,1] <- 'Male Mean (SD)'
+print(summary_table)
+
 

@@ -1,3 +1,7 @@
+Alpha <- function(){
+    return('$\\alpha$')
+}
+
 standardize <- function(a) {
     est_mean <- mean(a, na.rm = TRUE)
     est_SD <- sd(a, na.rm = TRUE)
@@ -1107,3 +1111,4 @@ plot_eigen <- function(evecs, postmeans, graph, namevecs, subscale, labels,texts
         theme(legend.position = "bottom",
             text=element_text(size=textsize))
 }
+

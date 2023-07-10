@@ -51,8 +51,8 @@ Rumination predicted depression and anxiety [@McLaughlin_2014], bipolar disorder
 Rumination can lead to negative mood states and thoughts mutually amplifying and prolonging each other [@Watkins_2020]. 
 However, consequences and effects of rumination are not specific to clinical samples, and can be identified in the background of the ruminative processes of healthy people [@Ciesla_2007; @Moulds_2007]. 
 As such, rumination could interfere with effective problem-solving by reducing self-confidence [@Watkins_2005]; reduce willingness to engage in pleasant activities [@Lyubomirsky_2015]; lead to elevated level of uncertainty [@Ward_2003], avoidance or personal difficulties [@Hayes_2004; @Yasinski_2019]. 
-Rumination is often operationalized as depressive rumination and consequently measured by the *Response Style Questionnaire* **RSQ**, or its shorter form the *Ruminative Response Scale*, **RRS** [@Hoeksema1991; @Treynor_2003]. 
-Two sub-factors within the **RRS**: the *brooding* and *reflective pondering* (or *reflection*) were identified [@Treynor_2003]. 
+Rumination is often operationalized as depressive rumination and consequently measured by the *Response Style Questionnaire* **RSQ**, or its shorter form the *Ruminative Response Scale*, **RRS** [@Hoeksema1991; @Treynor2003]. 
+Two sub-factors within the **RRS**: the *brooding* and *reflective pondering* (or *reflection*) were identified [@Treynor2003]. 
 Brooding is a maladaptive, passive dwelling on negative events and associated affects, while reflection is a more adaptive (or less pathological) form of thinking, a non-evaluative introspection towards one’s mood. 
 Several empirical findings support the adaptive-maladaptive distinction of brooding and reflection. 
 Brooding alone increased the risk of substance use among people with history of illicit drug use [@Memedovic_2019], and with attentional disengagement difficulties, while controlling for depression and anxiety [@Allard_2019].
@@ -84,10 +84,11 @@ In the network approach we follow, items are not assumed to have a common, under
 Psychological networks such the ones presented below rather can be used to model components (items, and in our case scales) in dynamic interaction and also can be used to test past distinctions and classifications of rumination in a data-driven way.
 Contrary to latent variable models, network analysis does not seek for a common cause of co-occurrence of indicators (e.g. different items of a questionnaire) but shift the focus toward the relationships and interactions between variables, items or or other constructs of interest [@Epskamp_2017]. 
 //TODO: Schmittmann cikk!
+// TODO: Robi feedback maradeka tablazat szamformatum+cimke
 *Psychological networks* have their own characteristics which differentiate them from other kinds of networks of graph theory (@Epskamp2017; @Epskamp_2018; @Newman2010). 
 Vertices (also called nodes) usually represent some psychological measures or items of psychological surveys or questionnaires, while the edges of the network reflect the corresponding estimates of association derived from the data.
 Thus in a network model, the construct of rumination could be interpreted as a system in which some aspects relate or even stimulate each other, while other aspects have negative or inhibiting effects [@Costantini_2015]. 
-Thanks to this data-driven approach we can test how self-critical and depressive ruminative processes or the different items of the ruminative questionnaires cluster and relate to each other and we can gain important insights which could remain hidden by relying only on latent variable models [@Bernstein2019]. 
+With this data-driven approach we can test how self-critical and depressive ruminative processes or the different items of the ruminative questionnaires cluster and relate to each other and we can gain important insights which could remain hidden by relying only on latent variable models [@Bernstein2019]. 
 Having two rumination-related questionnaires, the **Ruminative Response Style **(*RRS*) and the **Self-critical Rumination Scale** (*SCRS*), we assumed the following hypotheses:
 
 * Network analysis will reveal their respective internal structure previously established in the literature (such as *RRS* having a two-scale structure: *reflection* and *brooding*; while *SCRS* will show a single-scale structure);
@@ -132,12 +133,12 @@ The protocol was designed in accordance with the Declaration of Helsinki and the
 The *Self-Critical Rumination Scale* **SCRS**; [@Smart_2015] was used to assess those thoughts that criticize the self for perceived failures, mistakes or bad habits in a prolonged and repetitive manner. 
 The SCRS is a self-reported, one factor scale that consists of 10 items. 
 Participants were asked to rate the statements (i.e. “*My attention is often focused on aspects of myself that I’m ashamed of*”; “*I criticize myself a lot for how I act around other people*”) on a 4-point Likert scale from 1 (not at all) to 4 (very much). 
-The scale showed high internal consistency in the original version (Cronbach's Alpha (CA)=0.92). We obtained a satisfactory estimate (CA=`r round(crA_SCRS_total$alpha[1],2)`). 
+The scale showed high internal consistency in the original version (`r Alpha()`=0.92). We obtained a satisfactory estimate (`r Alpha()`=`r round(crA_SCRS_total$alpha[1],2)`). 
 
-The short form of *Ruminative Response Scale* **RRS**; [@Treynor_2003] was used to measure mood dependent rumination, which consists of 10 items and quantifies ruminative thoughts via two dimensions (each composed of 5 items). 
+The short form of *Ruminative Response Scale* **RRS**; [@Treynor2003] was used to measure mood dependent rumination, which consists of 10 items and quantifies ruminative thoughts via two dimensions (each composed of 5 items). 
 The *brooding* subscale of **RRS** measures the maladaptive form or ruminative thinking (i.e. “*What am I doing to deserve this?*”), while the  *reflective pondering* (or reflection) factor measures a more adaptive form of self-reflecting thinking (i.e. “*I write down what I am thinking and analyze it*”). 
 Participants are asked to indicate on a 4-point Likert scale how often the items apply to themselves when they feel down, sad or depressed (1=almost never; 4=almost always).
-Internal consistency was found to be satisfactory for RRS (CA=`r round(crA_RRS_total$alpha[1],2)`), as well as for the *reflection* (CA=`r round(crA_RRS_reflection$alpha[1], 2)`) and *brooding* (CA=`r round(crA_RRS_brooding$alpha[1],2)`) scales.
+Internal consistency was found to be satisfactory for RRS (`r Alpha()`=`r round(crA_RRS_total$alpha[1],2)`), as well as for the *reflection* (`r Alpha()`=`r format(round(crA_RRS_reflection$alpha[1], 2), nsmall=2)`) and *brooding* (`r Alpha()`=`r round(crA_RRS_brooding$alpha[1],2)`) scales.
 Besides the **SCRS** and **RRS** basic socio-demographic information (e.g. age, gender, parents’ level of education) was recorded.
 
 <!-- Sample sizes have direct impact on estimated accuracy and stability of the psychological network, thus the accuracy of the network parameters and measures is crucial: By obtaining robust results we can have a more realistic picture of a network without knowing the true network shape and structure. --> 
@@ -234,7 +235,7 @@ Simulation studies [@Epskamp2017] lead us in our expectation as the *CS*-coeffic
 ## 3. Results
 
 ### 3.1 Descriptives, network descriptives and community detection
-Pearson correlation coefficients and Cronbach’s Alphas of the scales, means and standard deviations (for the total sample, and for females and males separately) are presented in Table 1. below.
+Pearson correlation coefficients and Cronbach’s `r Alpha()`s of the scales, means and standard deviations (for the total sample, and for females and males separately) are presented in Table 1. below.
 The data being skewed and homoscedasticity being hurt between gender groups, we estimated 20% trimmed Cohen's d coefficients. 
 With medium-to-high effect sizes, Cliff's delta suggests group differences for female participants having higher scores on **RRS**, **SCRS** and RRS sub-scales (with at least 0.577 or higher probability).
 As expected [@Smart_2015], significant positive correlations were found between SCRS and RRS total scores (and both sub-scales), indicating that self-critical rumination somewhat differs from depressive mood related rumination, but people who are likely to ruminative self-critically are also likely to ruminate about their mood.
@@ -244,7 +245,8 @@ As expected [@Smart_2015], significant positive correlations were found between 
 knitr::kable(summary_table, row.names=FALSE, format='simple', caption="Sample and Scale Descriptives")
 ```
 
-*Upper triangle reflects inter-scale Pearson correlations between sub-scales; 'male' and 'female' rows are descriptives of each scale in terms of means and standard deviations; the lower three rows are summaries of effect size measures.*
+<!-- *Upper triangle reflects inter-scale Pearson correlations between sub-scales; 'male' and 'female' rows are descriptives of each scale in terms of means and standard deviations; the lower three rows are summaries of effect size measures.* -->
+*RRS= Ruminative Response Scale. SCRS= Self-Critical Rumination Scale. SD=standard deviation. P(f>m)=probability of difference of female scores over male. All correlations are significant at p<.001.*
 
 The undirected, weighted, associational networks of *RRS*, *SCRS* and their combined structure can be seen below (see Figure 1).
 All three networks proved to be connected (any vertex is reachable from every other).
@@ -563,6 +565,9 @@ The **Self-Critical Rumination Scale** proved to have a one-scale structure.
 Separation between scales in the combined graph is underlined by our eigenmodel, as in the two-dimensional space of the first two eigenvectors, expected grouping of *RRS* and *SCRS* items can be achieved.
 Items 2 and 9 are well separated from the bulk of the rest of the RRS items, supporting our above conclusion of them being a part of reflection or found a new component.
 Brooding has more associations with the self-critical aspects of rumination than reflection, which is highlighted by our eigenvector analysis as well as the sparse, unstable and weak edges with which reflection connects to brooding and self-critical rumination in their combined network.
+
+TODO Bernstein results?
+TODO others' results
 
 We have gathered evidence of scale playing an important role in the edge-building process.
 According to our exponential random graph model, the internal scales of the combined network indeed have a non-trivial impact on associations between items, whereas the effect of questionnaire dissolved, no longer having an impact on the probability of edge formation.
