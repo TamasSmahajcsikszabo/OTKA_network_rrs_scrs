@@ -83,7 +83,7 @@ Modeling rumination as activation in a system of interacting components, such as
 In this network approach, items are not assumed to have a common, underlying cause, nor can we expect that resulting networks fully map and cover the whole construct of trait rumination.
 Psychological networks such the ones presented below rather can be used to model components (items, and in our case scales) in dynamic interaction and to test past distinctions and classifications of rumination in a data-driven way.
 Contrary to latent variable models, network analysis does not seek for a common cause of co-occurrence of indicators (e.g. different items of a questionnaire) but shift the focus toward the relationships and interactions between variables, items or or other constructs of interest [@Epskamp_2017]. 
-As opposed to *formative* models where observed scores define an attriute, or *relfective* models where  latent attribute is causing observables; in this alternative approach psychological attributes (such as rumination)  are conceptualized as *network* of directly related observables [@Schmittmann2013].
+As opposed to *formative* models where observed scores define an attribute, or *reflective* models where a latent attribute is causing observables; in this alternative approach, psychological attributes (such as rumination) are conceptualized as *network* of directly related observables [@Schmittmann2013].
 *Psychological networks* have their own characteristics which differentiate them from other kinds of networks of graph theory (@Epskamp2017; @Epskamp_2018; @Newman2010). 
 Vertices (also called nodes) usually represent some psychological measures or items of psychological surveys or questionnaires, while the edges of the network reflect the corresponding estimates of association derived from the data.
 Thus in a network model, the construct of rumination could be interpreted as a system in which some aspects relate or even stimulate each other, while other aspects have negative or inhibiting effects [@Costantini_2015]. 
@@ -559,19 +559,24 @@ These findings suggest that the combined network tolerates very few sample loss 
 
 ## 4. Discussion
 In the present paper, we examined the separation of two facets of rumination (a depressive dimension, lying along the *brooding*-*reflection* axis; and the *self-critical* aspects of rumination) using a network approach.
+The **Self-Critical Rumination Scale** proved to have a one-scale structure.
 In its respective network, the **Ruminative Response Style Questionnaire** exhibits a two-scale structure.
-Our community detection estimates suggest though that the reflective aspects of rumination such as analyzing one's self and recent event for better emotional insights (items 2 and 9 of *RRS*) have more to common with brooding, or have a tendency to emerge as a third aspect.
-In analyzing the factor structure of *RRS* on samples from Argentina and the United States, the error variances of these two items were found to be correlated and thus excluded from the solution [@Arana2017]. 
-The assocation of these items with depression, and therefore their elimination from any analysis related to Reflection have been suggested and practiced [@Treynor2003; @Armey2009; @Lee2014].
+Our community detection estimates suggest though that the reflective aspects of rumination such as analyzing one's self and recent events for better emotional insights (items 2 and 9 of *RRS*) have more to common with brooding, or have a tendency to emerge as a third aspect.
+In analyzing the factor structure of *RRS* on samples from Argentina and the United States, the error variances of these two items were found to be correlated and thus ended up being excluded from the solution [@Arana2017]. 
+The association of these items with depression, and therefore their elimination from any analysis related to Reflection have been suggested and practiced [@Treynor2003; @Armey2009; @Lee2014].
 With concurring results on these items, the hypothesis can be phrased that "*the distinction between reflection and brooding is blurred in depressed individuals*", meaning the confounding effect of these items with depression [@Whitmer2011].
 The same authors also suggest that "*given that these three items measure a tendency to self-isolate with the intention to ruminate, we call this factor ‘intentional rumination’*".
-The **Self-Critical Rumination Scale** proved to have a one-scale structure.
-Separation between scales in the combined graph is underlined by our eigenmodel, as in the two-dimensional space of the first two eigenvectors, expected grouping of *RRS* and *SCRS* items can be achieved.
-Items 2 and 9 are well separated from the bulk of the rest of the RRS items, supporting our above conclusion of them being a part of reflection or found a new component.
-Brooding has more associations with the self-critical aspects of rumination than reflection, which is highlighted by our eigenvector analysis as well as the sparse, unstable and weak edges with which reflection connects to brooding and self-critical rumination in their combined network.
+On a sample of Dutch students, researchers excluded these two items for reasons of their "*reference to negative feelings*", and the resulting three-item Reflection scale was names as "*reflective self-regulation*" [@Brose2020].
+Although, in a recent study on samples of Peruvian students, the separation of the "analyze" items was not present [@Valencia2022].
+A clear two-factor structure of RRS was revealed on Columbian samples [@Ruiz2017] or on Japanese sample [@Hasegawa2013].
+These findings on two- or three-factor structures of RRS support the notion of our findings that the items of 'intentional rumination' are sensitive to sampling characteristics, demographics, and as we have seen in our combined network, to covariates or additional activation paths taken into account.
+Items #2 and #9 of *RRS* on their own graph emerged as a third component, presented a low *true positive rate* of 0.22 each, but this pattern dissolved in a combined graph with the self-critical aspects of rumination accounted for.
 
-TODO Bernstein results?
-TODO others' results
+Separation between scales in the **combined graph** is underlined by our *eigenmodel*, as in the two-dimensional space of the first two eigenvectors, expected grouping of *RRS* and *SCRS* items can be achieved.
+Items #2 and #9 of RRS are well separated from the bulk of the rest of the RRS items, supporting our above conclusion of them being a part of reflection or found a new component.
+Brooding has more associations with the self-critical aspects of rumination than reflection, which is highlighted by our eigenvector analysis as well as the sparse, unstable and weak edges with which reflection connects to brooding and self-critical rumination in their combined network.
+Our graphs suggests and support the notion of not referring to a psychological attribute as a sum score, but rather take into account the underlying activation pattern [@Bernstein2019].
+A similar approach was used by [@Williams2021], where researchers combined items of "*reflecting pondering*" into one node.
 
 We have gathered evidence of scale playing an important role in the edge-building process.
 According to our exponential random graph model, the internal scales of the combined network indeed have a non-trivial impact on associations between items, whereas the effect of questionnaire dissolved, no longer having an impact on the probability of edge formation.
