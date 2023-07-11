@@ -80,11 +80,10 @@ Previous work also supported the notion that individuals can show different form
 
 Because of its multifaceted structure and the question of boundaries between the different subtypes and more importantly, patterns of rumination, it could be beneficial to investigate them in a network perspective.
 Modeling rumination as activation in a system of interacting components, such as a network would allow us to shift away from the distinctive labeling of brooding, relfection or self-critical aspects of rumination and would allow a more detailed, pattern-like view on the psychology of repetitive thoughts [see also at @Bernstein2019].
-In the network approach we follow, items are not assumed to have a common, underlying cause, nor can we expect that resulting networks fully map and cover the whole construct of trait rumination.
-Psychological networks such the ones presented below rather can be used to model components (items, and in our case scales) in dynamic interaction and also can be used to test past distinctions and classifications of rumination in a data-driven way.
+In this network approach, items are not assumed to have a common, underlying cause, nor can we expect that resulting networks fully map and cover the whole construct of trait rumination.
+Psychological networks such the ones presented below rather can be used to model components (items, and in our case scales) in dynamic interaction and to test past distinctions and classifications of rumination in a data-driven way.
 Contrary to latent variable models, network analysis does not seek for a common cause of co-occurrence of indicators (e.g. different items of a questionnaire) but shift the focus toward the relationships and interactions between variables, items or or other constructs of interest [@Epskamp_2017]. 
-//TODO: Schmittmann cikk!
-// TODO: Robi feedback maradeka tablazat szamformatum+cimke
+As opposed to *formative* models where observed scores define an attriute, or *relfective* models where  latent attribute is causing observables; in this alternative approach psychological attributes (such as rumination)  are conceptualized as *network* of directly related observables [@Schmittmann2013].
 *Psychological networks* have their own characteristics which differentiate them from other kinds of networks of graph theory (@Epskamp2017; @Epskamp_2018; @Newman2010). 
 Vertices (also called nodes) usually represent some psychological measures or items of psychological surveys or questionnaires, while the edges of the network reflect the corresponding estimates of association derived from the data.
 Thus in a network model, the construct of rumination could be interpreted as a system in which some aspects relate or even stimulate each other, while other aspects have negative or inhibiting effects [@Costantini_2015]. 
@@ -408,12 +407,12 @@ get_p <- function(logit){
 
 probs=get_p(ergm_tidy[,2])
 ergm_tidy$`p of EB` = round(probs,2)
-knitr::kable(ergm_tidy,digits=2,label="", caption="ERGM model fit results with Markov chain Monte Carlo Maximum Likelihood Estimation", align="lcccc")
+knitr::kable(ergm_tidy,digits=2,label="", caption="ERGM model fit", align="lcccc")
 
 # gof(ergm_model_fit)
 # mcmc.diagnostics(ergm_model_fit)
 ```
-*Note. MCMC=Monte Carlo Markov Chain; GWESP=Geometrically Weighted Edgewise Shared Partner Distribution; p of EB=probability of Edge Building*
+*Note. MCMC=Monte Carlo Markov Chain; GWESP=Geometrically Weighted Edgewise Shared Partner Distribution; p of EB=probability of Edge Building; model built with Markov chain Monte Carlo Maximum Likelihood Estimation*
 
 An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$residual.deviance[2][[1]],3)`, p `r format.pval(round(anova_tidy$Pr...Chisq..[2][[1]],3),eps=0.001)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
 The detailed analysis reveals that *endogenous* effects such as the overall density of the network (number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`), and at p<0.05 level the closed triangle formulation  indicates a non-trivial impact on clustering (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`).
@@ -531,15 +530,19 @@ Accuracy and stability statistics have been summarized for *RRS*, *SCRS* and the
 
 CS_estimates <- readRDS("output/corStab_table.RDS")
 colnames(CS_estimates) <- c("Metric", "RRS", "RRS:Brooding", "RRS:Reflection", "SCRS", "RRS & SCRS")
-CS_estimates[2,6] <- 0.001
+CS_estimates[2,6] <- 0.01
 CS_estimates$Metric  <-  c("Betweenness", "Closeness", "Edge Strength", "Expected Influence", "Edge Weight")
+for (i in 2:6) {
+    CS_estimates[,i] = tibble::num(CS_estimates[,i][[1]], digits=2)
+}
 ```
 
 As shown at [@Epskamp2017], the *Correlation Stability* coefficent is not acceptable below 0.25, and preferably stays above 0.5. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-pander::pander(CS_estimates, 
-             caption = "Correlation Stability coefficient estimates for RRS, SCRS and their combined network", digits = 3, justify="center")
+knitr::kable(CS_estimates,digits=2,label="", caption="Correlation Stability coefficient estimates", align="lccccc")
+# pander::pander(CS_estimates, 
+#              caption = "Correlation Stability coefficient estimates for RRS, SCRS and their combined network", justify="center")
 ```
 
 We found satisfactory correlation stability of the Betweenness statistic of the Brooding (RRS) stand-alone network ($\ CS_{Brooding}$=`r round(CS_estimates[1,3], 3)`) as Brooding has retraceble communities, and as we already pointed out above, had the only Articulation Point of the RRS network.
