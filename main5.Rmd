@@ -39,6 +39,7 @@ source("get_rumi.R")
 suppressMessages(extrafont::loadfonts(device='postscript'))
 setwd('/home/tamas/repos/rumination_lasso')
 source('R/summary.R')
+source('R/items.R')
 ```
 ## 1. Introduction
 
@@ -263,10 +264,6 @@ Besides **size** and **order**, on Figure 1. we also indicated the **Clustering 
 The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points.
 The previously identified articulation point of the *RRS* network (*problem* vertex) is no longer a cut-off vertex when all rumination data is encompassed in one graph.
 
-In order to analyze their respective internal structures, we performed community detection using the *igraph* package in R.
-On Figure 1., the inner node point of each vertex provides colour coding for our community detection results (the presented shades correspond to the True Positive Rates of each sub-scale; in other words, the average match between the detected community and the original sub-scale [ranging between 0 and 1]).
-
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 i  <- 1000
 # simulate_communities(RRS_graph, path="output/RRS_communities.RDS",i=i)
@@ -351,8 +348,34 @@ method <- 'optimal'
 summary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights, item_TPR=RRS_item_TDR),
                             network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights, item_TPR=SCRS_item_TDR),
                             network_summary(rumi, name="Combined",seed=seed,method=method,weights=weights, item_TPR=combined_item_TDR))
+saveRDS(summary_table,"./output/networksummary_table.RDS")
 
 ```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+networkSummary <- readRDS('./output/networksummary_table.RDS') 
+influenceThresholds = c(-0.75, 0.75)
+highPosInfluence = networkSummary %>% filter(EI1 >= influenceThresholds[2])
+highNegInfluence = networkSummary %>% filter(EI1 <= influenceThresholds[1])
+```
+
+In the *RRS* network two Reflection items proved to be have highly positive influence on their neighbourhoods, these are the `r makeItemStats('alone1',highPosInfluence[1:4,], fullExplain=TRUE)` and the `r makeItemStats('person', highPosInfluence[1:4,])` items.
+The item  `r makeItemStats('handle',highPosInfluence [1:4,])` was the most influential item of the Brooding scale in *RRS* network.
+The items with the most negative, prohibiting influence of the *RRS* graph were `r makeItemStats('deserve', highNegInfluence[1:3,])`; `r makeItemStats('analyze', highNegInfluence[1:3,])` and `r makeItemStats('write', highNegInfluence[1:3,])`.
+These items stand out in their characteristic that their two-step influence metrics (influence on the rest of the graph also taken into account) are negative.
+
+In the *SCRS* graph highly positive influence were contributed to items such as `r makeItemStats('habits', highPosInfluence[5:6,])` and `r makeItemStats('mistakes', highPosInfluence[5:6,])`.
+The highest negative influence items of *SCRS* were `r makeItemStats('situation', highNegInfluence[4:5,])` and `r makeItemStats('time', highNegInfluence[4:5,])`.
+
+In the combined *RRS - SCRS* graph, the item of `r makeItemStats('alone1', highPosInfluence[7:12,])` not only proved to be highly positively influential, but also increased its Betweenness centrality, meaning it started to act as a connecting point between sub-domains of the network.
+The rest of the most positively influential nodes of this network are from *SCRS* such as `r makeItemStats('situation', highPosInfluence[7:12,])`, `r makeItemStats('habits', highPosInfluence[7:12,])`, `r makeItemStats('act around', highPosInfluence[7:12,])` and `r makeItemStats('different', highPosInfluence[7:12,])`.
+With regard to the negative influence of network activation in the combined graph, the pattern is dominated by *RRS* items such as `r makeItemStats('deserve', highNegInfluence[6:11,])`, .`r makeItemStats('react', highNegInfluence[6:11,])`, `r makeItemStats('write', highNegInfluence[6:11,])`, `r makeItemStats('wish', highNegInfluence[6:11,])` and `r makeItemStats('handle', highNegInfluence[6:11,])`.
+Note the item of `write` increased its Betweenness compared to the standalone *RRS* graph.
+Among the *SCRS* items, the `r makeItemStats('mistakes', highNegInfluence[6:11,])` was the most negatively influential on the common network.
+
+In order to analyze their respective internal structures, we performed community detection using the *igraph* package in R.
+On Figure 1., the inner node point of each vertex provides colour coding for our community detection results (the presented shades correspond to the True Positive Rates of each sub-scale; in other words, the average match between the detected community and the original sub-scale [ranging between 0 and 1]).
+
 
 \newpage
 \blandscape
