@@ -1,5 +1,6 @@
 library(tibble)
 library(stringr)
+library(igraph)
 RRS_graph <- readRDS("data/RRS.RDS")
 SCRS_graph <- readRDS("data/SCRS.RDS")
 
@@ -27,36 +28,46 @@ items_table <- tribble(
  "SCRS (10)","Self-critical", "I often berate myself for not being as productive as I should be.")
 
 item_codes <- c(V(RRS_graph)$label, V(SCRS_graph)$label)
-items_table$Abbreviation  <- item_codes
+items_table$Tag  <- item_codes
 
 lookUpItemName <- function(itemName) {
-    items_table[items_table$Abbreviation == itemName,]$Item
+    items_table[items_table$Tag == itemName,]$Item
 }
 
-makeItemStats <- function(itemName, summaryTable, stats=c('EI1', 'EI2', 'TPR', 'Br.EI1', 'Br.EI2', 'Bet'), names=c('Expected Influence', 'Two-Step Expected Influence', 'True Positive Rate', 'Bridge Expected Influence', 'Two-Step Bridge Expected Influence', 'Betweenness'), fullExplain=FALSE) {
+makeItemStats <- function(itemName, summaryTable, stats=c('EI1', 'EI2','Bet.'), names=c('Exp. Inf.', 'Two-Step Exp. Inf.', 'Betweenness'), fullExplain=FALSE, onlyExplain=TRUE) {
     itemLabel = lookUpItemName((itemName))
     colMask = colnames(summaryTable) %in% stats
-    colIndex = 1:length(colMask)
+    colIndex = seq(1,length(colMask))
     colIndex = colIndex[colMask]
     colTable <- data.frame(index = stats, label = names)
 
-    textSummary <- paste0("'",itemLabel,"'- "," [")
+    textSummary <- paste0("'",itemLabel,"'-"," [")
 
     statsRow = summaryTable[summaryTable$Label == itemName,]
     for (j in seq_along(colIndex)) {
         colName = colTable[colTable$index == colnames(summaryTable)[colIndex[j]],]
         if (j == length(colIndex)){
             if (fullExplain){
-            textSummary <- paste0(textSummary, "", colName$index, " (", colName$label,") = ", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "")
+            textSummary <- paste0(textSummary, colName$index, "(", colName$label, ") = ", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "")
             } else {
-            textSummary <- paste0(textSummary, "", colName$index, " = ", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "")
-
+                if (onlyExplain) {
+                    textSummary  <- paste0(textSummary, colName$label)
+                } else {
+                    textSummary  <- paste0(textSummary, colName$index)
+                }
+            textSummary <- paste0(textSummary, "=", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "")
             }
         } else {
             if (fullExplain){
-                textSummary <- paste0(textSummary, "", colName$index, " (", colName$label,") = ", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "; ")
+                textSummary <- paste0(textSummary, colName$index, "(", colName$label,") = ", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "; ")
             } else {
-                textSummary <- paste0(textSummary, "", colName$index, " = ", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "; ")
+
+                if (onlyExplain) {
+                    textSummary  <- paste0(textSummary, colName$label)
+                } else {
+                    textSummary  <- paste0(textSummary, colName$index)
+                }
+                textSummary <- paste0(textSummary, "=", format(round(statsRow[1,colIndex[j]][[1]],2),nsmall=2), "; ")
 
             }
         }

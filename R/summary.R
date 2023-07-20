@@ -29,7 +29,13 @@ rumidata$gender[rumidata$nem=='fiu'] <- 'male'
 rumidata$gender <- factor(rumidata$gender)
 dataset <- rumidata
 
-scales <- data.frame(scale=c(rep('brooding', 5), rep('reflection',5), rep('SCRS',10)), 
+# sanity check
+# dataset %>% dplyr::select(nem, c(paste0('RRS_',c(2,4,5,9,10)), paste0("RRS_",c(1,3,6,7,8)))) %>%
+#     mutate(RRS = RRS_1 + RRS_2 + RRS_3 + RRS_4 + RRS_5 + RRS_6 + RRS_7 + RRS_8 + RRS_9 + RRS_10) %>%
+#     group_by(nem) %>%
+#     summarise (m = mean(RRS), SD = sd(RRS))
+
+scales <- data.frame(scale=c(rep('reflection', 5), rep('brooding',5), rep('SCRS',10)), 
     item=c(paste0('RRS_',c(2,4,5,9,10)), paste0("RRS_",c(1,3,6,7,8)), paste0("SCRS_",seq(1,10))))
 
 rumidata <- rumidata  %>% 
@@ -58,12 +64,15 @@ summary_table <- tribble(
     ~Scale, ~crA,
     "RRS brooding", Round(crA_RRS_brooding$alpha[[1]]),
     "RRS reflection", Round(crA_RRS_reflection$alpha[[1]]),
-    "RRS total", Round(crA_RRS_total$alpha[[1]]),
-    "SCRS total", Round(crA_SCRS_total$alpha[[1]])
+    "RRS", Round(crA_RRS_total$alpha[[1]]),
+    "SCRS", Round(crA_SCRS_total$alpha[[1]])
 )
 colnames(summary_table)  <-  c('Scale', crA_title)
 
 scores <- rumidata %>% group_by(gender, ID, scale) %>% summarise(score=sum(value))
+scores  <- scores %>% spread(scale, score) %>% mutate(RRS = brooding + reflection)
+scores <- scores %>% pivot_longer(3:6)
+colnames(scores)[3:4] <- c("scale", "score")
 
 check_homoscedasticity <- function(dataset, group_index_vector, measured) {
     res <- list()
@@ -120,24 +129,26 @@ reflectionCliff <- cidv2(reflectionf,  reflectionm)[c(5,8)]
 
 
 ### RRS total
-RRSscoresf <- rumidata %>% 
-    group_by(gender, ID, scale) %>% 
-    summarise(score=sum(value)) %>% 
-    ungroup() %>% 
-    filter(!scale == "SCRS") %>% 
-    group_by(gender,ID) %>% summarise(score=sum(score)) %>% 
-    ungroup() %>% 
-    filter(gender=='female') %>% 
-    dplyr::select(-gender, -ID, score) %>% unlist()  %>%  unname()
-RRSscoresm <- rumidata %>% 
-    group_by(gender, ID, scale) %>% 
-    summarise(score=sum(value)) %>% 
-    ungroup() %>% 
-    filter(!scale == "SCRS") %>% 
-    group_by(gender,ID) %>% summarise(score=sum(score)) %>% 
-    ungroup() %>% 
-    filter(gender=='male') %>% 
-    dplyr::select(-gender, -ID, score) %>% unlist()  %>%  unname()
+RRSscoresf <- scores %>% filter(gender=='female', scale=='RRS') %>% ungroup() %>% dplyr::select(-ID,-gender,-scale, score) %>% unlist() %>% unname()
+RRSscoresm <- scores %>% filter(gender=='male', scale=='RRS') %>% ungroup() %>% dplyr::select(-ID,-gender,-scale, score) %>% unlist() %>% unname()
+# RRSscoresf <- rumidata %>% 
+#     group_by(gender, ID, scale) %>% 
+#     summarise(score=sum(value)) %>% 
+#     ungroup() %>% 
+#     filter(!scale == "SCRS") %>% 
+#     group_by(gender,ID) %>% summarise(score=sum(score)) %>% 
+#     ungroup() %>% 
+#     filter(gender=='female') %>% 
+#     dplyr::select(-gender, -ID, score) %>% unlist()  %>%  unname()
+# RRSscoresm <- rumidata %>% 
+#     group_by(gender, ID, scale) %>% 
+#     summarise(score=sum(value)) %>% 
+#     ungroup() %>% 
+#     filter(!scale == "SCRS") %>% 
+#     group_by(gender,ID) %>% summarise(score=sum(score)) %>% 
+#     ungroup() %>% 
+#     filter(gender=='male') %>% 
+#     dplyr::select(-gender, -ID, score) %>% unlist()  %>%  unname()
 
 RRSTOTALcohenD <- akp.effect(RRSscoresf, RRSscoresm, tr=0, EQVAR=TRUE)
 RRSTOTALcohenDtr <- akp.effect(RRSscoresf, RRSscoresm, tr=0.2, EQVAR=TRUE)
@@ -160,31 +171,34 @@ summary_table <- bind_cols(summary_table, cohen_summary)
 score_summary <- scores %>% 
     rowwise() %>% 
     mutate(tool = if_else(str_detect("SCRS", scale), "SCRS", "RRS")) %>% 
-    group_by(scale, gender) %>% 
+    mutate(Scale = if_else(str_detect("SCRS", tool), tool, paste0("RRS ", scale))) %>%
+    group_by(Scale, gender) %>% 
     summarise(M=mean(score),
               SD=sd(score))
+score_summary = score_summary %>%  ungroup() %>% mutate(Scale = if_else(Scale == "RRS RRS", "RRS", Scale))
 
-score_summary_RRS <- scores %>% 
-    rowwise() %>% 
-    mutate(tool = if_else(str_detect("SCRS", scale), "SCRS", "RRS")) %>% 
-    filter(tool=='RRS') %>% 
-    group_by(tool, gender) %>% 
-    summarise(M=mean(score),
-              SD=sd(score)) %>% 
-    ungroup() %>% 
-    dplyr::select(-tool) %>% 
-    mutate(scale='RRS')
+# score_summary_RRS <- scores %>% 
+#     rowwise() %>% 
+#     mutate(tool = if_else(str_detect("SCRS", scale), "SCRS", "RRS")) %>% 
+#     filter(tool=='RRS') %>% 
+#     group_by(tool, gender) %>% 
+#     summarise(M=mean(score),
+#               SD=sd(score)) %>% 
+#     ungroup() %>% 
+#     dplyr::select(-tool) %>% 
+#     mutate(Scale='RRS')
 
-score_summary <- bind_rows(score_summary, score_summary_RRS) %>% arrange(scale)
+score_summary <- bind_rows(score_summary) %>% arrange(Scale)
 score_summary <- score_summary %>% 
     mutate(MSD = paste0(Round(M), ' (',Round(SD), ')')) %>% 
     dplyr::select(-M, -SD) %>% 
     pivot_wider(names_from='gender', values_from="MSD") %>% 
-    ungroup() %>% 
-    dplyr::select(-scale)
+    ungroup()
+    # dplyr::select(-Scale)
 
 
-summary_table <- bind_cols(summary_table, score_summary)
+summary_table <- summary_table %>% arrange(Scale)
+summary_table <- summary_table %>% left_join(score_summary)
 
 
 # corr matrix
@@ -211,7 +225,7 @@ lower_table <- summary_table %>%
     pivot_longer(crA_title:male, names_to='col', values_to='val', values_transform=as.character) %>%
     mutate(val=if_else(!is.na(as.numeric(val)), Round(val), val)) %>% 
 pivot_wider(names_from='Scale', values_from='val') %>% 
-dplyr::select(col, `RRS total`, `RRS brooding`, `RRS reflection`, `SCRS total`)
+dplyr::select(col, `RRS`, `RRS brooding`, `RRS reflection`, `SCRS`)
 
 
 lower_table <- lower_table[c(5,6,1,2,3),]
