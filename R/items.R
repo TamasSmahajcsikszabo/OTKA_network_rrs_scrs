@@ -28,10 +28,10 @@ items_table <- tribble(
  "SCRS (10)","Self-critical", "I often berate myself for not being as productive as I should be.")
 
 item_codes <- c(V(RRS_graph)$label, V(SCRS_graph)$label)
-items_table$Tag  <- item_codes
+items_table$Label  <- item_codes
 
 lookUpItemName <- function(itemName) {
-    items_table[items_table$Tag == itemName,]$Item
+    items_table[items_table$Label == itemName,]$Item
 }
 
 makeItemStats <- function(itemName, summaryTable, stats=c('EI1', 'EI2','Bet.'), names=c('Exp. Inf.', 'Two-Step Exp. Inf.', 'Betweenness'), fullExplain=FALSE, onlyExplain=TRUE) {

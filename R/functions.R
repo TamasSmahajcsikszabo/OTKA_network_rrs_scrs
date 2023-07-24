@@ -500,6 +500,20 @@ get_bridge_estimate <- function(network, dec = 2, seed = 1234, method = "fast_gr
     # as.data.frame(output_tibble)
     output_tibble
 }
+
+get_factor_levels <- function() {
+    itemLevels <- c(paste0('RRS_', seq(1,10)), paste0('SCRS_', seq(1,10)))
+    itemLabels <- c(paste0('RRS (', seq(1,10), ')'), paste0('SCRS (', seq(1,10), ')'))
+    scaleLevels <- c('brooding', 'reflection', 'self-critical')
+    scaleLabels <- c('Brooding', 'Reflection', 'Self-critism')
+    list(
+        "scaleLevels" = scaleLevels,
+        "scaleLabels" = scaleLabels,
+        "itemLevels" = itemLevels,
+        "itemLabels" = itemLabels
+    )
+}
+
 network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE, seed = 1234, method = "optimal", weights = TRUE, item_TPR) {
     summary <- matrix(nrow = vcount(graph))
     summary <- data.frame(summary)
@@ -520,7 +534,16 @@ network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE
     summary["Title"] <- c(name, rep("", vcount(graph) - 1))
     summary["TPR"] <- round(V(add_community_certainty(graph, item_TPR))$TPR,3)
 
-    summary %>% dplyr::select("Graph"="Title", "Item", "Scale", "Label", everything(), -"Community")
+
+
+    summary = summary %>% dplyr::select("Graph"="Title", "Item", "Scale", "Label", everything(), -"Community")
+
+
+    labels <- get_factor_levels()
+    summary$Item = factor(summary$Item, levels=labels['itemLevels'][[1]], labels=labels['itemLabels'][[1]])
+    summary$Scale = factor(summary$Scale, levels=labels['scaleLevels'][[1]], labels=labels['scaleLabels'][[1]])
+    summary = summary %>% arrange(Scale)
+    summary
 
 }
 
@@ -1029,7 +1052,12 @@ edge_summary <- function(graph, accuracy_data, stability_data, statistic = "edge
     result <- result %>% left_join(stability_aggregated)
     result <- result %>%
         dplyr::select(-Statistic)
-    result %>% dplyr::select("Vx.1", "Vx.2", everything())
+    result <- result %>% dplyr::select("Vx.1", "Vx.2", everything())
+    labels <- get_factor_levels()
+    result$Vx.1 = factor(result[,1][[1]], levels=labels['itemLevels'][[1]], labels=labels['itemLabels'][[1]])
+    result$Vx.2 = factor(result[,2][[1]], levels=labels['itemLevels'][[1]], labels=labels['itemLabels'][[1]])
+    result
+
 }
 
 
