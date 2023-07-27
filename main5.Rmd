@@ -268,7 +268,7 @@ All three networks proved to be connected (any vertex is reachable from every ot
 Comparing diameters to mean distances, we see densely connected graphs (for the *RRS* network, its diameter is `r round(diameter(RRS_graph),3)` compared to its mean distance of `r round(mean_distance(RRS_graph),3)`; the *SCRS* and the combined networks show similar ratio patterns).
 On the plot, vertices represent the corresponding items of each questionnaire with labels showing item number, sub-scale and a label for each item.
 Sub-scales are presented in a colour-coded fashion as the outer circle of each vertex.
-Edges are the **LASSO** *L1*-penalized partial correlation coefficients whose value is represented as shade and width of the arcs.
+Edges are the **LASSO** *L1*-penalized partial correlation coefficients.
 
 The *RRS* (order of `r vcount(RRS_graph)`, size of `r ecount(RRS_graph)`) and *SCRS* (order of `r vcount(SCRS_graph)`, size of `r ecount(SCRS_graph)`) networks are densely connected networks.
 Analyzing their structure, while *SCRS* exhibits no *articulation point* [*cut vertex* whose removal would disconnect the network; @GaborCsardi2020]. 
@@ -432,6 +432,10 @@ One notable, inter-questionnaire edge which has high, non-zero accuracy is betwe
 Taken their item content into account, both of these items refer to rumination in recent or certain situations.
 Further edge related descriptive statistic and their related accuracy and stability estimates are in section 3.5 below.
 
+Another aspect of inter-questionnaire activation are items activating neighbours from another subscales in the combined graph of rumination.
+Items such as *react* of the *Brooding* subscale (*`r items_table[items_table$Label=="react",]$Item`*) are in-between of multiple other items belonging to different subscales. 
+The item *react* can activate its direct neighbor *handle*  (*`r items_table[items_table$Label=="handle",]$Item`*) from the same subscale, but also, although in a less stable way, *analyze* of the *Reflection* subscale (*`r items_table[items_table$Label=="analyze",]$Item`*)  and *act around* of SCRS (*`r items_table[items_table$Label=="act around",]$Item`*).
+
 ### 3.2 Internal Structure with an exponential random graph model
 
 Our ERGM model was built with *Markov chain Monte Carlo* (MCMC) maximum likelihood estimation (1000 iterations) to obtain model parameters by generating samples from the space of possible networks allowed by the data.
@@ -462,7 +466,7 @@ knitr::kable(ergm_tidy,digits=2,label="", caption="ERGM model fit", align="lcccc
 
 *Note. MCMC=Monte Carlo Markov Chain; GWESP=Geometrically Weighted Edgewise Shared Partner Distribution; p of EB=probability of Edge Building; model built with Markov chain Monte Carlo Maximum Likelihood Estimation*
 
-An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$residual.deviance[2][[1]],3)`, p `r format.pval(round(anova_tidy$Pr...Chisq..[2][[1]],3),eps=0.001)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
+An ANOVA analysis on the overall model indicates (with df=`r anova_tidy$df[2][[1]]`, residual deviance=`r round(anova_tidy$Resid..Dev[2][[1]],3)`, p `r format.pval(round(anova_tidy$Pr...Chisq..[2][[1]],3),eps=0.001)`) that variables involved in the model explain the network connectivity in a highly non-trivial fashion.
 The detailed analysis reveals that *endogenous* effects such as the overall density of the network (number of *edges*) change the probability of the formation of an edge by `r round(get_p(ergm_tidy$Estimate[1][[1]]),3)`), and at p<0.05 level the closed triangle formulation  indicates a non-trivial impact on clustering (connectivity probability changed by `r round(get_p(ergm_tidy$Estimate)[2][[1]],3)`).
 As expected, *exogenous* effects, such as two items belonging to the same sub-scale have a significant positive impact on connectivity (sub-scale changes edge probability by `r round(get_p(ergm_tidy$Estimate[5][[1]]),3)`, keeping the rest of the network fixed).
 Questionnaires themselves have no impact on edge formation ('Questionnaire main effect').
@@ -557,10 +561,10 @@ See Figure 4. in the Appendix for the corresponding ROC curves.
 ### 3.5 Power analysis, network accuracy and stability
 We used the *bootnet* R package to have an estimate of edge-weight accuracy with *non-parametric bootstrap* (5000 times sampling).
 The resulting **accuracy** estimates have been visually incorporated in Figure 1 in the following manner.
-Edge shade reflects the lower bound of the 95% confidence interval (CI) for each edge, while edges are presented with dashed line for cases of the CI including 0.0 edge weights.
+Edges are presented with dashed line for cases of the CI including 0.0 edge weights.
 For such cases,  we cannot be sure if their weight persist given different samples and varying sample characteristics.
-Darker shaded, continuous edges represent stable edges according to the bootstrap estimate.
-Edges such as between the *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))['vnames'][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line and has lighter shade indicating a lower stability.
+Continuous edges represent stable edges according to the bootstrap estimate.
+Edges such as between the *SCRS(5)* and *SCRS(7)* items indicate moderate penalized partial correlation between items in the SCRS network ($\rho$=`r round(E(SCRS_graph)[attributes(E(SCRS_graph))['vnames'][[1]]=='SCRS_5|SCRS_7']$strength,3)`), but the edge is presented with dashed line indicating lower stability.
 Examples for accurate and strong edges are *RRS(4)* (*alone1*; *"Go away by yourself and think about why you feel this way"*) and *RRS(10)* (*alone2*; *"Go someplace alone to think about your feelings"*). 
 The edge weight for these items in their stand-alone *RRS* network is `r round(E(RRS_graph)[10]$strength,3)` (estimated edge-weight accuracy is with average `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)` with lower and upper CI bounds of `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`).
 These items exhibit the same pattern in the combined network with estimated edge-weight accuracy with average weight of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)`; lower and upper CI bounds of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`.
@@ -571,6 +575,12 @@ Network **stability** estimates for our three networks were carried out by using
 We performed a *case dropping bootstrap* to simulate scenarios where fewer and fewer cases of the original sample would have been available and quantified the stability of the centrality metrics with the *Correlation Stability* (CS) coefficient. 
 Bootstrap was performed with B=5000 samples.
 
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+RRSchange <- readRDS("output/RRS_pos_comparative.RDS")
+SCRSchange <- readRDS("output/SCRS_comparative.RDS")
+```
+We specifically examined how accuracy  estimates of individual edges in their respective networks change compared to what we estimated in the combined graph of rumination.
+Although most of the stability and accuracy estimates decreased once entering into the combined graph, some increased, most notably the upper bounds of the 95% confidence intervals of accuracy for edges as *`r RRSchange[1,1][[1]]`* and *`r RRSchange[2,1][[1]]`* of RRS and  *`r SCRSchange[3,1][[1]]`* and *`r SCRSchange[4,1][[1]]`* of SCRS.
 Edge desriptive statistics as well as edge accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Appendix (see Table 5., 6., and 7.).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
@@ -629,11 +639,14 @@ Items #2 and #9 of *RRS* on their own graph emerged as a third component, presen
 Separation between scales in the **combined graph** is underlined by our *eigenmodel*, as in the two-dimensional space of the first two eigenvectors, expected grouping of *RRS* and *SCRS* items can be achieved.
 Items #2 and #9 of RRS are well separated from the bulk of the rest of the RRS items, supporting our above conclusion of them being a part of reflection or found a new component.
 Brooding has more associations with the self-critical aspects of rumination than reflection, which is highlighted by our eigenvector analysis as well as the sparse, unstable and weak edges with which reflection connects to brooding and self-critical rumination in their combined network.
-Our graphs suggests and support the notion of not referring to a psychological attribute as a sum score, but rather take into account the underlying activation pattern [@Bernstein2019].
+Our graphs suggests and support the notion of not referring to a psychological attribute as a sum score, but rather take into account the underlying activation pattern [@Bernstein2019; @Bork2019].
+Items modelled as nodes of a network present activation patterns inter-subscales, an example of which in our research is the interplay between items *react* and *handle* (both from Brooding), *analyze* (Reflection) and *act around* (SCRS).
+This example shows how the generic rumination on acting and the reasons of reactions activate other ruminative aspects, such as analyzing and understanding one's actions, and increased self-criticism in a social context.
 In a network analysis, @Williams2021  combined items of *"analyze"* into one node.
 
 We have gathered evidence of scale playing an important role in the edge-building process.
 According to our exponential random graph model, the internal scales of the combined network indeed have a statistically significant impact on associations between items, whereas the effect of questionnaire dissolved, no longer having an impact on the probability of edge formation.
+Edge desriptive statistics as well as edge accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Appendix (see Table 5., 6., and 7.).
 This suggest that all three scales are effective in assessing a separate facet of rumination when used together.
 As shown, associations within the combined network only have low chances of false discovery.
 
@@ -641,9 +654,12 @@ Results indicate that network associations are accurately aligned to the interna
 Edge strengths and edge weights have also high stability and relatively high resistance to sample loss, whereas betweenness is remarkably sensitive to case-dropping.
 This suggest that on different samples with lesser count of observations and varying sample characteristics, the centrality of a node conceptualized as being a connecting point between subnetworks (i.e. betweenness) can be less stable.
 
-Limitations
+## 5. Limitations
+Our results have provided a view on rumination as an interplay between depressive rumination and self-criticsm, but no other construct was involved in the present study.
+By including depression, anxiety or social aspects of the individual the combined view on rumination could be further expanded.
 
-Conclusions
+
+## 6. Conclusions
 Network analysis is an evolving and in research psychology, an emerging approach to draw *psychological networks*, and eventually confirm or question existing findings on confirmatory analysis.
 In the present paper, scrutinizing rumination as patterns of activation among its measuring items, we provided a view on depressive and self-critical rumination as a common network.
 Being in their respective, isolated network, depressive rumination and self-critical rumination confirmed their structures (both solid and blurred, like the "analyze" items) known to literature.
@@ -651,6 +667,35 @@ The combined network of rumination presented less-to-none blurred items, and has
 
 Future steps include analyzing such data from a person-level graph perspective, where vertices are individuals, and edges can be some distance measure between vertices based upon demographics and survey data.
 Also, if keeping our analysis on the item-level, as in the present paper, we would extend our methodology to directed acyclic graphs (DAGs) which would allow causal assumptions to support our understanding various facets of rumination.
+
+\newpage
+## 7. Declarations
+
+### Funding  
+The study was supported by the Hungarian National Research, Development and Innovation Office (Grant No. FK128614, K143764). GK was supported by the Hungarian Brain Research Program 3.0 (NAP2022-I-4/2022). NK was supported by the New National Excellence Program of The Ministry for Culture and Innovation from the source of the National Research, Development and Innovation Fund (ÚNKP-22-4-II-ELTE-751). 
+
+### Acknowledgements 
+We thank for all the BA students who helped us in data collection. 
+Conflicts of interest/Competing interests.
+The authors declare that they have no competing interests. 
+
+### Ethics approval  
+The protocol was designed in accordance with the Declaration of Helsinki and the study was ethically approved by the Institutional Review Board of Eötvös Loránd University, Faculty of Education and Psychology.  
+
+### Consent to participate  
+Participation in the study was voluntary and anonymous for the participants (high school students). Informed consent was obtained from the participants and their parents. School principals provided institutional consent. 
+
+### Consent for publication  
+Not applicable. 
+
+### Availability of data and materials (data transparency) 
+https://github.com/TamasSmahajcsikszabo/rumination_lasso/data/
+
+### Code availability (software application or custom code) 
+https://github.com/TamasSmahajcsikszabo/rumination_lasso
+
+### Authors' contributions  
+GK and ZR conceptualized the study design and supervised the data collection. TSSZ performed data analysis and GK, NK and RU contributed to the interpretation of the results. TSSZ and NK drafted the manuscript. GK, ZR, NK, RU reviewed the first draft and provided critical feedback. All authors read and approved the final manuscript. 
 
 \newpage
 

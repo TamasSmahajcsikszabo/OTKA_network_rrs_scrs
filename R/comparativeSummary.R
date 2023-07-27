@@ -33,7 +33,7 @@ ggplot(plotdata) +
     facet_wrap(~network)
 
 
-combinedplotdata %>%
+plotdata %>%
     group_by(network, edge, name) %>% summarize(v = mean(value))
 
 
@@ -58,7 +58,10 @@ comparative <- comparative %>% filter(!is.na(value))
 RRS_comparative <- comparative %>% filter(network == 'RRS')
 RRS_comparative <- RRS_comparative %>% filter(str_detect(name, 'Acc'))
 RRS_comparative$name <- factor(RRS_comparative$name, levels=c('L.B.Acc.', 'Avg. Acc.', 'U.B.Acc.'))
-RRS_comparative <- RRS_comparative %>% filter(!is.na(diff))
+RRS_comparative_pos <- RRS_comparative %>% filter(!is.na(diff)) %>% filter(diff > 0)
+saveRDS(RRS_comparative_pos, "output/RRS_pos_comparative.RDS")
+RRS_comparative_neg <- RRS_comparative %>% filter(!is.na(diff)) %>% filter(diff < 0)
+saveRDS(RRS_comparative_neg, "output/RRS_pos_comparative.RDS")
 
 ggplot(RRS_comparative) +
     geom_point(aes(name, value), color="skyblue") +
@@ -71,7 +74,8 @@ facet_wrap(~edge) + theme_light()
 SCRS_comparative <- comparative %>% filter(network == 'SCRS')
 SCRS_comparative <- SCRS_comparative %>% filter(str_detect(name, 'Acc'))
 SCRS_comparative$name <- factor(SCRS_comparative$name, levels=c('L.B.Acc.', 'Avg. Acc.', 'U.B.Acc.'))
-SCRS_comparative <- SCRS_comparative %>% filter(!is.na(diff))
+SCRS_comparative <- SCRS_comparative %>% filter(!is.na(diff)) %>% filter(diff>0)
+saveRDS(SCRS_comparative, "output/SCRS_comparative.RDS")
 
 ggplot(SCRS_comparative) +
     geom_point(aes(name, value), color="skyblue") +
@@ -79,3 +83,25 @@ ggplot(SCRS_comparative) +
     geom_point(aes(name, diff)) +
     geom_line(aes(name, diff, group=edge)) +
 facet_wrap(~edge) + theme_light()
+
+
+comparative %>%
+    filter(!network == 'RRS + SCRS') %>%
+        filter(!is.na(diff)) %>%
+        # mutate(diff = paste0(Round(value), ' [', Round(diff), ']')) %>%
+        dplyr::select(1:4) %>%
+        ggplot() + 
+        geom_tile(aes(edge, name, fill=diff>0))
+        # group_by(network, edge) %>%
+        # pivot_wider(names_from=name, values_from = diff) %>%
+        # ungroup() %>%
+        # dplyr::select(network, edge, everything())
+
+
+increased <- comparative %>%
+    filter(!network == 'RRS + SCRS') %>%
+        filter(!is.na(diff)) %>%
+        dplyr::select(1:4) %>%
+        filter(diff>0)
+
+broom::tidy(summary(increased$diff))
