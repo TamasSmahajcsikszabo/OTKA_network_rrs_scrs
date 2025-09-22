@@ -9,58 +9,6 @@ standardize <- function(a) {
     (a - est_mean) / est_SD
 }
 
-tau_estimate <- function(x, y = NULL) {
-    if (is.list(x)) {
-        input <- x
-        x <- input[[1]]
-        y <- input[[2]]
-    }
-
-    concordants <- c()
-    discordants <- c()
-    total <- c(0)
-    max_op <- length(x) * (length(y) - 1)
-    for (index in seq(1, length(x))) {
-        for (pair_index in seq(1, length(x))[!seq(1, length(x)) == index]) {
-            first <- list(x[index], y[index])
-            second <- list(x[pair_index], y[pair_index])
-            if ((first[[1]] > second[[1]] & first[[2]] > second[[2]]) |
-                (first[[1]] < second[[1]] & first[[2]] < second[[2]])) {
-                concordants <- c(concordants, 1)
-            } else {
-                discordants <- c(discordants, -1)
-            }
-            total <- total + 1
-            cat(paste0("\r", "Progress: ", round(total / max_op, 2) * 100, "%"))
-        }
-    }
-    tau <- (sum(concordants) + sum(discordants)) / total
-    if (is.nan(tau) & (length(x) == 1 | length(y) == 1)) {
-        warning("Estimation not possible; input values are scalars")
-    } else {
-        cat(paste0("\n", "Tau estimate = ", tau))
-    }
-}
-
-get_item_names <- function(covMatrix, labels) {
-    new_labels <- c()
-    original_names <- unlist(lapply(rownames(covMatrix), function(x) {
-        str_replace(x, "PCA.", "")
-    }))
-    for (i in seq_along(original_names)) {
-        if (str_detect(original_names[i], "\\.")) {
-            split_labels <- unlist(strsplit(original_names[i], "\\."))
-            lookup_names <- paste0(unlist(lapply(split_labels, function(x) {
-                labels[names(labels) == x]
-            })), collapse = " + ")
-            split_labels <- paste0(split_labels, collapse = " + ")
-            new_labels[i] <- paste0(split_labels, ": \n", lookup_names)
-        } else {
-            new_labels[i] <- paste0(original_names[i], ": \n", labels[names(labels) == original_names[i]])
-        }
-    }
-    new_labels
-}
 
 make_community_graph <- function(graph, covMatrix, labels) {
     igraph_converted <- as.igraph(graph, attributes = TRUE)

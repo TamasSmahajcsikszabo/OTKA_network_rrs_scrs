@@ -1,13 +1,3 @@
-# libraries
-library(foreign)
-library(tidyverse)
-library(haven)
-library(igraph)
-library(sand)
-library(qgraph)
-library(tibble)
-library(tidyverse)
-
 # data importing
 dataset <- read.spss("data/scrs888.sav", to.data.frame = TRUE, use.value.labels = TRUE)
 dataset <- as_tibble(dataset) # transform raw dataframe into tibble dataframe
