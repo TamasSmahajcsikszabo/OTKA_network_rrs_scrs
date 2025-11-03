@@ -1,38 +1,87 @@
-library(tidyverse)
-library(networktools)
-library(qgraph)
-library(glasso)
-library(ggraph)
-library(igraph)
-library(bootnet)
-library(modelr)
-library(scales)
-library(knitr)
-library(ggpubr)
-library(broom)
-library(ergm)
-library(fdrtool)
-library(eigenmodel)
-library(ROCR)
-library(bookdown)
-library(foreign)
-library(tidyverse)
-library(haven)
-library(tibble)
-library(ergm)
-library(fdrtool)
-library(eigenmodel)
-library(ROCR)
-library(bookdown)
+#' Attempts to load an R package
+#' If not found, tries install the package
+#' @param package_name string name of the package
+load_library <- function(package_name) {
+    tryCatch(
+        {
+            if (package_name %in% installed.packages()) {
+                library(package_name, character.only = TRUE)
+            } else {
+                install.packages(package_name, dependencies = TRUE, repos = "https://cloud.r-project.org")
+            }
+        },
+        error = function(e) {
+            print(e)
+        },
+        warning = function(w) {
+            print(w)
+        }
+    )
+}
+
+load_library("devtools")
+load_library("tidyverse")
+load_library("networktools")
+load_library("qgraph")
+load_library("glasso")
+load_library("ggraph")
+load_library("igraph")
+load_library("bootnet")
+load_library("modelr")
+load_library("scales")
+load_library("knitr")
+load_library("ggpubr")
+load_library("broom")
+load_library("ergm")
+load_library("fdrtool")
+load_library("eigenmodel")
+load_library("ROCR")
+load_library("bookdown")
+load_library("foreign")
+load_library("tidyverse")
+load_library("haven")
+load_library("tibble")
+load_library("ergm")
+load_library("fdrtool")
+load_library("eigenmodel")
+load_library("ROCR")
+load_library("bookdown")
+load_library("extrafont")
+load_library("WRS")
+load_library("kableExtra")
 
 if (!"captioner" %in% installed.packages()) {
-  devtools::install_github("adletaw/captioner")
+    devtools::install_github("adletaw/captioner")
 } else {
-  library(captioner)
+    library(captioner)
+}
+if (!"rogme" %in% installed.packages()) {
+    devtools::install_github("Grousselet/rogme")
+} else {
+    library(captioner)
+}
+
+if (!"WRS" %in% installed.packages()) {
+    # first: install dependent packages
+    install.packages(c("MASS", "akima", "robustbase"))
+
+    # second: install suggested packages
+    install.packages(c("akima", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "mc2d", "psych", "Rfit", "DepthProc", "class", "fda", "rankFD"))
+
+    # third: install an additional package which provides some C functions
+    # install.packages("devtools")
+    # NOTE: This seems to be stalled and not functional any more
+    # devtools::install_github("mrxiaohe/WRScpp")
+
+    # fourth: install WRS
+    devtools::install_github("nicebread/WRS", subdir = "pkg")
 }
 
 if (!"networkAnalysisTools" %in% installed.packages()) {
-  devtools::install_github("TamasSmahajcsikszabo/networkAnalysisTools")
+    print("NetworkAnalysisTools not found. Attempting install from GitHub source")
+    devtools::install_github("TamasSmahajcsikszabo/networkAnalysisTools")
 } else {
-  library(networkAnalysisTools)
+    library(networkAnalysisTools)
 }
+
+print("------- ALL DEPENDENCIES INSTALLED -------")

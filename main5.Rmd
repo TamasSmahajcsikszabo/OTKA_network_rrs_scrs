@@ -15,24 +15,8 @@ output:
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
-library(tidyverse)
-library(networktools)
-library(qgraph)
-library(glasso)
-library(ggraph)
-library(igraph)
-library(bootnet)
-library(modelr)
-library(scales)
-library(knitr)
-library(ggpubr)
-library(broom)
-library(ergm)
-library(fdrtool)
-library(eigenmodel)
-library(ROCR)
-library(bookdown)
-library(kableExtra)
+# libraries declared
+source("R/import_libraries.R")
 source("R/data_import.R")
 source("R/functions.R")
 source("get_rumi.R")
@@ -277,7 +261,7 @@ Besides *size* and *order*, on Figure 1. we also indicated the *Clustering coeff
 The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points.
 The previously identified articulation point of the *RRS* network (*problem* vertex) is no longer a cut-off vertex when all rumination items (brooding, reflection and self-criticism) are encompassed in one graph.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+```{r communities, echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
 i  <- 1000
 # simulate_communities(RRS_graph, path="output/RRS_communities.RDS",i=i)
 # simulate_communities(SCRS_graph, path="output/SCRS_communities.RDS",i=i)
