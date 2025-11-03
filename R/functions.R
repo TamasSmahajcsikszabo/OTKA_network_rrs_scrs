@@ -860,12 +860,15 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
     my_color_scale <- tibble("subscale" = V(graph)$subscale) %>% left_join(custom_colors)
     my_color_scale <- as.character(my_color_scale$color)
     names(my_color_scale) <- V(graph)$subscale
-    plot <- add_community_certainty(graph, item_TDR) %>%
+    linetypes <- rep("solid", length(E(graph)))
+    linetypes[E(graph)$accuracy<0]<-rep("dotted", length(linetypes[E(graph)$accuracy<0]))
+    E(graph)$linetype <- linetypes
+    p <- add_community_certainty(graph, item_TDR) %>%
         add_articulation_point() %>%
         add_toolname() %>%
         ggraph(layout = "fr") +
-        geom_edge_density(edge_fill = "white") +
-        geom_edge_fan(aes(width = weight, linetype = accuracy < 0), show.legend = FALSE, color='grey70') +
+        # geom_edge_density(edge_fill = "white")  +
+        geom_edge_fan(aes(width = weight), show.legend = FALSE, color='grey70') +
         scale_color_manual(values = my_color_scale, name = "Sub-scale") +
         geom_node_point(color = "black", size = overallnodesize) +
         geom_node_point(aes(color = subscale), size = overallnodesize * (10/12)) +
@@ -886,6 +889,8 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
             panel.background = element_rect(color = "black", fill = "white"),
             plot.caption = element_text(hjust=0)
         )
+    plot(p)
+    p
 }
 
 
