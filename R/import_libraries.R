@@ -18,6 +18,7 @@ load_library <- function(package_name) {
         }
     )
 }
+options(repos = c(CRAN = "https://cloud.r-project.org"))
 
 load_library("devtools")
 load_library("tidyverse")
@@ -49,6 +50,8 @@ load_library("bookdown")
 load_library("extrafont")
 load_library("WRS")
 load_library("kableExtra")
+load_library("ltm")
+load_library("pander")
 
 if (!"captioner" %in% installed.packages()) {
     devtools::install_github("adletaw/captioner")
@@ -58,7 +61,12 @@ if (!"captioner" %in% installed.packages()) {
 if (!"rogme" %in% installed.packages()) {
     devtools::install_github("Grousselet/rogme")
 } else {
-    library(captioner)
+    library(rogme)
+}
+if (!"GGMncv" %in% installed.packages()) {
+    devtools::install_github("donaldRwilliams/GGMncv")
+} else {
+    library(GGMncv)
 }
 
 if (!"WRS" %in% installed.packages()) {

@@ -1,3 +1,5 @@
+library(ggraph)
+
 Alpha <- function(){
     return('$\\alpha$')
 }
