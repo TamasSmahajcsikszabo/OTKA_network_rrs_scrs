@@ -869,7 +869,7 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         add_articulation_point() %>%
         add_toolname() %>%
         ggraph(layout = "fr") +
-        # geom_edge_density(edge_fill = "white")  +
+        geom_edge_density(edge_fill = "grey")  +
         geom_edge_fan(aes(width = weight), show.legend = FALSE, color='grey70') +
         scale_color_manual(values = my_color_scale, name = "Sub-scale") +
         geom_node_point(color = "black", size = overallnodesize) +
@@ -877,9 +877,9 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         geom_node_point(color = "white", size = overallnodesize * (5/12)) +
         geom_node_point(aes(alpha = TPR), size = overallnodesize * (5/12)) + 
         # geom_node_text(aes(label=paste0(tool, "(", item_number, ")",articulation_point, "\n", subscale, "\n", label)), size=textsize, vjust=1.5) + 
-        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold") +
-        geom_node_text(aes(label = paste0(subscale, "(", item_number, ")")), size = textsize, vjust = -2.6) +
-        geom_node_text(aes(label = articulation_point), size = overalltextsize * (13/18), hjust = -2.9, vjust = -1.0) +
+        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold", repe=TRUE) +
+        geom_node_text(aes(label = paste0(subscale, "(", item_number, ")")), size = textsize, vjust = -2.6, repel=TRUE) +
+        geom_node_text(aes(label = articulation_point), size = overalltextsize * (13/18), hjust = -2.9, vjust = -1.0, repel=TRUE) +
         labs(
             caption = caption,
             title = title,
@@ -891,7 +891,6 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
             panel.background = element_rect(color = "black", fill = "white"),
             plot.caption = element_text(hjust=0)
         )
-    plot(p)
     p
 }
 
