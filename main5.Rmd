@@ -15,15 +15,12 @@ output:
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
-# libraries declared
-source("R/import_libraries.R")
-source("R/data_import.R")
-source("R/functions.R")
-source("get_rumi.R")
+source("R/01_import_dependencies.R")
+source("R/02_import_functions.R")
+source("R/03_import_data.R")
+source('R/04_import_items.R')
+
 suppressMessages(extrafont::loadfonts(device='postscript'))
-setwd('/home/tamas/repos/rumination_lasso')
-source('R/summary.R')
-source('R/items.R')
 ```
 
 
@@ -261,7 +258,7 @@ Besides *size* and *order*, on Figure 1. we also indicated the *Clustering coeff
 The combined network (order: `r vcount(rumi)`, size: `r ecount(rumi)`) has no articulation points.
 The previously identified articulation point of the *RRS* network (*problem* vertex) is no longer a cut-off vertex when all rumination items (brooding, reflection and self-criticism) are encompassed in one graph.
 
-```{r communities, echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
+```{r communities, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 i  <- 1000
 # simulate_communities(RRS_graph, path="output/RRS_communities.RDS",i=i)
 # simulate_communities(SCRS_graph, path="output/SCRS_communities.RDS",i=i)
@@ -276,34 +273,6 @@ combined_simulated_communities <- readRDS("output/combined_communities.RDS")
 # saveRDS(SCRS_item_TPR, 'output/SCRS_item_TPR.RDS')
 # combined_item_TPR <- item_level_TPR(combined_simulated_communities, rumi)
 # saveRDS(combined_item_TPR, 'output/combined_item_TPR.RDS')
-RRS_item_TDR <- readRDS('output/RRS_item_TPR.RDS')
-SCRS_item_TDR <- readRDS('output/SCRS_item_TPR.RDS')
-combined_item_TDR <- readRDS('output/combined_item_TPR.RDS')
-accuracy_rrs  <- readRDS("output/accuracy_rrs.RDS")
-accuracy_scrs  <- readRDS("output/accuracy_scrs.RDS")
-accuracy_combined <- readRDS("output/accuracy_combined.RDS")
-accuracy_rrs <- network_accuracy_data(accuracy_rrs)
-accuracy_scrs <- network_accuracy_data(accuracy_scrs)
-accuracy_combined <- network_accuracy_data(accuracy_combined)
-
-get_itemnames <- function(namevector){
-    grid <- tibble(expand.grid(namevector, namevector))
-    grid <- grid %>% filter(!Var1==Var2)
-    grid
-}
-# add accuracy to networks
-rumi <- add_accuracy_to_graph(rumi, accuracy_combined)
-RRS_graph <- add_accuracy_to_graph(RRS_graph, accuracy_rrs)
-SCRS_graph <- add_accuracy_to_graph(SCRS_graph, accuracy_scrs)
-
-overalltextsize <- 24
-textsize <- 7
-overallnodesize  <- 10
-RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=RRS_item_TDR, overallnodesize=overallnodesize)
-SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=SCRS_item_TDR, overallnodesize=overallnodesize)
-combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS & SCRS undirected graph",force_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize, item_TDR=combined_item_TDR, overallnodesize=overallnodesize)
-network_plot <- ggarrange(ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1,1)), combined_plot, widths=c(0.95,1.05))
-ggsave("output/networkplot.png",network_plot, dpi=400, device='png',width=35, height=18)
 
 # RRS_simulated_communities  %>%
 #     group_by(Item, Community)  %>%
@@ -380,7 +349,7 @@ Lower TPR in this sense means that the item had on average lower rate of being m
 \newpage
 \blandscape
 
-```{r networkPlot, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=32, fig.height=20, fig.cap='Tableau view of three graphs of rumination'}
+```{r networkPlot, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=36, fig.height=24,out.width='\\linewidth', fig.cap='Tableau view of three graphs of rumination'}
 network_plot
 ```
 
@@ -751,7 +720,7 @@ knitr::kable(combinedSummary, format='simple', row.names=FALSE,caption="Edge Acc
 \elandscape
 \newpage
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=10, fig.height=6, fig.cap='ROC curves of the combined RRS-SCRS network'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=6, fig.height=4, fig.cap='ROC curves of the combined RRS-SCRS network'}
 
 ROC_data <- bind_rows(getAUC(perf1, "Latent effect"), getAUC(perf2, "Latent + Questionaire as pair-wise"), getAUC(perf3, "Latent + Scale as pair-wise"))
 
