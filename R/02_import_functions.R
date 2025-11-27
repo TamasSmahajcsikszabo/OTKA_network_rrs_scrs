@@ -891,9 +891,9 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
         geom_node_point(color = "white", size = overallnodesize * (5/12)) +
         geom_node_point(aes(alpha = TPR), size = overallnodesize * (5/12)) + 
         # geom_node_text(aes(label=paste0(tool, "(", item_number, ")",articulation_point, "\n", subscale, "\n", label)), size=textsize, vjust=1.5) + 
-        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold", repe=TRUE) +
-        geom_node_text(aes(label = paste0(subscale, "(", item_number, ")")), size = textsize, vjust = -2.6, repel=TRUE) +
-        geom_node_text(aes(label = articulation_point), size = overalltextsize * (13/18), hjust = -2.9, vjust = -1.0, repel=TRUE) +
+        geom_node_text(aes(label = label), size = textsize, vjust = -1.4, fontface = "bold") +
+        geom_node_text(aes(label = paste0(subscale, "(", item_number, ")")), size = textsize, vjust = -2.6) +
+        geom_node_text(aes(label = articulation_point), size = overalltextsize * (13/18), hjust = -2.9, vjust = -1.0) +
         labs(
             caption = caption,
             title = title,
