@@ -482,10 +482,10 @@ network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE
     colnames(summary) <- "Item"
     summary["Scale"] <- tibble("subscale" = V(graph)$subscale)
     summary["Label"] <- tibble("label" = V(graph)$label)
-    summary["Deg."] <- tibble("degree" = degree(graph))
-    summary["Str."] <- tibble("strength" = round(strength(graph), dec))
-    summary["Bet."] <- tibble("betweenness" = round(betweenness(graph), dec))
-    summary["Clo."] <- tibble("closeness" = round(closeness(graph), dec))
+    summary["Deg."] <- tibble("degree" = igraph::degree(graph))
+    summary["Str."] <- tibble("strength" = round(igraph::strength(graph), dec))
+    summary["Bet."] <- tibble("betweenness" = round(igraph::betweenness(graph), dec))
+    summary["Clo."] <- tibble("closeness" = round(igraph::closeness(graph), dec))
     influence_df <- networktools::expectedInf(graph, step = c("both"), directed = FALSE)
     summary["EI1"] <- tibble("EI1" = round(standardize(influence_df$step1), dec))
     summary["EI2"] <- tibble("EI2" = round(standardize(influence_df$step2), dec))
@@ -497,13 +497,13 @@ network_summary <- function(graph, dec = 2, name = "Graph", single_scale = FALSE
 
 
 
-    summary = summary %>% dplyr::select("Graph"="Title", "Item", "Scale", "Label", everything(), -"Community")
+    summary  <-  summary %>% dplyr::select("Graph"="Title", "Item", "Scale", "Label", everything(), -"Community")
 
 
     labels <- get_factor_levels()
-    summary$Item = factor(summary$Item, levels=labels['itemLevels'][[1]], labels=labels['itemLabels'][[1]])
-    summary$Scale = factor(summary$Scale, levels=labels['scaleLevels'][[1]], labels=labels['scaleLabels'][[1]])
-    summary = summary %>% arrange(Scale)
+    summary$Item  <-  factor(summary$Item, levels=labels['itemLevels'][[1]], labels=labels['itemLabels'][[1]])
+    summary$Scale  <-  factor(summary$Scale, levels=labels['scaleLevels'][[1]], labels=labels['scaleLabels'][[1]])
+    summary  <-  summary %>% arrange(Scale)
     summary
 
 }
@@ -876,11 +876,14 @@ beautify <- function(graph, simulated_community, title = "Graph", no_caption = F
     linetypes <- rep("solid", length(E(graph)))
     linetypes[E(graph)$accuracy<0]<-rep("dotted", length(linetypes[E(graph)$accuracy<0]))
     E(graph)$linetype <- linetypes
-    p <- add_community_certainty(graph, item_TDR) %>%
-        add_articulation_point() %>%
-        add_toolname() %>%
-        ggraph(layout = "fr") +
-        geom_edge_density(edge_fill = "grey")  +
+
+
+    graph_base <- add_community_certainty(graph, item_TDR) %>%
+         add_articulation_point() %>%
+         add_toolname()
+
+    p <- ggraph(graph_base, layout='fr') +
+        geom_edge_density(edge_fill='white') +
         geom_edge_fan(aes(width = weight), show.legend = FALSE, color='grey70') +
         scale_color_manual(values = my_color_scale, name = "Sub-scale") +
         geom_node_point(color = "black", size = overallnodesize) +

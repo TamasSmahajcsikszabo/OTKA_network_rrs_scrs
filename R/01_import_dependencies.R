@@ -28,6 +28,7 @@ load_library("glasso")
 load_library("ggraph")
 load_library("igraph")
 load_library("bootnet")
+load_library("statnet")
 load_library("modelr")
 load_library("scales")
 load_library("knitr")
@@ -91,5 +92,6 @@ if (!"networkAnalysisTools" %in% installed.packages()) {
 } else {
     library(networkAnalysisTools)
 }
+# remotes::install_version("ggplot2", "3.5.2")
 
 print("------- ALL DEPENDENCIES INSTALLED -------")

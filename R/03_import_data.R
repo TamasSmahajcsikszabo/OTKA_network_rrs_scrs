@@ -29,6 +29,7 @@ rumidata$gender <- factor(rumidata$gender)
 
 # prepared dataset
 dataset <- rumidata
+var_names <- names(dataset)
 
 # load computed measures
 rumi<-readRDS("data/rumi_graph_full.RDS")
@@ -60,16 +61,19 @@ RRS_graph <- add_accuracy_to_graph(RRS_graph, accuracy_rrs)
 SCRS_graph <- add_accuracy_to_graph(SCRS_graph, accuracy_scrs)
 
 # network plots
-overalltextsize <- 24
+overalltextsize <- 18
 textsize <- 7
-overallnodesize  <- 10
+overallnodesize  <- 8
 RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=RRS_item_TDR, overallnodesize=overallnodesize)
+RRS_plot
 SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=SCRS_item_TDR, overallnodesize=overallnodesize)
 combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS & SCRS undirected graph",force_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize, item_TDR=combined_item_TDR, overallnodesize=overallnodesize)
-network_plot <- ggarrange(ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1,1)), combined_plot, widths=c(0.95,1.05))
+network_plot <- ggpubr::ggarrange(ggpubr::ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1,1)), combined_plot, widths=c(0.95,1.05))
+network_plot
 ggsave("output/networkplot.png",network_plot, dpi=400, device='png',width=35, height=18)
 
 # community detection methods
+i  <- 1000
 RRS_tpr <- suppressMessages(get_TPR(RRS_simulated_communities,RRS_graph))
 RRS_tpr_s <- suppressMessages(RRS_tpr %>% 
     group_by(Subscale)  %>%
@@ -88,14 +92,15 @@ combined_tpr_top <- suppressMessages(combined_tpr %>%
     group_by(Subscale)  %>%
     summarise(TPR_m = mean(TPR)))
 
-
 # summary table
 seed <- 647
 weights <- TRUE
 method <- 'optimal'
-networksummary_table <- bind_rows(network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights, item_TPR=RRS_item_TDR),
-                            network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights, item_TPR=SCRS_item_TDR),
-                            network_summary(rumi, name="Combined",seed=seed,method=method,weights=weights, item_TPR=combined_item_TDR))
+RRS_summary  <- network_summary(RRS_graph, name="RRS",seed=seed,method=method,weights=weights, item_TPR=RRS_item_TDR)
+SCRS_summary <- network_summary(SCRS_graph, name="SCRS", seed=seed,method=method,weights=weights, item_TPR=SCRS_item_TDR)
+combined_graph_summary <- network_summary(rumi, name="Combined",seed=seed,method=method,weights=weights, item_TPR=combined_item_TDR)
+networksummary_table <- bind_rows(RRS_summary, SCRS_summary, combined_graph_summary)
+saveRDS(networksummary_table,"./output/networksummary_table.RDS")
 
 
 # create a questionnaire scales and add them to data
@@ -261,4 +266,3 @@ opening_line <- tibble_row("Correlations:", `1.`="", `2.`="", `3.`="", `4.`="")
 colnames(opening_line)[1] <- ''
 summary_table <- bind_rows(opening_line, summary_table)
 colnames(summary_table)[1] <- ''
-

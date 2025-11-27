@@ -8,13 +8,6 @@ library(rogme)
 library(magrittr)
 library(stringr)
 
-Alpha <- function(){
-    '$\\alpha$'
-}
-
-Round <- function(value) {
-        return(format(round(as.numeric(value), 2), nsmall=2))
-}
 
 rumidata <- readRDS("/home/tamas/repos/networks_with_r/full_data.RDS")
 rumidata <- rumidata %>% mutate(ID = row_number())

@@ -1,8 +1,19 @@
 library(ggraph)
 
+
 Alpha <- function(){
-    return('$\\alpha$')
+    '$\\alpha$'
 }
+
+Round <- function(value) {
+        return(format(round(as.numeric(value), 2), nsmall=2))
+}
+get_itemnames <- function(namevector){
+    gridN <- tibble(expand.grid(namevector, namevector))
+    gridN <- gridN %>% filter(!Var1==Var2)
+    gridN
+}
+
 
 standardize <- function(a) {
     est_mean <- mean(a, na.rm = TRUE)
