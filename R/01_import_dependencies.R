@@ -86,12 +86,13 @@ if (!"WRS" %in% installed.packages()) {
     devtools::install_github("nicebread/WRS", subdir = "pkg")
 }
 
-if (!"networkAnalysisTools" %in% installed.packages()) {
-    print("NetworkAnalysisTools not found. Attempting install from GitHub source")
-    devtools::install_github("TamasSmahajcsikszabo/networkAnalysisTools")
-} else {
-    library(networkAnalysisTools)
-}
+# if (!"networkAnalysisTools" %in% installed.packages()) {
+print("NetworkAnalysisTools not found. Attempting install from GitHub source")
+devtools::install_github("TamasSmahajcsikszabo/networkAnalysisTools")
+library(networkAnalysisTools)
+# } else {
+    # library(networkAnalysisTools)
+# }
 # remotes::install_version("ggplot2", "3.5.2")
 
 print("------- ALL DEPENDENCIES INSTALLED -------")

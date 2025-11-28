@@ -1,54 +1,29 @@
 library(ggraph)
+library(networkAnalysisTools)
 
 
-Alpha <- function(){
+#' Pastes Alpha character
+Alpha <- function() {
     '$\\alpha$'
 }
 
+#' Custom formatting round function
 Round <- function(value) {
         return(format(round(as.numeric(value), 2), nsmall=2))
 }
-get_itemnames <- function(namevector){
-    gridN <- tibble(expand.grid(namevector, namevector))
-    gridN <- gridN %>% filter(!Var1==Var2)
-    gridN
-}
 
 
+#' Standardize function
+#' @param a numeric vector
+#' @returns standardized numeric vector of a
 standardize <- function(a) {
     est_mean <- mean(a, na.rm = TRUE)
     est_SD <- sd(a, na.rm = TRUE)
-
     (a - est_mean) / est_SD
 }
 
 
-make_community_graph <- function(graph, covMatrix, labels) {
-    igraph_converted <- as.igraph(graph, attributes = TRUE)
-    group_estimation <- cluster_spinglass(
-        igraph_converted,
-        weights = NULL,
-        vertex = NULL,
-        spins = 25,
-        parupdate = FALSE,
-        start.temp = 1,
-        stop.temp = 0.01,
-        cool.fact = 0.99,
-        update.rule = c("config", "random", "simple"),
-        gamma = 0.5,
-        implementation = c("orig", "neg"),
-        gamma.minus = 1
-    )
-
-
-    grouping_order <- data.frame(id = group_estimation$membership) %>%
-        left_join(global_colors) %>%
-        select(color) %>%
-        unlist()
-    labels <- get_item_names(covMatrix, labels)
-    qgraph(covMatrix, graph = "glasso", tuning = 0.5, layout = "spring", sampleSize = 888, theme = "TeamFortress", details = TRUE, threshold = FALSE, color = grouping_order, labels = labels)
-}
-
+#' Helper function to find item name of questionnaire
 find_tool <- function(itemname, data_labels) {
     if (str_locate(itemname, " .+ ")[1, 1] > 0 & !is.na(str_locate(itemname, " .+ "))) {
         itemname <- str_sub(itemname, start = 1, end = str_locate(itemname, " .+ ")[1, 1] - 1)
@@ -59,6 +34,7 @@ find_tool <- function(itemname, data_labels) {
     toolname <- str_sub(toolname, start = 1, end = str_locate(toolname, "_")[[1, 1]] - 1)
     toolname
 }
+
 expected_inf_plot <- function(network, toolname) {
     influence_df <- networktools::expectedInf(network, step = c("both"), directed = FALSE)
     step1 <- unlist(influence_df["step1"])
