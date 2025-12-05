@@ -7,6 +7,9 @@ library(tidyr)
 library(rogme)
 library(magrittr)
 library(stringr)
+library(igraph)
+library(qgraph)
+library(tidyverse)
 
 #import main data
 dataset_raw <- read.spss("data/scrs888.sav", to.data.frame = TRUE, use.value.labels = TRUE)
@@ -30,12 +33,51 @@ rumidata$gender <- factor(rumidata$gender)
 # prepared dataset
 dataset <- rumidata
 var_names <- names(dataset)
+dataset_only_scales <- dataset[,names(dataset) %in% c(paste0("RRS_", 1:10), paste0("SCRS_", 1:10))]
+
+# create networks
+source_data <- readRDS("data/full_data.RDS")[,c(4,5,6,7,10,11,12,13:32,47)]
+source_data <- na.omit(source_data)
+names(source_data)<-c('gender','age', 'edu','class','wellb','chronic','acute',paste0('RRS_',seq(1:10)), paste0('SCRS_',seq(1:10)), 'Cantrell')
+levels(source_data$gender)<-ifelse(source_data$gender=='fiu',1,2)
+levels(source_data$edu)<-c(1,2,3,4)
+cormatrix <- cor_auto(source_data)
+ebic_data <- data.frame(qgraph::EBICglasso(cormatrix, n = nrow(source_data), threshold = FALSE))
+ebic_data[lower.tri(ebic_data, diag=TRUE)] <- NA
+ebic_data <- tibble(data.frame(ebic_data))
+ebic_data <- bind_cols(name = colnames(ebic_data), ebic_data)
+ebic_data <- ebic_data %>% pivot_longer(cols=age:Cantrell, names_to="pair", values_to="r") %>% unique() %>% filter(!is.na(r)) %>% filter(r > 0 )
+rumi_graph <- graph_from_data_frame(ebic_data[,1:2], directed=FALSE)
+E(rumi_graph)$strength <-ebic_data[,3][[1]]
+tool <- unname(unlist(sapply(names(V(rumi_graph)), function(x){ strsplit(x,split="_")[[1]][1]})))
+tool[tool %in% c("age", "class")] <- 'demo'
+tool[tool %in% c("wellb", 'chronic', 'acute', 'Cantrell')] <- 'health'
+toolcolor <- tool
+toolcolor[toolcolor == 'demo'] <- 'grey71'
+toolcolor[toolcolor == 'health'] <- 'green'
+toolcolor[toolcolor == "RRS"] <- "cornflowerblue"
+toolcolor[toolcolor == "SCRS"] <- "coral"
+V(rumi_graph)$tool <- tool
+tools <- unique(tool)
+tool_enum <- c()
+for (item in tool) {
+    for (i in 1:length(tools)) {
+        if (item == tools[i]) {
+            tool_enum <- c(tool_enum, i)
+        }
+
+    }
+}
+V(rumi_graph)$tool_enum <- tool_enum
+V(rumi_graph)$toolcolor <- toolcolor
+# V(rumi_graph)$mean_value <- colMeans(as.matrix(rumi), na.rm=T)
+saveRDS(rumi_graph, "rumi_graph_full.RDS")
+saveRDS(source_data, "rumi_data.RDS")
 
 # load computed measures
-rumi<-readRDS("data/rumi_graph_full.RDS")
-rumid<-readRDS("data/rumi_graph_full_din.RDS")
-prumi<-readRDS("data/personified_rumi.RDS")
-rumi_data<-readRDS("data/rumi_data.RDS")
+rumi <-readRDS("data/rumi_graph_full.RDS")
+rumid <-readRDS("data/rumi_graph_full_din.RDS")
+prumi <-readRDS("data/personified_rumi.RDS")
 temporal_summary <- readRDS("data/temporal_summary.RDS")
 dynamic <- readRDS("data/dynamic.RDS")
 ids <- readRDS("data/ids.RDS")
