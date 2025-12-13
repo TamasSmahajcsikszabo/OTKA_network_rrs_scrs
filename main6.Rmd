@@ -358,8 +358,8 @@ Additional MCMC diagnostics revealed good fit of the model, as the observed grap
 mute <- function(exp) {
   invisible(capture.output(exp))
 }
-mycorr <- cor_auto(rumi_data, detectOrdinal = TRUE)
-mycorr <- cor(rumi_data, method = "spearman")
+mycorr <- cor_auto(dataset_only_scales, detectOrdinal = TRUE)
+mycorr <- cor(dataset_only_scales, method = "spearman")
 mycorr <- mycorr[upper.tri(mycorr)]
 mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation", plot=FALSE)))
 ```

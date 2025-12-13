@@ -19,71 +19,41 @@ dataset_raw <- as_tibble(dataset_raw) # transform raw dataframe into tibble data
 data_labels <- tibble(var = names(dataset_raw), labels = attributes(dataset_raw)$variable.labels) %>%
   filter(labels != "")
 
-rumidata <- dataset_raw %>% mutate(ID = row_number())
-origdata <- rumidata
-rumidata <- na.omit(rumidata[,c(4, 13:32, 56)])
-filterd_idx <- rumidata$ID
-origdata <- origdata %>% filter(ID %in% filterd_idx)
-rumidata  <- rumidata[,1:21]
-rumidata$gender <- ""
-rumidata$gender[rumidata$nem=='lany'] <- 'female'
-rumidata$gender[rumidata$nem=='fiu'] <- 'male'
-rumidata$gender <- factor(rumidata$gender)
 
 # prepared dataset
-dataset <- rumidata
+dataset <- dataset_raw %>% mutate(ID = row_number())
+# store unfiltered data
+origdata <- dataset 
+dataset <- na.omit(dataset[,c(4, 13:32, 56)])
+filterd_idx <- dataset$ID
+origdata <- origdata %>% filter(ID %in% filterd_idx)
+dataset <-dataset [,1:21]
+dataset$gender <- ""
+dataset$gender[dataset$nem=='lany'] <- 'female'
+dataset$gender[dataset$nem=='fiu'] <- 'male'
+dataset$gender <- factor(dataset$gender)
+
+# prepared data for analysis
 var_names <- names(dataset)
 dataset_only_scales <- dataset[,names(dataset) %in% c(paste0("RRS_", 1:10), paste0("SCRS_", 1:10))]
 
-# create networks
-source_data <- readRDS("data/full_data.RDS")[,c(4,5,6,7,10,11,12,13:32,47)]
-source_data <- na.omit(source_data)
-names(source_data)<-c('gender','age', 'edu','class','wellb','chronic','acute',paste0('RRS_',seq(1:10)), paste0('SCRS_',seq(1:10)), 'Cantrell')
-levels(source_data$gender)<-ifelse(source_data$gender=='fiu',1,2)
-levels(source_data$edu)<-c(1,2,3,4)
-cormatrix <- cor_auto(source_data)
-ebic_data <- data.frame(qgraph::EBICglasso(cormatrix, n = nrow(source_data), threshold = FALSE))
-ebic_data[lower.tri(ebic_data, diag=TRUE)] <- NA
-ebic_data <- tibble(data.frame(ebic_data))
-ebic_data <- bind_cols(name = colnames(ebic_data), ebic_data)
-ebic_data <- ebic_data %>% pivot_longer(cols=age:Cantrell, names_to="pair", values_to="r") %>% unique() %>% filter(!is.na(r)) %>% filter(r > 0 )
-rumi_graph <- graph_from_data_frame(ebic_data[,1:2], directed=FALSE)
-E(rumi_graph)$strength <-ebic_data[,3][[1]]
-tool <- unname(unlist(sapply(names(V(rumi_graph)), function(x){ strsplit(x,split="_")[[1]][1]})))
-tool[tool %in% c("age", "class")] <- 'demo'
-tool[tool %in% c("wellb", 'chronic', 'acute', 'Cantrell')] <- 'health'
-toolcolor <- tool
-toolcolor[toolcolor == 'demo'] <- 'grey71'
-toolcolor[toolcolor == 'health'] <- 'green'
-toolcolor[toolcolor == "RRS"] <- "cornflowerblue"
-toolcolor[toolcolor == "SCRS"] <- "coral"
-V(rumi_graph)$tool <- tool
-tools <- unique(tool)
-tool_enum <- c()
-for (item in tool) {
-    for (i in 1:length(tools)) {
-        if (item == tools[i]) {
-            tool_enum <- c(tool_enum, i)
-        }
+### create networks ###
 
-    }
-}
-V(rumi_graph)$tool_enum <- tool_enum
-V(rumi_graph)$toolcolor <- toolcolor
-# V(rumi_graph)$mean_value <- colMeans(as.matrix(rumi), na.rm=T)
-saveRDS(rumi_graph, "rumi_graph_full.RDS")
-saveRDS(source_data, "rumi_data.RDS")
+# 1. RRS Graph
+source_data_rrs <- dataset_only_scales[,paste0("RRS_", 1:10)]
+RRS_graph_scale_id <- c(1,2,1,2,2,1,1,1,2,2)
+RRS_graph <- construct_graph(source_data_rrs,  "RRS_graph_2025.RDS", RRS_graph_scale_id, data_labels)
+
+# 2. SCRS Graph
+source_data_scrs <- dataset_only_scales[,paste0("SCRS_", 1:10)]
+SCRS_graph_scale_id <- rep(3, 10)
+SCRS_graph <- construct_graph(source_data_scrs,  "SCRS_graph_2025.RDS", SCRS_graph_scale_id, data_labels)
+
+# 3. Full Combined Graph of RRS + SCRS
+full_graph_scale_id <- c(1,2,1,2,2,1,1,1,2,3,3,3,3,3,3,3,3,3,2,3)
+rumi_graph <- construct_graph(dataset_only_scales, "rumi_graph_full_2025.RDS", full_graph_scale_id, data_labels)
 
 # load computed measures
-rumi <-readRDS("data/rumi_graph_full.RDS")
-rumid <-readRDS("data/rumi_graph_full_din.RDS")
-prumi <-readRDS("data/personified_rumi.RDS")
-temporal_summary <- readRDS("data/temporal_summary.RDS")
-dynamic <- readRDS("data/dynamic.RDS")
-ids <- readRDS("data/ids.RDS")
-mycorr <- readRDS("data/mycorr.RDS")
-RRS_graph <- readRDS("data/RRS.RDS")
-SCRS_graph <- readRDS("data/SCRS.RDS")
 RRS_simulated_communities <- readRDS("output/RRS_communities.RDS")
 SCRS_simulated_communities <- readRDS("output/SCRS_communities.RDS")
 combined_simulated_communities <- readRDS("output/combined_communities.RDS")
@@ -98,7 +68,7 @@ accuracy_scrs <- network_accuracy_data(accuracy_scrs)
 accuracy_combined <- network_accuracy_data(accuracy_combined)
 
 # add accuracy to networks
-rumi <- add_accuracy_to_graph(rumi, accuracy_combined)
+rumi <- add_accuracy_to_graph(rumi_graph, accuracy_combined)
 RRS_graph <- add_accuracy_to_graph(RRS_graph, accuracy_rrs)
 SCRS_graph <- add_accuracy_to_graph(SCRS_graph, accuracy_scrs)
 
@@ -107,11 +77,9 @@ overalltextsize <- 18
 textsize <- 7
 overallnodesize  <- 8
 RRS_plot <- beautify(RRS_graph, RRS_simulated_communities, title="RRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=RRS_item_TDR, overallnodesize=overallnodesize)
-RRS_plot
 SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title="SCRS undirected graph", no_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize,item_TDR=SCRS_item_TDR, overallnodesize=overallnodesize)
 combined_plot <- beautify(rumi, combined_simulated_communities, title="RRS & SCRS undirected graph",force_caption=TRUE, textsize=textsize, overalltextsize=overalltextsize, item_TDR=combined_item_TDR, overallnodesize=overallnodesize)
 network_plot <- ggpubr::ggarrange(ggpubr::ggarrange(RRS_plot, SCRS_plot, nrow=2,heights=c(1,1)), combined_plot, widths=c(0.95,1.05))
-network_plot
 ggsave("output/networkplot.png",network_plot, dpi=400, device='png',width=35, height=18)
 
 # community detection methods
