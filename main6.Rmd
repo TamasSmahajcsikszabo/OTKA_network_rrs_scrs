@@ -569,7 +569,8 @@ Not applicable.
 https://github.com/TamasSmahajcsikszabo/rumination_lasso/data/
 
 ### Code availability (software application or custom code) 
-https://github.com/TamasSmahajcsikszabo/rumination_lasso
+A companion R package 'NetworkAnalysisTools': https://github.com/TamasSmahajcsikszabo/networkAnalysisTools
+Codes for the article: TBD
 
 ### Authors' contributions  
 GK and ZR conceptualized the study design and supervised the data collection. TSSZ performed data analysis and GK, NK and RU contributed to the interpretation of the results. TSSZ and NK drafted the manuscript. GK, ZR, NK, RU reviewed the first draft and provided critical feedback. All authors read and approved the final manuscript. 
