@@ -6,6 +6,8 @@ header-includes:
 - \usepackage{pdflscape}
 - \newcommand{\blandscape}{\begin{landscape}}
 - \newcommand{\elandscape}{\end{landscape}}
+- \newcommand{\beginsupplement}{\setcounter{table}{0}\renewcommand{\thetable}{S\arabic{table}}\setcounter{figure}{0} \renewcommand{\thefigure}{S\arabic{figure}}}
+- \newcommand{\beginappendix}{\setcounter{table}{0}\renewcommand{\thetable}{A\arabic{table}}\setcounter{figure}{0} \renewcommand{\thefigure}{A\arabic{figure}}}
 
 template: "template.tex"
 output: 
@@ -82,7 +84,7 @@ Having two rumination-related questionnaires, the Ruminative Response Style (*RR
 (3.) we also assumed a combined rumination network, representing the generic (more trait-like) and the self-critical aspects of rumination will exhibit a three-component structure.
 
 Previously, network modeling was successfully applied to investigate depressive rumination by testing the original 22-item version of RRS [@Bernstein2019], but to the best of our knowledge no other rumination questionnaires were investigated, especially in terms of self-critical thoughts.
-We provide a glossary of the main network analysis related concepts in Table 8. of the Appendix.
+We provide a glossary of the main network analysis related concepts in Table A1. of the Appendix.
 
 
 
@@ -216,7 +218,7 @@ Simulation studies [@Epskamp2017] lead us in our expectation as the *CS*-coeffic
 ## 3. Results
 
 ### 3.1 Descriptives, network descriptives and community detection
-Pearson correlation coefficients and Cronbach’s `r Alpha()`s of the scales, means and standard deviations (for the total sample, and for females and males separately) are presented in Table 1. below.
+Pearson correlation coefficients and Cronbach’s `r Alpha()`s of the scales, means and standard deviations (for the total sample, and for females and males separately) are presented in Table 2.
 The data being skewed and homoscedasticity violated between gender groups, we estimated 20% trimmed Cohen's d coefficients. 
 With medium-to-high effect sizes, Cliff's delta suggests group differences for female participants having higher scores on *RRS*, *SCRS* and RRS sub-scales (with at least 0.577 or higher probability).
 As expected [@Smart_2015], significant strong positive correlations were found between SCRS and RRS total scores (and both sub-scales), indicating that self-critical rumination somewhat differs from depressive mood related rumination, but people who are likely to ruminative self-critically are also likely to ruminate about their mood.
@@ -308,7 +310,7 @@ The *RRS* *brooding* scale has good separation in terms of TPR, except for its i
 The one-factor SCRS has also a separable community with high (>0.925) TPR.
 The combined network has large TPR of `r combinend_tpr_avg`; while keeping only the *spinglass* algorithm [as used by @Bernstein2019], we get high average 1.0 TPR for the combined graph.
 
-Please refer to our vertex summary table in the Appendix (Table 4.) for actual descriptives, including expected influence, bridge node related statistics and average True Positive Rates for each vertex.
+Please refer to our vertex summary table in the Supplement (Table S1.) for actual descriptives, including expected influence, bridge node related statistics and average True Positive Rates for each vertex.
 Where applicable, we used the standardized scores.
 
 Edges are remaining penalized partial correlations between items, after LASSO-penalization.
@@ -363,7 +365,7 @@ Additional MCMC diagnostics revealed good fit of the model, as the observed grap
 
 ### 3.3 Association Network Inference
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.width=6,fig.height=6, fig.align='center', fig.cap="Association Network Inference results"}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.width=12,fig.height=6, fig.align='center', fig.cap="Association Network Inference results"}
 mute <- function(exp) {
   invisible(capture.output(exp))
 }
@@ -373,7 +375,7 @@ graph_corr <- graph_corr[upper.tri(graph_corr)]
 mute(fdr <- suppressWarnings(fdrtool(graph_corr, statistic = "correlation", plot=FALSE)))
 ```
 Results show low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicating large mixing rate for the alternative hypothesis of edges having non-zero weights.
-The histogram of absolute correlation coefficients (see Figure 3. in Appendix) has a centered shape in contrast to the null component.
+The histogram of absolute correlation coefficients (see Figure S1. in the Supplement) has a centered shape in contrast to the null component.
 The density-based *FDR* drops once empirical correlations reach at least $\rho$=0.1 (see the lowest section of Figure 3.).
 
 ### 3.4 Latent Network Modeling
@@ -442,7 +444,7 @@ for (v in c(pred1, pred2, pred3)) {
 Summarizing the results from the *eigenmodels*, using the original combined network's adjacency matrix as a reference, we estimated the *Area Under the Curve* (AUC) statistics for each model.
 Compared to the latent model ($\ AUC_{latent}$ =`r round(aucs[1], 3)`), the inclusion of the questionnaires as a grouping factor resulted in a better predictive model ($\ AUC_{latent+questionnaire}$ = `r round(aucs[2], 3)`).
 The final model involving the scale-level vertex characteristics has the best goodness-of-fit ($\ AUC_{latent+scale}$ =`r round(aucs[3],3)`).
-See Figure 4. in the Appendix for the corresponding ROC curves.
+See Figure S2. in the Supplement for the corresponding ROC curves.
 
 ### 3.5 Power analysis, network accuracy and stability
 We used the *bootnet* R package to have an estimate of edge-weight accuracy with *non-parametric bootstrap* (5000 times sampling).
@@ -455,9 +457,9 @@ Examples for accurate and strong edges are *RRS(4)* (*alone1*; *"Go away by your
 The edge weight for these items in their stand-alone *RRS* network is `r round(E(RRS_graph)[10]$strength,3)` (estimated edge-weight accuracy is with average `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)` with lower and upper CI bounds of `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_rrs[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`).
 These items exhibit the same pattern in the combined network with estimated edge-weight accuracy with average weight of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(m) %>% unlist(),3)`; lower and upper CI bounds of `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(lower) %>% unlist(),3)` - `r round(accuracy_combined[2][[1]]  %>% filter(node1=='RRS_4', node2=='RRS_10') %>% ungroup() %>%  dplyr::select(upper) %>% unlist(),3)`.
 
-In the SCRS network we can track a *path* (a graph movement [*walk*] without repeated edges or vertices) between *SCRS* 6, 5, 9 and 10 items (please refer to Table 5. for edge-level weight and accuracy estimates of *SCRS*).
+In the SCRS network we can track a *path* (a graph movement [*walk*] without repeated edges or vertices) between *SCRS* 6, 5, 9 and 10 items. 
 
-Network **stability** estimates for our three networks were carried out by using the *bootnet* function (results in Table 3. below). 
+Network **stability** estimates for our three networks were carried out by using the *bootnet* function (results in Table 3.). 
 We performed a *case dropping bootstrap* to simulate scenarios where fewer and fewer cases of the original sample would have been available and quantified the stability of the centrality metrics with the *Correlation Stability* (CS) coefficient. 
 Bootstrap was performed with B=5000 samples.
 
@@ -467,7 +469,7 @@ SCRSchange <- readRDS("output/SCRS_comparative.RDS")
 ```
 We specifically examined how accuracy  estimates of individual edges in their respective networks change compared to what we estimated in the combined graph of rumination.
 Although most of the stability and accuracy estimates decreased once entering into the combined graph, some increased, most notably the upper bounds of the 95% confidence intervals of accuracy for edges as *`r RRSchange[1,1][[1]]`* and *`r RRSchange[2,1][[1]]`* of RRS and  *`r SCRSchange[3,1][[1]]`* and *`r SCRSchange[4,1][[1]]`* of SCRS.
-Edge desriptive statistics as well as edge accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Appendix (see Table 5., 6., and 7.).
+Edge descriptive statistics as well as edge accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Supplement (see Table S2., S3., and S4.).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 #CS estimates
@@ -492,7 +494,7 @@ knitr::kable(CS_estimates,digits=2,label="", caption="Correlation Stability coef
 We found satisfactory correlation stability of the Betweenness statistic of the Brooding (RRS) stand-alone network ($\ CS_{Brooding}$=`r Round(CS_estimates[1,3])`) as Brooding has retraceable communities, and as we already pointed out above, had the only Articulation Point of the RRS network.
 Brooding, Reflection and the SCRS networks have acceptable correlation statistics for the closeness statistic ($\ CS_{Brooding}$=`r Round(CS_estimates[2,3])`, $\ CS_{Reflection}$=`r Round(CS_estimates[2,4])` and $\ CS_{SCRS}$=`r Round(CS_estimates[2,5])`).
 The Edge Strength (the sum of edge weight, in the present paper the partial correlation coefficients) and the Expected Influence statistics have good correlation stabilities on all networks; specifically, the Reflection stand-alone network exhibits high estimates  for Edge Strength ($\ CS_{Reflection}$=`r  Round(CS_estimates[3,4])`) and Expected Influence ( $\ CS_{Reflection}$=`r  Round(CS_estimates[4,4])`) which might be driven by the high correlation between items 4. and 10. of RRS.
-The Edge Weight shows highly satisfactory patterns on all networks (*"Edge Weight"* row of Table 3.) which is the expected stability of our penalized partial correlation coefficients.
+The Edge Weight shows highly satisfactory patterns on all networks (*"Edge Weight"* row of Table 4.) which is the expected stability of our penalized partial correlation coefficients.
 For the combined network of RRS and SCRS, we see stable Edge Strength, Edge Weight and Expected Influence stability estimates, whereas Betweenness ($\ CS_{combined}$=`r Round(CS_estimates[1,6])`) and Closeness ($\ CS_{combined}$=`r Round(CS_estimates[2,6])`) are unsatisfactory.
 These findings suggest that the combined network tolerates very few sample loss and sample variance when it comes to the Betweenness centrality and the Closeness centrality measures, as all networks are densely connected and fewer items can stand out with higher local importance such as being between sub-networks.
 
@@ -530,7 +532,7 @@ In a network analysis, @Williams2021  combined items of *"analyze"* into one nod
 
 We have gathered evidence of scale playing an important role in the edge-building process.
 According to our exponential random graph model, the internal scales of the combined network indeed have a statistically significant impact on associations between items, whereas the effect of questionnaire dissolved, no longer having an impact on the probability of edge formation.
-Edge descriptive statistics as well as edge accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Appendix (see Table 5., 6., and 7.).
+Edge descriptive statistics as well as edge accuracy and stability statistics have been summarized for *RRS*, *SCRS* and their combined graphs in respective tables of Supplement (see Table S4., S3., and S4.).
 This suggest that all three scales are effective in assessing a separate facet of rumination when used together.
 As shown, associations within the combined network only have low chances of false discovery.
 
@@ -588,23 +590,35 @@ GK and ZR conceptualized the study design and supervised the data collection. TS
 \newpage
 
 
+\beginappendix
+\newpage
 ## Appendix
 
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-knitr::kable(summary_table, format='simple', row.names=FALSE,caption="Network descriptive statistics for RRS, SCRS and their combined networks",label='Table 1',digits=2)
+pander::pander(glossary_tb, style='grid', caption='Glossary of network analysis relevant terms mentioned in the article', justify=c('left'))
+
+```
+
+\newpage
+
+## Supplement
+
+\beginsupplement
+\blandscape
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+knitr::kable(networksummary_table, format='simple', row.names=FALSE,caption="Network descriptive statistics for RRS, SCRS and their combined networks",label='Table 1',digits=2)
 ```
 
 *Deg.=Degree; Str.=Strength; Bet.=Betweenness; Clo.=Closeness; EI1= One-step Expected Influence; EI2= Two-step Expected Influence; Br.Str.=Bridge Strength; Br.Bet.=Bridge Betweenness; Br.Cl.=Bridge Closeness; Br.EI1=One-step Bridge Expected Influence; Br.EI2=Two-step Bridge Expected Influence; TPR=average True Positive Rate*
 
 
+\elandscape
 \newpage
 \blandscape
 
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=7, fig.height=6, fig.cap='False Discovery Rate (FDR) for the combined network'}
 mute(fdr <- suppressWarnings(fdrtool(graph_corr, statistic = "correlation")))
-save_figure(fdrtool(graph_corr, statistic="correlation"), "Figure_3_FDR_plot", height=10, width=16, use_ggplot=FALSE)
+mute(save_figure(fdrtool(graph_corr, statistic="correlation"), "Figure_3_FDR_plot", height=10, width=16, use_ggplot=FALSE))
 ```
 
 
@@ -656,7 +670,7 @@ knitr::kable(combinedSummary, format='simple', row.names=FALSE,caption="Edge Acc
 \newpage
 \blandscape
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=5, fig.height=5, fig.cap='ROC curves of the combined RRS-SCRS network'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=8, fig.height=6, fig.cap='ROC curves of the combined RRS-SCRS network'}
 
 ROC_data <- bind_rows(getAUC(perf1, "Latent effect"), getAUC(perf2, "Latent + Questionaire as pair-wise"), getAUC(perf3, "Latent + Scale as pair-wise"))
 
@@ -688,54 +702,6 @@ save_figure(roc_plot, "Figure_4_Roc_Plot_Graphs", height=8, width=12)
 roc_plot
 ```
 \elandscape
-\newpage
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
- glossary_tb <- tribble(
-     ~Term, ~Definition,
-     "Articulation point", "A measure of vertex influence: V(i) vertex of G graph is an Articulation Point, if removed from the graph, would segment, cut or disintegrate the graph; therefore is considered locally important.",
-     "","",
-     "Association network","A network where neighbouring vertices when connected are assumed to being associated; in other words, edges represent some measure of correlation or other kind of association; this makes them different from energy or information flow networks, for instance.",
-     "","",
-      "Community Detection", "A group of algorithmic methods to find clusters of nodes  whose community can be described by systematic variance encoded in data represented in edges and node characteristics, and therefore are non-trivial. In the current paper, we used four selected algorithms to estimate how well they identify the original subscale-structure of the RRS and SCRS questionnaires.",
-     "","",
-      "Cut vertex", "see 'Articulation point'",
-     "","",
-     "Edge", "A link (E, arc) between nodes of a network. Undirected if direction of the connection (e.g. flow of energy or information) is not essential to the network; directed (uni- or bidirectional) otherwise. Can be weighted by some measure of association, frequency or other attribute.",
-     "","",
-     "Exponential Random Graph Models", "ERGM; a family of models to the analogy of generalized linear models adopted to network modeling. They allow the construction, fitting and comparison of network models. Their nature is structural, incorporating different configurations of a graph (sets of possible edges). ERGMs have numerous extensions and variations.",
-     "","",
-     "Graph", "see 'Network'",
-     "","",
-     "Markov Chain Monte Carlo","Monte Carlo methods are a collection of techniques which approximate a quantity (mean, variance, some other measure of location, for instance) by generating random values of a random variable. In the present paper, MCMC was used to get the ERGM model parameters; and also in the fitting of the eigenmodel for the latent network modeling.",
-     "","",
-     "Network", "Graph G = (V,E), a construct of V vertices and E edges.",
-     "","",
-     "Network, Adjancency matrix", "Given v number of vertices, the adjacency matrix is a v X v matrix, where any [i,j] cell's value reflects with 0 or 1 whether a selected pair of vertices are connected or not",
-     "","",
-     "Network, Clustering coefficient", "Transitivity, a descriptive measure to reflect the degree of connectedness [or process of clustering] in a graph by giving the ratio of connected triangles (triads of vertices) versus the total number of triangles in the graph.",
-     "","",
-     "Network, Diameter", "The value of the longest distance (traceable route along edges and incident nodes) in a graph.",
-     "","",
-     "Network, Order", "Descriptive; order of a network is the number of vertices.",
-     "","",
-     "Network, Size","Descriptive; size of a network is the total number of edges.",
-     "","",
-     "Network, Vertex, Betweenness","Descriptive of vertex centrality; quantifies how much a given vertex is between other pairs of vertices, thus has a connecting power.",
-     "","",
-     "Network, Vertex, Closeness","Descriptive of vertex centrality; assumes that important vertices are closer to others; its measure is inverse of total distances to other vertices.",
-     "","",
-     "Network, Vertex, Degree","Descriptive; the degree of a vertex is the number of edges incident on the given vertex. Vertex degrees are summarized as Degree Distribution of a graph.",
-     "","",
-     "Network, Vertex, Strength", "Descriptive of vertex centrality; equals the sum of edge weights incident upon the given vertex, reflecting vertex centrality (importance). Vertex Strength Distribution is a histogram of vertex strength estimates of an entire graph.",
-     "","",
-     "Node", "Nodes (V,vertices) are representation of constructs, latent variables, subjects or any level of attributes in a network. Like edges, they can inherently bear any attributes.",
-     "","",
-       "Penalization", "In regression, penalization introduces additional penalty to the sum of squared errors the model is trying to minimize. This way, by allowing a small increase in bias, the model is expected to exhibit  a lower level of variance. The graphical LASSO method, used in the current paper, uses an absolute fraction of coefficietnts as penalties. With the applied penalty, insignificant or weak associations are expected to shrink towards 0."
- )
-pander::pander(glossary_tb, style='grid', caption='Glossary of network analysis relevant terms mentioned in the article', justify=c('left'))
-
-```
 
 \newpage
 ## References
