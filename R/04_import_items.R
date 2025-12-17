@@ -39,15 +39,16 @@ lookUpItemName <- function(itemName) {
 }
 
 makeItemStats <- function(itemName, summaryTable, stats=c('EI1', 'EI2','Bet.'), names=c('Exp. Inf.', 'Two-Step Exp. Inf.', 'Betweenness'), fullExplain=FALSE, onlyExplain=TRUE) {
-    itemLabel = lookUpItemName((itemName))
-    colMask = colnames(summaryTable) %in% stats
-    colIndex = seq(1,length(colMask))
-    colIndex = colIndex[colMask]
+    itemLabel <-  lookUpItemName((itemName))
+    colMask <- colnames(summaryTable) %in% stats
+    colIndex <- seq(1,length(colMask))
+    colIndex <- colIndex[colMask]
     colTable <- data.frame(index = stats, label = names)
 
     textSummary <- paste0("'",itemLabel,"'-"," [")
 
-    statsRow = summaryTable[summaryTable$Label == itemName,]
+    statsRow <- summaryTable[summaryTable$Label == itemName,]
+    print(statsRow)
     for (j in seq_along(colIndex)) {
         colName = colTable[colTable$index == colnames(summaryTable)[colIndex[j]],]
         if (j == length(colIndex)){
