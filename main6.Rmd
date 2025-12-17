@@ -99,8 +99,8 @@ Following their consent, students were asked to fill out paper-pencil questionna
 Participation in the study was anonymous and voluntary. 
 Data collection was supervised by trained undergraduate students of psychology. 
 No teaching staff were present. 
-The total sample of the study comprises data from `r nrow(origdata)` participants (aged `r min(origdata$kor, na.rm=TRUE)`-`r max(origdata$kor, na.rm=TRUE)` years, females= `r sum(origdata$nem == 'lany')` (`r round(sum(origdata$nem == 'lany')/nrow(origdata),2) * 100`%), males=`r sum(origdata$nem == 'fiu')` (`r round(sum(origdata$nem == 'fiu')/nrow(origdata),2) * 100`%) collected via convenience sampling method. 
-The mean age was `r round(mean(origdata$kor, na.rm=TRUE),1)` (SD=`r round(sd(origdata$kor, na.rm=TRUE),1)`) years. 
+The total sample of the study comprises data from `r nrow(dataset)` participants (aged `r min(dataset$kor, na.rm=TRUE)`-`r max(dataset$kor, na.rm=TRUE)` years, females= `r sum(dataset$nem == 'lany')` (`r round(sum(dataset$nem == 'lany')/nrow(dataset),2) * 100`%), males=`r sum(dataset$nem == 'fiu')` (`r round(sum(dataset$nem == 'fiu')/nrow(dataset),2) * 100`%) collected via convenience sampling method. 
+The mean age was `r round(mean(dataset$kor, na.rm=TRUE),1)` (SD=`r round(sd(dataset$kor, na.rm=TRUE),1)`) years. 
 The protocol was designed in accordance with the Declaration of Helsinki and the study was ethically approved by the Institutional Review Board (note: the name of the university is masked for review process).
 
 ### 2.2 Measures
