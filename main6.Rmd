@@ -223,13 +223,22 @@ As expected [@Smart_2015], significant strong positive correlations were found b
 
 
 ```{r descriptives, echo=FALSE}
-knitr::kable(summary_table, row.names=FALSE, format='simple', caption="Sample and Scale Descriptives")
+library(knitr)
+library(kableExtra)
+
+knitr::kable(summary_table, 
+             row.names = FALSE, 
+             format = 'latex', 
+             booktabs = TRUE, 
+             caption = "Sample and Scale Descriptives") %>%
+  row_spec(5, hline_after = TRUE) %>%
+  kable_styling(latex_options = c())
 ```
 
 <!-- *Upper triangle reflects inter-scale Pearson correlations between sub-scales; 'male' and 'female' rows are descriptives of each scale in terms of means and standard deviations; the lower three rows are summaries of effect size measures.* -->
 Note. *RRS= Ruminative Response Scale. SCRS= Self-critical Rumination Scale. SD=standard deviation. P(f>m)=probability of difference of female scores over male. All correlations are significant at p<.001.*
 
-The undirected, weighted, associational networks of *RRS*, *SCRS* and their combined structure can be seen below (see Figure 1).
+The undirected, weighted, associational networks of *RRS*, *SCRS* and their combined structure can be seen (see Figure 1).
 All three networks proved to be connected (any vertex is reachable from every other).
 Comparing diameters to mean distances, we see densely connected graphs (for the *RRS* network, its diameter is `r round(diameter(RRS_graph),3)` compared to its mean distance of `r round(mean_distance(RRS_graph),3)`; the *SCRS* and the combined networks show similar ratio patterns).
 On the plot, vertices represent the corresponding items of each questionnaire with labels showing item number, sub-scale and a label for each item.
