@@ -313,3 +313,49 @@ opening_line <- tibble_row("Correlations:", `1.` = "", `2.` = "", `3.` = "", `4.
 colnames(opening_line)[1] <- ""
 summary_table <- bind_rows(opening_line, summary_table)
 colnames(summary_table)[1] <- ""
+
+
+
+#### glossary tibble
+ glossary_tb <- tribble(
+     ~Term, ~Definition,
+     "Articulation point", "A measure of vertex influence: V(i) vertex of G graph is an Articulation Point, if removed from the graph, would segment, cut or disintegrate the graph; therefore is considered locally important.",
+     "","",
+     "Association network","A network where neighbouring vertices when connected are assumed to being associated; in other words, edges represent some measure of correlation or other kind of association; this makes them different from energy or information flow networks, for instance.",
+     "","",
+      "Community Detection", "A group of algorithmic methods to find clusters of nodes  whose community can be described by systematic variance encoded in data represented in edges and node characteristics, and therefore are non-trivial. In the current paper, we used four selected algorithms to estimate how well they identify the original subscale-structure of the RRS and SCRS questionnaires.",
+     "","",
+      "Cut vertex", "see 'Articulation point'",
+     "","",
+     "Edge", "A link (E, arc) between nodes of a network. Undirected if direction of the connection (e.g. flow of energy or information) is not essential to the network; directed (uni- or bidirectional) otherwise. Can be weighted by some measure of association, frequency or other attribute.",
+     "","",
+     "Exponential Random Graph Models", "ERGM; a family of models to the analogy of generalized linear models adopted to network modeling. They allow the construction, fitting and comparison of network models. Their nature is structural, incorporating different configurations of a graph (sets of possible edges). ERGMs have numerous extensions and variations.",
+     "","",
+     "Graph", "see 'Network'",
+     "","",
+     "Markov Chain Monte Carlo","Monte Carlo methods are a collection of techniques which approximate a quantity (mean, variance, some other measure of location, for instance) by generating random values of a random variable. In the present paper, MCMC was used to get the ERGM model parameters; and also in the fitting of the eigenmodel for the latent network modeling.",
+     "","",
+     "Network", "Graph G = (V,E), a construct of V vertices and E edges.",
+     "","",
+     "Network, Adjancency matrix", "Given v number of vertices, the adjacency matrix is a v X v matrix, where any [i,j] cell's value reflects with 0 or 1 whether a selected pair of vertices are connected or not",
+     "","",
+     "Network, Clustering coefficient", "Transitivity, a descriptive measure to reflect the degree of connectedness [or process of clustering] in a graph by giving the ratio of connected triangles (triads of vertices) versus the total number of triangles in the graph.",
+     "","",
+     "Network, Diameter", "The value of the longest distance (traceable route along edges and incident nodes) in a graph.",
+     "","",
+     "Network, Order", "Descriptive; order of a network is the number of vertices.",
+     "","",
+     "Network, Size","Descriptive; size of a network is the total number of edges.",
+     "","",
+     "Network, Vertex, Betweenness","Descriptive of vertex centrality; quantifies how much a given vertex is between other pairs of vertices, thus has a connecting power.",
+     "","",
+     "Network, Vertex, Closeness","Descriptive of vertex centrality; assumes that important vertices are closer to others; its measure is inverse of total distances to other vertices.",
+     "","",
+     "Network, Vertex, Degree","Descriptive; the degree of a vertex is the number of edges incident on the given vertex. Vertex degrees are summarized as Degree Distribution of a graph.",
+     "","",
+     "Network, Vertex, Strength", "Descriptive of vertex centrality; equals the sum of edge weights incident upon the given vertex, reflecting vertex centrality (importance). Vertex Strength Distribution is a histogram of vertex strength estimates of an entire graph.",
+     "","",
+     "Node", "Nodes (V,vertices) are representation of constructs, latent variables, subjects or any level of attributes in a network. Like edges, they can inherently bear any attributes.",
+     "","",
+       "Penalization", "In regression, penalization introduces additional penalty to the sum of squared errors the model is trying to minimize. This way, by allowing a small increase in bias, the model is expected to exhibit  a lower level of variance. The graphical LASSO method, used in the current paper, uses an absolute fraction of coefficietnts as penalties. With the applied penalty, insignificant or weak associations are expected to shrink towards 0."
+ )
