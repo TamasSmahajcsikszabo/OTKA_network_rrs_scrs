@@ -59,7 +59,7 @@ While in self-critical rumination, individuals concentrate on their lack of self
 Indeed, in a recent study, self-critical rumination was strongly related to shame and predicted sensitivity to stress after a perceived failure [@Milia_2020]. 
 Positive meta-cognitions in self-critical rumination [@Kolubinski_2017] likely has less importance than in depressive rumination [@Papageorgiou_2001]. 
 One can assume that in depressive rumination the positive, while in self-critical rumination the negative meta-cognitions (e.g. “*I will get depressed if I don’t stop reviewing my self-critical thoughts*”) are those processes which maintain the ruminative process [@Kolubinski_2017].
-The Self-Critical Rumination Scale (SCRS, @Smart_2015), developed to assess the construct, showed incremental validity over other rumination scales (including the widely used RRS and RSQ) and self-criticism scale in explaining interindividual differences in borderline personality features and general distress.
+The Self-critical Rumination Scale (SCRS, @Smart_2015), developed to assess the construct, showed incremental validity over other rumination scales (including the widely used RRS and RSQ) and self-criticism scale in explaining interindividual differences in borderline personality features and general distress.
 However, in the same study, SCRS and RRS were highly correlated, indicating that those individuals who ruminate in a more general or broader way are also likely to ruminate on numerous topics, including self-devaluating thoughts and vice versa. 
 Previous work also supported the notion that individuals can show different forms of repetitive thought and they can ruminate and worry simultaneously, or they are able to passively brooding on something and adaptively reflect on other topics [@Watkins2008]. 
 
@@ -105,7 +105,7 @@ The protocol was designed in accordance with the Declaration of Helsinki and the
 
 ### 2.2 Measures
 
-The *Self-Critical Rumination Scale*; [@Smart_2015] was used to assess those thoughts that criticize the self for perceived failures, mistakes or bad habits in a prolonged and repetitive manner. 
+The *Self-critical Rumination Scale*; [@Smart_2015] was used to assess those thoughts that criticize the self for perceived failures, mistakes or bad habits in a prolonged and repetitive manner. 
 The SCRS is a self-reported, one factor scale that consists of 10 items. 
 Participants were asked to rate the statements (i.e. “*My attention is often focused on aspects of myself that I’m ashamed of*”; “*I criticize myself a lot for how I act around other people*”) on a 4-point Likert scale from 1 (not at all) to 4 (very much). 
 The scale showed high internal consistency in the original version (`r Alpha()`=0.92). We obtained a satisfactory estimate (`r Alpha()`=`r round(crA_SCRS_total$alpha[1],2)`). 
@@ -227,7 +227,7 @@ knitr::kable(summary_table, row.names=FALSE, format='simple', caption="Sample an
 ```
 
 <!-- *Upper triangle reflects inter-scale Pearson correlations between sub-scales; 'male' and 'female' rows are descriptives of each scale in terms of means and standard deviations; the lower three rows are summaries of effect size measures.* -->
-Note. *RRS= Ruminative Response Scale. SCRS= Self-Critical Rumination Scale. SD=standard deviation. P(f>m)=probability of difference of female scores over male. All correlations are significant at p<.001.*
+Note. *RRS= Ruminative Response Scale. SCRS= Self-critical Rumination Scale. SD=standard deviation. P(f>m)=probability of difference of female scores over male. All correlations are significant at p<.001.*
 
 The undirected, weighted, associational networks of *RRS*, *SCRS* and their combined structure can be seen below (see Figure 1).
 All three networks proved to be connected (any vertex is reachable from every other).
@@ -499,7 +499,7 @@ A network approach identified them as not merging with one-another, but establis
 Thus, we provided further evidence that self-critical rumination is a separate construct from depressive rumination.
 
 
-The **Self-Critical Rumination Scale** proved to have a one-factor structure.
+The **Self-critical Rumination Scale** proved to have a one-factor structure.
 In its respective network, the **Ruminative Response Style Questionnaire** exhibits a two-factor structure.
 Our community detection estimates suggest though that the reflective aspects of rumination such as analyzing one's self and recent events for better emotional insights (items 2 and 9 of *RRS*: *"Analyze recent events to try to understand why you are depressed"* and *"Analyze your personality to try to understand why you are depressed"*) have more to common with brooding, or have a tendency to emerge as a third aspect.
 In analyzing the factor structure of *RRS* on samples from Argentina and the United States, the error variances of these two items were found to be correlated and thus ended up being excluded from the solution [@Arana2017]. 
@@ -567,11 +567,11 @@ Participation in the study was voluntary and anonymous for the participants (hig
 Not applicable. 
 
 ### Availability of data and materials (data transparency) 
-https://github.com/TamasSmahajcsikszabo/rumination_lasso/data/
+https://github.com/TamasSmahajcsikszabo/OTKA_network_rrs_scrs/tree/publish/data
 
 ### Code availability (software application or custom code) 
 A companion R package 'NetworkAnalysisTools': https://github.com/TamasSmahajcsikszabo/networkAnalysisTools
-Codes for the article: TBD
+Codes for the article: https://github.com/TamasSmahajcsikszabo/OTKA_network_rrs_scrs/tree/publish/R
 
 ### Authors' contributions  
 GK and ZR conceptualized the study design and supervised the data collection. TSSZ performed data analysis and GK, NK and RU contributed to the interpretation of the results. TSSZ and NK drafted the manuscript. GK, ZR, NK, RU reviewed the first draft and provided critical feedback. All authors read and approved the final manuscript. 
