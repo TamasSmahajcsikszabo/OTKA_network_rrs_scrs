@@ -348,3 +348,22 @@ plot_eigen <- function(evecs, postmeans, graph, namevecs, subscale, labels,texts
             text=element_text(size=textsize))
 }
 
+#' Save plots into "figures" folder as jpg
+save_figure <- function(p, filename, height, width, dpi=400, device="jpeg", use_ggplot = TRUE) {
+    filepath <- paste0("figures/", filename,".jpg")
+    if (use_ggplot) {
+        require(ggplot2)
+        ggsave(filepath, p, dpi=dpi, device=device, width=width, height=height)
+    } else {
+        jpeg(filepath,
+          width  = 2400,
+          height = 1600,
+          units = "px",
+          quality = 100,   
+          pointsize = 24
+        )
+        p
+        dev.off()
+    }
+
+}

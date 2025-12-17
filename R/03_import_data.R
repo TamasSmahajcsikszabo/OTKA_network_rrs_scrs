@@ -12,30 +12,16 @@ library(qgraph)
 library(tidyverse)
 
 # import main data
-dataset_raw <- read.spss("data/scrs888.sav", to.data.frame = TRUE, use.value.labels = TRUE)
-dataset_raw <- as_tibble(dataset_raw) # transform raw dataframe into tibble dataframe
+# original data with demographics
+dataset <- readRDS("data/original_data.RDS")
+data_labels <- readRDS("data/data_labels.RDS")
 
-# extract data labels
-data_labels <- tibble(var = names(dataset_raw), labels = attributes(dataset_raw)$variable.labels) %>%
-    filter(labels != "")
+# data for analysis
+dataset_only_scales <- dataset[, names(dataset) %in% c(paste0("RRS_", 1:10), paste0("SCRS_", 1:10))]
 
-
-# prepared dataset
-dataset <- dataset_raw %>% mutate(ID = row_number())
-# store unfiltered data
-origdata <- dataset
-dataset <- na.omit(dataset[, c(4, 13:32, 56)])
-filterd_idx <- dataset$ID
-origdata <- origdata %>% filter(ID %in% filterd_idx)
-dataset <- dataset[, 1:21]
-dataset$gender <- ""
-dataset$gender[dataset$nem == "lany"] <- "female"
-dataset$gender[dataset$nem == "fiu"] <- "male"
-dataset$gender <- factor(dataset$gender)
 
 # prepared data for analysis
 var_names <- names(dataset)
-dataset_only_scales <- dataset[, names(dataset) %in% c(paste0("RRS_", 1:10), paste0("SCRS_", 1:10))]
 
 ### create networks ###
 
@@ -81,6 +67,7 @@ SCRS_plot <- beautify(SCRS_graph, SCRS_simulated_communities, title = "SCRS undi
 combined_plot <- beautify(rumi, combined_simulated_communities, title = "RRS & SCRS undirected graph", force_caption = TRUE, textsize = textsize, overalltextsize = overalltextsize, item_TDR = combined_item_TDR, overallnodesize = overallnodesize)
 network_plot <- ggpubr::ggarrange(ggpubr::ggarrange(RRS_plot, SCRS_plot, nrow = 2, heights = c(1, 1)), combined_plot, widths = c(0.95, 1.05))
 ggsave("output/networkplot.png", network_plot, dpi = 400, device = "png", width = 35, height = 18)
+save_figure(network_plot, "Figure_1_Tableau_View_Graphs", height=18, width=35)
 
 # community detection methods
 i <- 1000
