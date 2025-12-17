@@ -358,10 +358,10 @@ Additional MCMC diagnostics revealed good fit of the model, as the observed grap
 mute <- function(exp) {
   invisible(capture.output(exp))
 }
-mycorr <- cor_auto(dataset_only_scales, detectOrdinal = TRUE)
-mycorr <- cor(dataset_only_scales, method = "spearman")
-mycorr <- mycorr[upper.tri(mycorr)]
-mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation", plot=FALSE)))
+graph_corr <- cor_auto(dataset_only_scales, detectOrdinal = TRUE)
+graph_corr <- cor(dataset_only_scales, method = "spearman")
+graph_corr <- graph_corr[upper.tri(graph_corr)]
+mute(fdr <- suppressWarnings(fdrtool(graph_corr, statistic = "correlation", plot=FALSE)))
 ```
 Results show low $\eta_0$ (`r round(unname(unlist(fdr['param'])[3]),3) `) indicating large mixing rate for the alternative hypothesis of edges having non-zero weights.
 The histogram of absolute correlation coefficients (see Figure 3. in Appendix) has a centered shape in contrast to the null component.
@@ -387,6 +387,7 @@ for (item in seq_along(itemnames)) {
     labels[item] <- paste0(item_name, "\n", label)
 }
 ploteigen <- plot_eigen(evecs, evals, rumi_graph, toolnames, subscale, labels)
+save_figure(ploteigen, "Figure_2_Eigen_Decomp_Plot", height=10, width=16)
 
 ggsave("output/eigenplot.png",ploteigen, dpi=400, device='png',width=15, height=10)
 ploteigen
@@ -593,7 +594,8 @@ knitr::kable(summary_table, format='simple', row.names=FALSE,caption="Network de
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.retina=1,fig.align='center', fig.width=7, fig.height=6, fig.cap='False Discovery Rate (FDR) for the combined network'}
-mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation")))
+mute(fdr <- suppressWarnings(fdrtool(graph_corr, statistic = "correlation")))
+save_figure(fdrtool(graph_corr, statistic="correlation"), "Figure_3_FDR_plot", height=10, width=16, use_ggplot=FALSE)
 ```
 
 
@@ -604,7 +606,7 @@ mute(fdr <- suppressWarnings(fdrtool(mycorr, statistic = "correlation")))
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 RRS_stability <- readRDS("output/RRS_stability.RDS")
-RRSsummary = edge_summary(RRS_graph, accuracy_rrs,RRS_stability)
+RRSsummary <- edge_summary(RRS_graph, accuracy_rrs,RRS_stability)
 saveRDS(RRSsummary, "output/RRSsummary.RDS")
 knitr::kable(RRSsummary, format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the RRS network",label='Table 2',digits=2)
 ```
@@ -618,7 +620,7 @@ knitr::kable(RRSsummary, format='simple', row.names=FALSE,caption="Edge Accuracy
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 SCRS_stability <- readRDS("output/SCRS_stability.RDS")
-SCRSsummary = edge_summary(SCRS_graph, accuracy_scrs,SCRS_stability)
+SCRSsummary <- edge_summary(SCRS_graph, accuracy_scrs,SCRS_stability)
 saveRDS(SCRSsummary, "output/SCRSsummary.RDS")
 knitr::kable(SCRSsummary, format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the SCRS network",label='Table 2',digits=2)
 ```
@@ -633,7 +635,7 @@ knitr::kable(SCRSsummary, format='simple', row.names=FALSE,caption="Edge Accurac
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 combined_stability <- readRDS("output/combined_stability.RDS")
-combinedSummary = edge_summary(rumi, accuracy_combined,combined_stability)
+combinedSummary <- edge_summary(rumi, accuracy_combined,combined_stability)
 saveRDS(combinedSummary, "output/combinedSummary.RDS")
 knitr::kable(combinedSummary, format='simple', row.names=FALSE,caption="Edge Accuracy and Stability Statistics for the RRS and SCRS network",label='Table 2',digits=2)
 ```
@@ -664,7 +666,7 @@ for (i in seq_along(conds)) {
 means <- ROC_data %>% group_by(Condition) %>% summarize(x=mean(x), y=mean(y))
 aucs_data <- tibble('Condition'= unique(ROC_data$Condition), 'AUC_value'=aucs) %>% left_join(means)
 
-ggplot(ROC_data, aes(x, y)) +
+roc_plot <- ggplot(ROC_data, aes(x, y)) +
     geom_path(aes(x, y, group = Condition, color = Condition), size = 1.5) +
     geom_label(data=aucs_data, aes(x=rep(0.9, 3),y=c(0.4,0.5, 0.6),group=Condition,label=paste0(round(AUC_value,3)*100,'%'),fill=Condition), alpha=1/2)+
     scale_color_manual(values =c("#CA382A", "#0C38A0", "grey60")) +
@@ -673,6 +675,8 @@ ggplot(ROC_data, aes(x, y)) +
     labs(x = "False Positive Rate", y = "True Positive Rate") +
     # geom_rect(aes(xmin = 0.75, ymin = 0, xmax = 1.0, ymax = 0.25), fill = "white", color = "gray70") +
     theme(legend.position = "bottom")
+save_figure(roc_plot, "Figure_4_Roc_Plot_Graphs", height=8, width=12)
+roc_plot
 ```
 \elandscape
 \newpage
