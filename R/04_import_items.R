@@ -27,7 +27,11 @@ items_table <- tribble(
  "SCRS (9)","Self-critical", "I spend a lot of time wishing I were different.",
  "SCRS (10)","Self-critical", "I often berate myself for not being as productive as I should be.")
 
-item_codes <- c(V(RRS_graph)$label, V(SCRS_graph)$label)
+item_codes <- c(V(RRS_graph)$label)
+for (i in 1:10) {
+    node_label <- paste0("SCRS_", i)
+    item_codes <- c(item_codes, V(SCRS_graph)[node_label]$label)
+}
 items_table$Label  <- item_codes
 
 lookUpItemName <- function(itemName) {
